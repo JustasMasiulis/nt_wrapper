@@ -28,7 +28,11 @@ namespace ntw::obj {
 
         public:
             NTW_INLINE basic_section() noexcept = default;
-            NTW_INLINE basic_section(void* handle) noexcept : _section(handle) {}
+
+            template<class ObjectHandle>
+            NTW_INLINE basic_section(const ObjectHandle& handle)
+                : _handle(unwrap_handle(handle))
+            {}
 
             NTW_INLINE Handle& handle() noexcept { return _section; }
             NTW_INLINE const Handle& handle() const noexcept { return _section; }

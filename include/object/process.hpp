@@ -16,6 +16,7 @@
 
 #pragma once
 #include "handle.hpp"
+#include "../util.hpp"
 
 namespace ntw::obj {
 
@@ -27,7 +28,11 @@ namespace ntw::obj {
 
         public:
             basic_process() = default;
-            basic_process(void* handle) : _handle(handle) {}
+
+            template<class ObjectHandle>
+            NTW_INLINE basic_process(const ObjectHandle& handle)
+                : _handle(unwrap_handle(handle))
+            {}
 
             NTW_INLINE Handle& handle() noexcept { return _handle; }
             NTW_INLINE const Handle& handle() const noexcept { return _handle; }

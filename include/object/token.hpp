@@ -33,7 +33,11 @@ namespace ntw::obj {
 
         public:
             basic_token() = default;
-            basic_token(void* handle) noexcept : _handle(handle) {}
+
+            template<class ObjectHandle>
+            NTW_INLINE basic_token(const ObjectHandle& handle)
+                : _handle(unwrap_handle(handle))
+            {}
 
             NTW_INLINE Handle& handle() noexcept { return _handle; }
             NTW_INLINE const Handle& handle() const noexcept { return _handle; }
