@@ -1,0 +1,6 @@
+[submodule "deps/lazy_importer"]
+	path = deps/lazy_importer
+	url = https://github.com/JustasMasiulis/lazy_importer
+[submodule "test/Catch2"]
+	path = test/Catch2
+	url = https://github.com/catchorg/Catch2
