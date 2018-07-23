@@ -68,7 +68,6 @@ namespace ntw::obj::detail {
                                    unsigned long    access_flags) noexcept
     {
         return _open(make_ustr(path),
-                     path,
                      create_if_not_existing,
                      access_flags,
                      FILE_NON_DIRECTORY_FILE);

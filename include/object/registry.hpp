@@ -43,7 +43,7 @@ namespace ntw::obj {
                              bool             is_volatile = true)
             {
                 auto  upath = make_ustr(path);
-                auto  attr  = make_attributes(&path, OBJ_CASE_INSENSITIVE);
+                auto  attr  = make_attributes(&upath, OBJ_CASE_INSENSITIVE);
                 ULONG disposition;
                 return LI_NT(NtCreateKey)(_handle.addressof(),
                                           access,
