@@ -42,12 +42,12 @@ namespace ntw::system {
 
             NTW_INLINE thread_info* begin() const noexcept
             {
-                return reinterpret_cast<thread_info*>(_first);
+                return std::launder(reinterpret_cast<thread_info*>(_first));
             }
 
             NTW_INLINE thread_info* end() const noexcept
             {
-                return reinterpret_cast<thread_info*>(_last);
+                return std::launder(reinterpret_cast<thread_info*>(_last));
             }
         };
 
@@ -130,7 +130,7 @@ namespace ntw::system {
 
     NTW_INLINE processes::iterator processes::begin() const noexcept
     {
-        return { reinterpret_cast<value_type*>(_info_buffer.get()) };
+        return { std::launder(reinterpret_cast<value_type*>(_info_buffer.get())) };
     }
 
     NTW_INLINE processes::iterator processes::end() const noexcept { return {}; }

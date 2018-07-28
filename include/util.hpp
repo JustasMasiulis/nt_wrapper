@@ -35,6 +35,9 @@ namespace ntw {
 
     NTW_INLINE LARGE_INTEGER make_large_int(std::int64_t i);
 
+	template<class New, class Old>
+	NTW_INLINE New address_cast(Old address) noexcept;
+
     template<class T>
     NTW_INLINE constexpr void assert_pointer_type() noexcept;
 

@@ -220,6 +220,50 @@ namespace ntw::obj::detail {
     }
 
     template<class Handle>
+    NT_FN basic_file<Handle>::device_io_control(unsigned long  control_code,
+                                                void*          in_buffer,
+                                                unsigned long  in_buffer_size,
+                                                void*          out_buffer,
+                                                unsigned long  out_buffer_size,
+                                                unsigned long* bytes_returned) const
+        noexcept
+    {
+        IO_STATUS_BLOCK status_block{ 0 };
+        const auto      status = LI_NT(NtDeviceIoControlFile)(_handle.get(),
+                                                         nullptr,
+                                                         nullptr,
+                                                         nullptr,
+                                                         &status_block,
+                                                         control_code,
+                                                         in_buffer,
+                                                         in_buffer_size,
+                                                         out_buffer,
+                                                         out_buffer_size);
+
+        // set the bytes returned if we are successfull
+        if(bytes_returned && NT_SUCCESS(status))
+            *bytes_returned = static_cast<unsigned long>(status_block.Information);
+
+        return status;
+    }
+
+    template<class Handle>
+    template<class InBuffer, class OutBuffer>
+    NT_FN basic_file<Handle>::device_io_control(unsigned long    control_code,
+                                                const InBuffer&  in_buffer,
+                                                const OutBuffer& out_buffer,
+                                                unsigned long*   bytes_returned) const
+        noexcept
+    {
+        return device_io_control(control_code,
+                                 in_buffer,
+                                 sizeof(InBuffer),
+                                 out_buffer,
+                                 sizeof(OutBuffer),
+                                 bytes_returned);
+    }
+
+    template<class Handle>
     template<class StringRef /* wstring_view or UNICODE_STRING */>
     NT_FN static basic_file<Handle>::destroy(const StringRef& path,
                                              bool             case_sensitive) noexcept
@@ -228,6 +272,42 @@ namespace ntw::obj::detail {
         auto attributes =
             make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
         return LI_NT(NtDeleteFile)(&attributes);
+    }
+
+    template<class Callback, class... Args>
+    NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args)
+    {
+        ntw::unique_handle handle;
+
+        {
+            auto attributes = ntw::make_attributes(&name, 0);
+            ret_on_err(LI_NT(NtOpenDirectoryObject)(
+                handle.addressof(), DIRECTORY_QUERY | DIRECTORY_TRAVERSE, &attributes));
+        }
+
+        std::aligned_storage_t<2048u, 8> buffer;
+        constexpr unsigned long          buffer_size = sizeof(buffer);
+        unsigned long                    ctx = 0, ret_len = 0;
+
+        while(true) {
+            const auto status = LI_NT(NtQueryDirectoryObject)(
+                handle.get(), &buffer, buffer_size, FALSE, FALSE, &ctx, &ret_len);
+
+            if(status == STATUS_NO_MORE_ENTRIES)
+                return STATUS_SUCCESS;
+            else if(!NT_SUCCESS(status))
+                return status;
+
+            auto ptr = reinterpret_cast<OBJECT_DIRECTORY_INFORMATION*>(&buffer);
+            // can't break out of 2 loops...
+        goto_next_iteration:
+            if(ptr->Name.Buffer != nullptr && ptr->TypeName.Buffer != nullptr) {
+                NTW_CALLBACK_BREAK_IF_FALSE(callback, *ptr++, args...);
+                goto goto_next_iteration;
+            }
+        }
+
+        return STATUS_SUCCESS;
     }
 
 } // namespace ntw::obj::detail

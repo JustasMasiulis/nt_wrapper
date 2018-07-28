@@ -82,6 +82,21 @@ namespace ntw::obj {
             template<class Callback, class... Args>
             NT_FN enum_contained_files(Callback callback, Args&&... args) const noexcept;
 
+            NT_FN device_io_control(unsigned long  control_code,
+                                    void*          in_buffer,
+                                    unsigned long  in_buffer_size,
+                                    void*          out_buffer,
+                                    unsigned long  out_buffer_size,
+                                    unsigned long* bytes_returned = nullptr) const
+                noexcept;
+
+            template<class InBuffer, class OutBuffer>
+            NT_FN device_io_control(unsigned long    control_code,
+                                    const InBuffer&  in_buffer,
+                                    const OutBuffer& out_buffer,
+                                    unsigned long*   bytes_returned = nullptr) const
+                noexcept;
+
             template<class StringRef /* wstring_view or UNICODE_STRING */>
             NT_FN static destroy(const StringRef& path,
                                  bool             case_sensitive = false) noexcept;
@@ -91,6 +106,9 @@ namespace ntw::obj {
 
     using unique_file = detail::basic_file<unique_handle>;
     using file_ref    = detail::basic_file<handle_ref>;
+
+    template<class Callback, class... Args>
+    NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args);
 
 } // namespace ntw::obj
 

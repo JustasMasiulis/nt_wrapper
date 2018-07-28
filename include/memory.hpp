@@ -25,6 +25,9 @@ namespace ntw {
         struct unique_memory_alloc_traits {
             using value_type = T;
 
+            template<class Address>
+            NT_FN allocate(Address addr, SIZE_T sz, unsigned long protection);
+
             NT_FN allocate(SIZE_T sz, unsigned long protection);
 
         protected:
@@ -57,6 +60,12 @@ namespace ntw {
         void* _process = NtCurrentProcess();
 
     public:
+        class protection;
+
+        class region_info;
+
+        using native_protection_t = unsigned long;
+
         template<class T>
         using unique_alloc = detail::unique_object<detail::unique_memory_alloc_traits<T>>;
 
@@ -101,6 +110,79 @@ namespace ntw {
 
         template<class Address>
         NT_FN unlock(Address address, SIZE_T size) const noexcept;
+
+        template<class Address, class Buffer>
+        NT_FN read(Address address,
+                   Buffer& buffer,
+                   SIZE_T  size = sizeof(Buffer),
+                   SIZE_T* read = nullptr) const noexcept;
+
+        template<class Address, class Buffer>
+        NT_FN write(Address       address,
+                    const Buffer& buffer,
+                    SIZE_T        size    = sizeof(Buffer),
+                    SIZE_T*       written = nullptr) const noexcept;
+
+        template<class Address, class Callback, class... Args>
+        NT_FN
+        enumerate_regions(Address begin, Address end, Callback cb, Args&&... args) const;
+    };
+
+    class memory::protection {
+        memory::native_protection_t _native;
+
+    public:
+        NTW_INLINE explicit constexpr protection() : _native(PAGE_NOACCESS) {}
+
+        NTW_INLINE constexpr protection(memory::native_protection_t native) noexcept
+            : _native(native)
+        {}
+
+        NTW_INLINE constexpr bool accessible() const noexcept;
+        NTW_INLINE constexpr bool readable() const noexcept;
+        NTW_INLINE constexpr bool writable() const noexcept;
+        NTW_INLINE constexpr bool executable() const noexcept;
+
+        NTW_INLINE constexpr bool guarded() const noexcept;
+        NTW_INLINE constexpr bool non_cached() const noexcept;
+        NTW_INLINE constexpr bool write_combined() const noexcept;
+
+        NTW_INLINE constexpr memory::native_protection_t native() const noexcept
+        {
+            return _native;
+        }
+    };
+
+    class memory::region_info {
+        MEMORY_BASIC_INFORMATION _info;
+
+    public:
+        template<class Address = void*>
+        NTW_INLINE Address base() const noexcept;
+
+        NTW_INLINE std::size_t size() const noexcept;
+
+        template<class Address = void*>
+        NTW_INLINE Address end() const noexcept;
+
+        NTW_INLINE memory::protection protection() const noexcept;
+
+        NTW_INLINE explicit      operator bool() const noexcept;
+        NTW_INLINE bool          is_commited() const noexcept;
+        NTW_INLINE bool          is_reserved() const noexcept;
+        NTW_INLINE unsigned long state() const noexcept;
+
+        NTW_INLINE unsigned long type() const noexcept;
+        NTW_INLINE bool          is_mapped() const noexcept;
+        NTW_INLINE bool          is_private() const noexcept;
+        NTW_INLINE bool          is_image() const noexcept;
+
+        template<class Address = void*>
+        NTW_INLINE Address allocation_base() const noexcept;
+
+        NTW_INLINE memory::protection allocation_protection() const noexcept;
+
+        NTW_INLINE MEMORY_BASIC_INFORMATION& get() noexcept;
     };
 
 } // namespace ntw

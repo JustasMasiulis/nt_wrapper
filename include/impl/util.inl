@@ -88,9 +88,45 @@ namespace ntw {
 
     template<class T>
     NTW_INLINE constexpr void assert_pointer_type() noexcept
+    {}
+
+    template<class New, class Old>
+    NTW_INLINE New address_cast(Old address) noexcept
     {
-        static_assert(alignof(T) == alignof(void*) && sizeof(T) == sizeof(void*),
-                      "invalid pointer type");
+        static_assert(std::is_pointer_v<Old> || std::is_unsigned_v<Old> ||
+                          std::is_null_pointer_v<Old>,
+                      "Address type must be either a pointer or unsigned");
+
+        // yes this is cancerous and overkill but meh
+        if constexpr(std::is_null_pointer_v<Old>)
+            return New{ 0 };
+        else if constexpr(std::is_pointer_v<Old>) {
+            // if both types are pointers
+            if constexpr(std::is_pointer_v<New>) {
+                // casts to / from void are implicit or require static_cast
+                if constexpr(std::is_void_v<std::remove_pointer_t<New>> ||
+                             std::is_void_v<std::remove_pointer_t<Old>>)
+                    return static_cast<New>(address);
+                // else if pointer types do not match we should launder them
+                else if constexpr(!std::is_same_v<New, Old>)
+                    return std::launder(reinterpret_cast<New>(address));
+				// both types are the same
+                else
+                    return address;
+            }
+            // else we just return what we casted
+            else
+                return reinterpret_cast<New>(address);
+        }
+        else {
+            // if we need to cast to pointer use reinterpret
+            if constexpr(std::is_pointer_v<New>)
+                return reinterpret_cast<New>(address);
+            // else use a simple static cast as reinterpret won't cast long -> int and
+            // vice versa
+            else
+                return static_cast<New>(address);
+        }
     }
 
     template<class T>

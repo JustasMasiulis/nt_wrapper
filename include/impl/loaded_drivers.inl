@@ -62,20 +62,35 @@ namespace ntw::system {
         return _me.BaseInfo.Flags;
     }
 
-    NTW_INLINE std::string_view loaded_driver::name() const noexcept
+    NTW_INLINE const char* loaded_driver::name() const noexcept
     {
-        const auto first = reinterpret_cast<const char*>(_me.BaseInfo.FullPathName) +
-                           _me.BaseInfo.OffsetToFileName;
-        auto last = first;
+        return path() + _me.BaseInfo.OffsetToFileName;
+    }
+
+    NTW_INLINE const char* loaded_driver::path() const noexcept
+    {
+        return reinterpret_cast<const char*>(_me.BaseInfo.FullPathName);
+    }
+
+    NTW_INLINE std::uint16_t loaded_driver::name_offset() const noexcept
+    {
+        return _me.BaseInfo.OffsetToFileName;
+    }
+
+
+    NTW_INLINE std::string_view loaded_driver::name_view() const noexcept
+    {
+        const auto first = name();
+        auto       last  = first;
         while(*last)
             ++last;
 
         return std::string_view(first, last - first);
     }
 
-    NTW_INLINE std::string_view loaded_driver::path() const noexcept
+    NTW_INLINE std::string_view loaded_driver::path_view() const noexcept
     {
-        auto driver_name = name();
+        auto driver_name = name_view();
         return { driver_name.data() - _me.BaseInfo.OffsetToFileName,
                  driver_name.size() + _me.BaseInfo.OffsetToFileName };
     }
@@ -118,7 +133,7 @@ namespace ntw::system {
 
     NTW_INLINE loaded_drivers::iterator loaded_drivers::begin() noexcept
     {
-        return { reinterpret_cast<loaded_driver*>(_buffer.get()) };
+        return { std::launder(reinterpret_cast<loaded_driver*>(_buffer.get())) };
     }
     NTW_INLINE loaded_drivers::iterator loaded_drivers::end() noexcept { return {}; }
 

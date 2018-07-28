@@ -17,7 +17,9 @@
 #pragma once
 #define NOMINMAX
 #include <type_traits>
+#include <utility>
 #include "../../deps/lazy_importer/include/lazy_importer.hpp"
+#include "../../deps/unrolled/include/unrolled.hpp"
 #include "../../deps/phnt/phnt_windows.h"
 #include "../../deps/phnt/phnt.h"
 
@@ -26,7 +28,7 @@
 #endif
 
 #ifdef NTW_ENABLE_DEBUG_TRACING
-#include <iostream>
+#include <cstdio>
 #define NTW_NT_TRACE(name, status)                                    \
     std::printf(__FILE__ " line: %i %s %u %s\n",                      \
                 __LINE__,                                             \
