@@ -122,7 +122,7 @@ namespace ntw {
 
     NTW_INLINE memory::region_info::operator bool() const noexcept
     {
-        return _info.State == MEM_FREE;
+        return _info.State != MEM_FREE;
     }
     NTW_INLINE bool memory::region_info::is_commited() const noexcept
     {
