@@ -25,7 +25,6 @@ namespace ntw::system {
     namespace detail {
 
         struct loader_drivers_iterator_traits;
-
     }
 
     class loaded_driver {
@@ -40,8 +39,13 @@ namespace ntw::system {
 
         NTW_INLINE std::uint32_t flags() const noexcept;
 
-        NTW_INLINE std::string_view name() const noexcept;
-        NTW_INLINE std::string_view path() const noexcept;
+        NTW_INLINE const char* name() const noexcept;
+        NTW_INLINE const char* path() const noexcept;
+
+        NTW_INLINE std::string_view name_view() const noexcept;
+        NTW_INLINE std::string_view path_view() const noexcept;
+
+        NTW_INLINE std::uint16_t name_offset() const noexcept;
 
         NTW_INLINE std::uint32_t checksum() const noexcept;
         NTW_INLINE std::uint32_t time_stamp() const noexcept;

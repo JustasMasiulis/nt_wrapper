@@ -41,7 +41,7 @@ namespace ntw::system {
                       unsigned long&           buffer_size)
     {
         unsigned long size   = buffer_size;
-        T*            buffer = size ? info_buffer.get() : nullptr;
+        T*            buffer = info_buffer.get();
 
         const auto ntqsi  = LI_NT(NtQuerySystemInformation);
         auto       status = ntqsi(info_class, buffer, size, &size);

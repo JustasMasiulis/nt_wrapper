@@ -40,7 +40,7 @@ namespace ntw {
     NT_FN detail::unique_memory_alloc_traits<T>::allocate(SIZE_T        sz,
                                                           unsigned long protection)
     {
-        return allocate(nullptr, sz, protection);
+        return allocate(std::uintptr_t{ 0 }, sz, protection);
     }
 
     template<class T>
