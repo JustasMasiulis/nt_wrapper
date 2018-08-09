@@ -1,5 +1,5 @@
 # nt_wrapper
-A header only wrapper library around native windows sytem APIs.
+A header only wrapper library around native windows system APIs.
 
 ### Highlights of currently implemented features
 System information:
