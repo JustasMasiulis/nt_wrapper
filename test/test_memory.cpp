@@ -114,11 +114,25 @@ TEST_CASE("memory::enumerate_regions")
         }));
 }
 
+TEST_CASE("memory::read and memory::write")
+{
+    int i = 1111;
+    int buffer;
+    REQUIRE_SUCCESS(ntw::memory().read(&i, buffer));
+    REQUIRE(i == 1111);
+    REQUIRE(i == buffer);
+    buffer = 2222;
+    REQUIRE_SUCCESS(ntw::memory().write(&i, buffer));
+    REQUIRE(i == 2222);
+    REQUIRE(i == buffer);
+}
+
 TEST_CASE("memory example")
 {
-    ntw::memory::unique_alloc<void> alloc;
+    ntw::memory::unique_alloc<std::uintptr_t> alloc;
     REQUIRE_SUCCESS(alloc.allocate(0x1000, PAGE_READWRITE));
 
+    // lock_strong call would expand working set if necessary
     ntw::memory::unique_lock lock;
     REQUIRE_SUCCESS(lock.lock(alloc.get(), 0x1000));
 
@@ -132,12 +146,16 @@ TEST_CASE("memory example")
     REQUIRE(region_info.protection().native() == PAGE_EXECUTE_READWRITE);
 
     auto status = ntw::memory().enumerate_regions(
-        static_cast<void*>(0), alloc.get(), [](ntw::memory::region_info& info) {
+        static_cast<std::uintptr_t*>(0), alloc.get(), [](ntw::memory::region_info& info) {
             // not free
             if(info) {
                 // ...
             }
         });
-
     REQUIRE_SUCCESS(status);
+
+    REQUIRE_SUCCESS(ntw::memory().write(alloc.get(), ~0ull));
+    REQUIRE(*alloc == ~0ull);
+    REQUIRE_SUCCESS(ntw::memory().read(alloc.get(), *(alloc.get() + 1)));
+    REQUIRE(alloc.get()[1] == ~0ull);
 }
