@@ -3,11 +3,11 @@ A header only wrapper library around native windows system APIs.
 
 ### Highlights of currently implemented features
 System information:
-* Handles enumeration -> ntw::system::handles
-* Process enumeration -> ntw::system::processes
+* [Handles enumeration](https://github.com/JustasMasiulis/nt_wrapper/blob/e2ff4b930c189b55548b4ba805756d1abf38053f/test/test_handles.cpp#L7) -> ntw::system::handles
+* [Process enumeration](https://github.com/JustasMasiulis/nt_wrapper/blob/e2ff4b930c189b55548b4ba805756d1abf38053f/test/test_processes.cpp#L7) -> ntw::system::processes
     * Threads enumeration -> ntw::system::thread_info
-* Loaded drivers enumeration -> ntw::system::loaded_drivers
-* Memory allocation, locking protection and queries with RAII constructs to avoid leaks -> ntw::memory
+* [Loaded drivers enumeration](https://github.com/JustasMasiulis/nt_wrapper/blob/e2ff4b930c189b55548b4ba805756d1abf38053f/test/test_loaded_drivers.cpp#L10) -> ntw::system::loaded_drivers
+* [Memory operations with RAII constructs](https://github.com/JustasMasiulis/nt_wrapper/blob/2f9ca30dc3098bf6884f325c77b44f77f2845f5a/test/test_memory.cpp#L132) -> ntw::memory
 
 Object manipulation:
 * Process -> ntw::obj::unique_process
