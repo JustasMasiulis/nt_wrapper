@@ -250,15 +250,15 @@ namespace ntw::obj::detail {
     template<class Handle>
     template<class InBuffer, class OutBuffer>
     NT_FN basic_file<Handle>::device_io_control(unsigned long    control_code,
-                                                const InBuffer&  in_buffer,
-                                                const OutBuffer& out_buffer,
+                                                InBuffer&        in_buffer,
+                                                OutBuffer&       out_buffer,
                                                 unsigned long*   bytes_returned) const
         noexcept
     {
         return device_io_control(control_code,
-                                 in_buffer,
+                                 ::std::addressof(in_buffer),
                                  sizeof(InBuffer),
-                                 out_buffer,
+                                 ::std::addressof(out_buffer),
                                  sizeof(OutBuffer),
                                  bytes_returned);
     }
