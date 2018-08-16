@@ -92,8 +92,8 @@ namespace ntw::obj {
 
             template<class InBuffer, class OutBuffer>
             NT_FN device_io_control(unsigned long    control_code,
-                                    const InBuffer&  in_buffer,
-                                    const OutBuffer& out_buffer,
+                                    InBuffer&        in_buffer,
+                                    OutBuffer&       out_buffer,
                                     unsigned long*   bytes_returned = nullptr) const
                 noexcept;
 
