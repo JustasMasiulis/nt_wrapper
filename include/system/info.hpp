@@ -31,8 +31,8 @@ namespace ntw::system {
     template<class Callback, class... Args, NTW_QUERY_CALLBACK_REQUIREMENT>
     NT_FN info(SYSTEM_INFORMATION_CLASS info_class, Callback cb, Args&&... args)
     {
-        return generic_query_can_fail(
-            LI_NT(NtQuerySystemInformation), info_class, cb, std::forward<Args>(args));
+        return detail::generic_query_can_fail(
+            LI_NT(NtQuerySystemInformation), info_class, cb, std::forward<Args>(args)...);
     }
 
     template<class T>
