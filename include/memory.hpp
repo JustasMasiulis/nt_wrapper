@@ -16,6 +16,7 @@
 
 #pragma once
 #include "detail/object.hpp"
+#include "util.hpp"
 
 namespace ntw {
 
@@ -72,7 +73,9 @@ namespace ntw {
         using unique_lock = detail::unique_object<detail::unique_memory_lock_traits>;
 
         constexpr memory() = default;
-        memory(void* process) noexcept : _process(process) {}
+        template<class ProcessHandle>
+        memory(const ProcessHandle& process) noexcept : _process(unwrap_handle(process))
+        {}
 
         template<class Address, class Buffer, NTW_QUERY_BUFFER_REQUIREMENT>
         NT_FN info(Address                  addr,
