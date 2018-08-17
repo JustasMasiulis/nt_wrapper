@@ -22,22 +22,18 @@ namespace ntw {
     namespace detail {
 
         template<class, class = void>
-        struct has_get : std::false_type {
-        };
+        struct has_get : std::false_type {};
 
         template<class T>
         struct has_get<T, std::void_t<decltype(std::declval<T>().get())>>
-            : std::true_type {
-        };
+            : std::true_type {};
 
         template<class, class = void>
-        struct has_addressof : std::false_type {
-        };
+        struct has_addressof : std::false_type {};
 
         template<class T>
         struct has_addressof<T, std::void_t<decltype(std::declval<T>().addressof())>>
-            : std::true_type {
-        };
+            : std::true_type {};
 
     } // namespace detail
 
@@ -110,7 +106,7 @@ namespace ntw {
                 // else if pointer types do not match we should launder them
                 else if constexpr(!std::is_same_v<New, Old>)
                     return std::launder(reinterpret_cast<New>(address));
-				// both types are the same
+                // both types are the same
                 else
                     return address;
             }
@@ -132,7 +128,7 @@ namespace ntw {
     template<class T>
     NTW_INLINE auto unwrap_handle(const T& handle) noexcept
     {
-        if constexpr(std::is_pointer_v<T>)
+        if constexpr(std::is_pointer_v<T> || std::is_null_pointer_v<T>)
             return handle;
         else if constexpr(detail::has_get<T>::value)
             return handle.get();
