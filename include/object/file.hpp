@@ -83,7 +83,7 @@ namespace ntw::obj {
             NT_FN enum_contained_files(Callback callback, Args&&... args) const noexcept;
 
             NT_FN device_io_control(unsigned long  control_code,
-                                    void*          in_buffer,
+                                    const void*    in_buffer,
                                     unsigned long  in_buffer_size,
                                     void*          out_buffer,
                                     unsigned long  out_buffer_size,
@@ -91,10 +91,10 @@ namespace ntw::obj {
                 noexcept;
 
             template<class InBuffer, class OutBuffer>
-            NT_FN device_io_control(unsigned long    control_code,
-                                    InBuffer&        in_buffer,
-                                    OutBuffer&       out_buffer,
-                                    unsigned long*   bytes_returned = nullptr) const
+            NT_FN device_io_control(unsigned long   control_code,
+                                    const InBuffer& in_buffer,
+                                    OutBuffer&      out_buffer,
+                                    unsigned long*  bytes_returned = nullptr) const
                 noexcept;
 
             template<class StringRef /* wstring_view or UNICODE_STRING */>

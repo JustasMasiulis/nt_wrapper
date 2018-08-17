@@ -221,7 +221,7 @@ namespace ntw::obj::detail {
 
     template<class Handle>
     NT_FN basic_file<Handle>::device_io_control(unsigned long  control_code,
-                                                void*          in_buffer,
+                                                const void*    in_buffer,
                                                 unsigned long  in_buffer_size,
                                                 void*          out_buffer,
                                                 unsigned long  out_buffer_size,
@@ -235,7 +235,7 @@ namespace ntw::obj::detail {
                                                          nullptr,
                                                          &status_block,
                                                          control_code,
-                                                         in_buffer,
+                                                         const_cast<void*>(in_buffer),
                                                          in_buffer_size,
                                                          out_buffer,
                                                          out_buffer_size);
@@ -249,10 +249,10 @@ namespace ntw::obj::detail {
 
     template<class Handle>
     template<class InBuffer, class OutBuffer>
-    NT_FN basic_file<Handle>::device_io_control(unsigned long    control_code,
-                                                InBuffer&        in_buffer,
-                                                OutBuffer&       out_buffer,
-                                                unsigned long*   bytes_returned) const
+    NT_FN basic_file<Handle>::device_io_control(unsigned long   control_code,
+                                                const InBuffer& in_buffer,
+                                                OutBuffer&      out_buffer,
+                                                unsigned long*  bytes_returned) const
         noexcept
     {
         return device_io_control(control_code,
