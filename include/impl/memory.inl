@@ -242,10 +242,13 @@ namespace ntw {
         struct query_functor {
             memory* _thisptr;
             Address _address;
-            template<class... Args>
-            NT_FN operator()(Args... args) const noexcept
+            using size_type = SIZE_T;
+            NT_FN operator()(MEMORY_INFORMATION_CLASS info_class,
+                             void*                    buffer,
+                             SIZE_T                   size,
+                             SIZE_T*                  return_size) const noexcept
             {
-                return _thisptr->info(_address, args...);
+                return _thisptr->info(_address, info_class, buffer, size, return_size);
             }
         };
         return detail::generic_query_can_fail(

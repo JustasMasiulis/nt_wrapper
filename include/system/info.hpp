@@ -25,7 +25,8 @@ namespace ntw::system {
                unsigned long            size     = sizeof(Buffer),
                unsigned long*           returned = nullptr)
     {
-        return LI_NT(NtQuerySystemInformation)(info_class, buffer, size, returned);
+        return LI_NT(NtQuerySystemInformation)(
+            info_class, ::std::addressof(buffer), size, returned);
     }
 
     template<class Callback, class... Args, NTW_QUERY_CALLBACK_REQUIREMENT>
