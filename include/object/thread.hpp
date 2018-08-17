@@ -23,7 +23,7 @@ namespace ntw::obj {
 
         template<class Handle>
         class basic_thread {
-            Handle _handle;
+            Handle _handle{ NtCurrentThread() };
 
         public:
             NTW_INLINE basic_thread() noexcept = default;
@@ -114,6 +114,14 @@ namespace ntw::obj {
                 return LI_NT(NtResumeThread)(_handle.get(), nullptr);
             }
 
+            NT_FN context(CONTEXT& ctx, unsigned long flags = 0) const noexcept
+            {
+                if(flags)
+                    ctx.ContextFlags = flags;
+
+                return LI_NT(NtGetContextThread)(_handle.get(), &ctx);
+            }
+
             NT_FN id(CLIENT_ID& id) const noexcept
             {
                 THREAD_BASIC_INFORMATION info;
@@ -128,6 +136,26 @@ namespace ntw::obj {
             {
                 return LI_NT(NtSetInformationThread)(
                     _handle.get(), ThreadHideFromDebugger, 0, 0);
+            }
+
+            template<class ProcessHandle>
+            NT_FN next(ACCESS_MASK          desired_access,
+                       const ProcessHandle& process,
+                       unsigned long        attributes = 0,
+                       unsigned long        flags      = 0) noexcept
+            {
+                void*      new_handle;
+                const auto status = LI_NT(NtGetNextThread)(unwrap_handle(process),
+                                                           _handle.get(),
+                                                           desired_access,
+                                                           attributes,
+                                                           flags,
+                                                           &new_handle);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(new_handle);
+
+                return status;
             }
         };
 
