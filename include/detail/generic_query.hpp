@@ -17,35 +17,31 @@
 #pragma once
 #include "../memory.hpp"
 
-#define NTW_IMPLEMENT_QUERY_CALLBACK                                  \
-    const auto _local_thisptr = this;                                 \
-                                                                      \
-    struct _callback_query_callable {                                 \
-        decltype(_local_thisptr) _thisptr;                            \
-        template<class InfoClass>                                     \
-        NT_FN operator()(InfoClass      info_class,                   \
-                         void*          buffer,                       \
-                         unsigned long  size,                         \
-                         unsigned long* ret_size)                     \
-        {                                                             \
-            return thisptr->info(info_class, buffer, size, ret_size); \
-        }                                                             \
-    };                                                                \
-    ntw::detail::generic_query_can_fail(                              \
-        _callback_query_callable{ _local_thisptr }, cb, std::forward<Args>(args)...);
+#define NTW_IMPLEMENT_QUERY_CALLBACK                                                                                                                                               \
+    const auto _local_thisptr = this;                                                                                                                                              \
+                                                                                                                                                                                   \
+    struct _callback_query_callable                                                                                                                                                \
+    {                                                                                                                                                                              \
+        decltype(_local_thisptr) _thisptr;                                                                                                                                         \
+        template <class InfoClass>                                                                                                                                                 \
+        NT_FN operator()(InfoClass info_class, void* buffer, unsigned long size, unsigned long* ret_size)                                                                          \
+        {                                                                                                                                                                          \
+            return thisptr->info(info_class, buffer, size, ret_size);                                                                                                              \
+        }                                                                                                                                                                          \
+    };                                                                                                                                                                             \
+    ntw::detail::generic_query_can_fail(_callback_query_callable{ _local_thisptr }, cb, std::forward<Args>(args)...);
 
-namespace ntw::detail {
+namespace ntw::detail
+{
 
-    template<class QueryFunction, class InfoClass, class T>
-    NT_FN generic_query_can_fail(QueryFunction            query,
-                                 InfoClass                info_class,
-                                 memory::unique_alloc<T>& buffer,
-                                 unsigned long&           size) noexcept
+    template <class QueryFunction, class InfoClass, class T>
+    NT_FN generic_query_can_fail(QueryFunction query, InfoClass info_class, memory::unique_alloc<T>& buffer, unsigned long& size) noexcept
     {
         // get the size first
         auto status = query(info_class, buffer.get(), size, &size);
 
-        if(status == STATUS_INFO_LENGTH_MISMATCH || status == STATUS_BUFFER_TOO_SMALL) {
+        if (status == STATUS_INFO_LENGTH_MISMATCH || status == STATUS_BUFFER_TOO_SMALL)
+        {
             // add an extra page for more information
             size += 0x1000;
             ret_on_err(buffer.allocate(size, PAGE_READWRITE));
@@ -55,17 +51,14 @@ namespace ntw::detail {
         return status;
     }
 
-    template<class QueryFunction, class InfoClass, class Callback, class... Args>
-    NT_FN generic_query_can_fail(QueryFunction query,
-                                 InfoClass     info_class,
-                                 Callback&     cb,
-                                 Args&&... args)
+    template <class QueryFunction, class InfoClass, class Callback, class... Args>
+    NT_FN generic_query_can_fail(QueryFunction query, InfoClass info_class, Callback& cb, Args&&... args)
     {
         memory::unique_alloc<void> buffer;
         unsigned long              size = 0;
 
         const auto status = generic_query_can_fail(query, info_class, buffer, size);
-        if(NT_SUCCESS(status))
+        if (NT_SUCCESS(status))
             cb(buffer.get(), size, std::forward<Args>(args)...);
 
         return status;
