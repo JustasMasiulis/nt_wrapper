@@ -58,7 +58,7 @@ namespace ntw::obj {
             {
                 _handle.reset();
                 return LI_NT(NtOpenThreadToken)(
-                    unwrap_handle(thread), desired_acces, open_as_self);
+                    unwrap_handle(thread), desired_access, open_as_self);
             }
 
             NT_FN open_process(ACCESS_MASK desired_access)
