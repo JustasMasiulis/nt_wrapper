@@ -38,8 +38,14 @@ namespace ntw::obj {
 
             NT_FN create(EVENT_TYPE type) noexcept
             {
-                return LI_NT(NtCreateEvent)(
-                    _handle.addressof(), EVENT_ALL_ACCESS, nullptr, type, FALSE);
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtCreateEvent)(
+                    &temp_handle, EVENT_ALL_ACCESS, nullptr, type, FALSE);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
             }
 
             NT_FN wait(std::int64_t timeout) const noexcept

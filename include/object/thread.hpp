@@ -54,9 +54,9 @@ namespace ntw::obj {
                 ps_attributes.Attributes[0].ValuePtr     = &client_id;
                 ps_attributes.Attributes[0].ReturnLength = 0;
 
-                void*      new_handle = nullptr;
-                const auto ret =
-                    LI_NT(NtCreateThreadEx)(&new_handle,
+                _void*      temp_handle = nullptr;
+                const auto status =
+                    LI_NT(NtCreateThreadEx)(&temp_handle,
                                             THREAD_ALL_ACCESS,
                                             &obj_attributes,
                                             unwrap_handle(process_handle),
@@ -67,11 +67,15 @@ namespace ntw::obj {
                                             0, // StackSize
                                             0, // MaxStackSize
                                             &ps_attributes);
-                _handle.reset(new_handle);
-                if(NT_SUCCESS(ret) && thread_id)
-                    *thread_id = reinterpret_cast<std::uintptr_t>(client_id.UniqueThread);
 
-                return ret;
+                if(NT_SUCCESS(status)) {
+                    if (thread_id)
+                        *thread_id = reinterpret_cast<std::uintptr_t>(client_id.UniqueThread);
+
+                    _handle.reset(temp_handle);
+                }
+
+                return status;
             }
 
             NT_FN
@@ -89,13 +93,16 @@ namespace ntw::obj {
 
             NT_FN open(ACCESS_MASK access, void* thread_id) noexcept
             {
-                void*      handle = nullptr;
                 CLIENT_ID  cid{ nullptr, thread_id };
                 auto       attributes = make_attributes(nullptr, 0);
-                const auto status =
-                    LI_NT(NtOpenThread)(&handle, access, &attributes, &cid);
 
-                _handle.reset(handle);
+                void*      temp_handle = nullptr;
+                const auto status =
+                    LI_NT(NtOpenThread)(&temp_handle, access, &attributes, &cid);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
                 return status;
             }
 

@@ -24,7 +24,7 @@ namespace ntw::obj {
 
         template<class Handle>
         class basic_section {
-            Handle _section;
+            Handle _handle;
 
         public:
             NTW_INLINE basic_section() noexcept = default;
@@ -34,8 +34,8 @@ namespace ntw::obj {
                 : _handle(unwrap_handle(handle))
             {}
 
-            NTW_INLINE Handle& handle() noexcept { return _section; }
-            NTW_INLINE const Handle& handle() const noexcept { return _section; }
+            NTW_INLINE Handle& handle() noexcept { return _handle; }
+            NTW_INLINE const Handle& handle() const noexcept { return _handle; }
 
             NT_FN create(std::int64_t  max_size,
                          unsigned long page_protection,
@@ -44,14 +44,19 @@ namespace ntw::obj {
                 static_assert(sizeof(std::int64_t) == sizeof(LARGE_INTEGER));
                 static_assert(alignof(std::int64_t) == alignof(LARGE_INTEGER));
 
-                _section.reset();
-                return LI_NT(NtCreateSection)(_section.addressof(),
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtCreateSection)(&temp_handle,
                                               SECTION_ALL_ACCESS,
                                               nullptr,
                                               reinterpret_cast<LARGE_INTEGER*>(&max_size),
                                               page_protection,
                                               alloc_attributes,
                                               nullptr);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
             }
 
             template<class ProcessHandle>
@@ -62,7 +67,7 @@ namespace ntw::obj {
             {
                 auto   offset = make_large_int(0);
                 SIZE_T view_size;
-                return LI_NT(NtMapViewOfSection)(_section.get(),
+                return LI_NT(NtMapViewOfSection)(_handle.get(),
                                                  unwrap_handle(process),
                                                  base,
                                                  0,

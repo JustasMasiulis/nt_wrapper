@@ -46,9 +46,14 @@ namespace ntw::obj {
             NT_FN open_process(const ProcessHandle& process,
                                ACCESS_MASK          desired_access) noexcept
             {
-                _handle.reset();
-                return LI_NT(NtOpenProcessToken)(
-                    unwrap_handle(process), desired_access, _handle.addressof());
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtOpenProcessToken)(
+                    unwrap_handle(process), desired_access, &temp_handle);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
             }
 
             template<class ThreadHandle>
@@ -56,9 +61,14 @@ namespace ntw::obj {
                               ACCESS_MASK         desired_access,
                               bool                open_as_self) noexcept
             {
-                _handle.reset();
-                return LI_NT(NtOpenThreadToken)(
-                    unwrap_handle(thread), desired_access, open_as_self);
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtOpenThreadToken)(
+                    unwrap_handle(thread), desired_access, open_as_self, &temp_handle);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
             }
 
             NT_FN open_process(ACCESS_MASK desired_access)
@@ -68,7 +78,7 @@ namespace ntw::obj {
 
             NT_FN open_thread(ACCESS_MASK desired_access, bool open_as_self)
             {
-                return open_process(NtCurrentThread(), open_as_self);
+                return open_thread(NtCurrentThread(), desired_access, open_as_self);
             }
 
             template<class T>
