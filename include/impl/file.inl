@@ -37,8 +37,10 @@ namespace ntw::obj::detail {
 
         auto            attributes = make_attributes(&path, OBJ_CASE_INSENSITIVE);
         IO_STATUS_BLOCK status_block;
-        _handle.reset();
-        return LI_NT(NtCreateFile)(_handle.addressof(),
+
+        void*      temp_handle = nullptr;
+        const auto status =
+            LI_NT(NtCreateFile)(&temp_handle,
                                    access_flags,
                                    &attributes,
                                    &status_block,
@@ -49,6 +51,12 @@ namespace ntw::obj::detail {
                                    create_flags,
                                    nullptr,
                                    0);
+
+        if(NT_SUCCESS(status))
+            _handle.reset(temp_handle);
+
+        return status;
+
     }
 
     template<class Handle>
@@ -86,9 +94,9 @@ namespace ntw::obj::detail {
         auto            attributes = ntw::make_attributes(&name, OBJ_CASE_INSENSITIVE);
         IO_STATUS_BLOCK iosb;
 
-        _handle.reset();
+        void*      temp_handle = nullptr;
         // if you want to use MESSAGE bullshit you can't just use the same macros
-        auto status = LI_NT(NtCreateNamedPipeFile)(_handle.addressof(),
+        const auto status = LI_NT(NtCreateNamedPipeFile)(&temp_handle,
                                                    open_mode,
                                                    &attributes,
                                                    &iosb,
@@ -103,9 +111,13 @@ namespace ntw::obj::detail {
                                                    out_max,
                                                    &timeout);
 
-        // looking at IDA if iosb.Information == 1 ERROR_ALREADY_EXISTS ?
-        if(NT_SUCCESS(status) && iosb.Information == 1)
-            return STATUS_OBJECT_NAME_EXISTS;
+        if(NT_SUCCESS(status)) {
+            // looking at IDA if iosb.Information == 1 ERROR_ALREADY_EXISTS ?
+            if (iosb.Information == 1)
+                return STATUS_OBJECT_NAME_EXISTS;
+            else
+                _handle.reset(temp_handle);
+        }
 
         return status;
     }

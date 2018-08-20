@@ -45,13 +45,20 @@ namespace ntw::obj {
                 auto  upath = make_ustr(path);
                 auto  attr  = make_attributes(&upath, OBJ_CASE_INSENSITIVE);
                 ULONG disposition;
-                return LI_NT(NtCreateKey)(_handle.addressof(),
+
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtCreateKey)(&temp_handle,
                                           access,
                                           &attr,
                                           0,
                                           nullptr,
                                           is_volatile ? REG_OPTION_VOLATILE : 0,
                                           &disposition);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
             }
 
             template<class StringRef>
@@ -59,7 +66,14 @@ namespace ntw::obj {
             {
                 auto upath = make_ustr(path);
                 auto attr  = make_attributes(&upath, OBJ_CASE_INSENSITIVE);
-                return LI_NT(NtOpenKeyEx)(_handle.addressof(), access, &attr, 0);
+
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtOpenKeyEx)(&temp_handle, access, &attr, 0);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
             }
 
             template<class StringRef>
