@@ -75,7 +75,7 @@ namespace ntw::obj {
             }
 
             template<class ProcessHandle>
-            NT_FN unmap(const ProcessHandle& process, void* base) noexcept
+            NT_FN static unmap(const ProcessHandle& process, void* base) noexcept
             {
                 return LI_NT(NtUnmapViewOfSection)(unwrap_handle(process), base);
             }
