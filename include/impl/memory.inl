@@ -196,7 +196,7 @@ namespace ntw {
     NTW_INLINE constexpr bool memory::protection::executable() const noexcept
     {
         constexpr auto mask =
-            PAGE_EXECUTE_READ | PAGE_EXECUTE | PAGE_EXECUTE_READWRITE | PAGE_WRITECOPY;
+            PAGE_EXECUTE_READ | PAGE_EXECUTE | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
 
         return _native & mask;
     }
