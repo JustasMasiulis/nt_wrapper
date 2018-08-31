@@ -277,8 +277,7 @@ namespace ntw::obj::detail {
 
     template<class Handle>
     template<class StringRef /* wstring_view or UNICODE_STRING */>
-    NT_FN static basic_file<Handle>::destroy(const StringRef& path,
-                                             bool             case_sensitive) noexcept
+    NT_FN basic_file<Handle>::destroy(const StringRef& path, bool case_sensitive) noexcept
     {
         auto upath = make_ustr(path);
         auto attributes =
