@@ -21,11 +21,19 @@
 namespace ntw::obj {
 
     class file_options_builder {
-        ACCESS_MASK _access = 0;
+        ACCESS_MASK   _access       = 0;
+        unsigned long _attributes   = 0;
+        unsigned long _share_access = 0;
+        unsigned long _options      = 0;
+        unsigned long _disposition; // uninitialized
+        // NOTE: if a need arises for extended attributes support please open a ticket and
+        // I'll add a function and data members for it
 
     public:
+        // clang-format off
         // ShareAccess; multiple allowed
-        NTW_INLINE constexpr file_options_builder& reset_share();
+        NTW_INLINE constexpr unsigned long         share_access() const;
+        NTW_INLINE constexpr file_options_builder& reset_share_access();
 
         NTW_INLINE constexpr file_options_builder& share_all(); 
         NTW_INLINE constexpr file_options_builder& share_read(); // FILE_SHARE_READ
@@ -33,14 +41,18 @@ namespace ntw::obj {
         NTW_INLINE constexpr file_options_builder& share_delete(); // FILE_SHARE_DELETE
 
         // CreateDisposition; 1 allowed
-        NTW_INLINE constexpr file_options_builder& supersede(); // FILE_SUPERSEDE
-        NTW_INLINE constexpr file_options_builder& create(); // FILE_CREATE
+        NTW_INLINE constexpr unsigned long         disposition() const;
+        NTW_INLINE constexpr file_options_builder& reset_disposition();
+
         NTW_INLINE constexpr file_options_builder& open(); // FILE_OPEN
-        NTW_INLINE constexpr file_options_builder& open_or_create(); // FILE_OPEN_IF
+        NTW_INLINE constexpr file_options_builder& create(); // FILE_CREATE
+        NTW_INLINE constexpr file_options_builder& supersede(); // FILE_SUPERSEDE
         NTW_INLINE constexpr file_options_builder& overwrite(); // FILE_OVERWRITE
+        NTW_INLINE constexpr file_options_builder& open_or_create(); // FILE_OPEN_IF
         NTW_INLINE constexpr file_options_builder& overwrite_or_create(); // FILE_OVERWRITE_IF
 
         // CreateOptions; multiple allowed
+        NTW_INLINE constexpr unsigned long         create_options() const;
         NTW_INLINE constexpr file_options_builder& reset_create_options();
 
         NTW_INLINE constexpr file_options_builder& directory(); // FILE_DIRECTORY_FILE
@@ -61,7 +73,10 @@ namespace ntw::obj {
         NTW_INLINE constexpr file_options_builder& complete_if_oplocked(); // FILE_COMPLETE_IF_OPLOCKED
 
         // DesiredAccess; multiple allowed
+        NTW_INLINE constexpr ACCESS_MASK           access() const;
         NTW_INLINE constexpr file_options_builder& reset_access();
+
+        NTW_INLINE constexpr file_options_builder& full_access();
 
         NTW_INLINE constexpr file_options_builder& deleteable(); // DELETE
         NTW_INLINE constexpr file_options_builder& synchronizable(); // SYNCHRONIZE
@@ -84,6 +99,20 @@ namespace ntw::obj {
         NTW_INLINE constexpr file_options_builder& writeable_access_control(); // WRITE_DAC
         NTW_INLINE constexpr file_options_builder& writeable_ownership(); // WRITE_OWNER
         NTW_INLINE constexpr file_options_builder& appendable_data(); // FILE_APPEND_DATA
+
+		// FileAttributes; multiple allowed
+        NTW_INLINE constexpr unsigned long         attributes() const;
+        NTW_INLINE constexpr file_options_builder& reset_attributes();
+
+        NTW_INLINE constexpr file_options_builder& archive(); // FILE_ATTRIBUTE_ARCHIVE
+        NTW_INLINE constexpr file_options_builder& encrypted(); // FILE_ATTRIBUTE_ENCRYPTED
+        NTW_INLINE constexpr file_options_builder& hidden(); // FILE_ATTRIBUTE_HIDDEN
+        NTW_INLINE constexpr file_options_builder& normal(); // FILE_ATTRIBUTE_NORMAL
+        NTW_INLINE constexpr file_options_builder& offline(); // FILE_ATTRIBUTE_OFFLINE
+        NTW_INLINE constexpr file_options_builder& readonly(); // FILE_ATTRIBUTE_READONLY
+        NTW_INLINE constexpr file_options_builder& system(); // FILE_ATTRIBUTE_SYSTEM
+        NTW_INLINE constexpr file_options_builder& temporary(); // FILE_ATTRIBUTE_TEMPORARY
+        // clang-format on
     };
 
     namespace detail {
