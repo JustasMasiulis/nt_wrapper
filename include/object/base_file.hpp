@@ -28,6 +28,9 @@ namespace ntw::obj {
         class file_attributes_builder {
             unsigned long _attributes = 0;
 
+            template<class Derived>
+            friend class base_file;
+
         protected:
             ~file_attributes_builder() = default;
 
@@ -55,8 +58,8 @@ namespace ntw::obj {
             unsigned long _instances_limit = -1;
             std::int64_t  _timeout         = -500000;
 
-            // template<class Derived>
-            // friend class base_file<Derived>;
+            template<class Derived>
+            friend class base_file;
 
         protected:
             ~pipe_options_builder() = default;
@@ -102,8 +105,8 @@ namespace ntw::obj {
             // NOTE: if a need arises for extended attributes support please open a ticket
             // and I'll add a function and data members for it
 
-            // template<class Derived>
-            // friend class base_file<Derived>;
+            template<class Derived>
+            friend class base_file;
 
         public:
             // clang-format off
