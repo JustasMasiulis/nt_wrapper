@@ -17,40 +17,24 @@
 #pragma once
 #include "../object/base_file.hpp"
 
-#define NTW_FILE_OPTION(function_name, member, value, op)                               \
-   NTW_FILE_OPTION( file_options_builder::function_name() \
-    {                                                                                \
-        member op value;                                                             \
-        return *this;                                                                \
+#define NTW_BUILDER_OPTION(builder, function_name, member, value, op) \
+    NTW_INLINE constexpr builder& builder::function_name()            \
+    {                                                                 \
+        member op value;                                              \
+        return *this;                                                 \
     }
 
-namespace ntw::obj {
+#define NTW_FILE_OPTION(name, member, value, op) \
+    template<class Base>                         \
+    NTW_BUILDER_OPTION(file_options_builder<Base>, name, member, value, op)
 
-    NTW_INLINE constexpr unsigned long file_options_builder::share_access() const
-    {
-        return _share_access;
-    }
+#define NTW_FILE_ATTRIBUTE_OPTION(name, member, value, op) \
+    NTW_BUILDER_OPTION(file_attributes_builder, name, member, value, op)
 
-    NTW_INLINE constexpr unsigned long file_options_builder::disposition() const
-    {
-        return _disposition;
-    }
+#define NTW_PIPE_OPTION(name, member, value, op) \
+    NTW_BUILDER_OPTION(pipe_options_builder, name, member, value, op)
 
-    NTW_INLINE constexpr unsigned long file_options_builder::attributes() const
-    {
-        return _attributes;
-    }
-
-    NTW_INLINE constexpr unsigned long file_options_builder::create_options() const
-    {
-        return _options;
-    }
-
-    NTW_INLINE constexpr ACCESS_MASK file_options_builder::access() const
-    {
-        return _access;
-    }
-
+namespace ntw::obj::detail {
 
     NTW_FILE_OPTION(reset_share_access, _share_access, 0, =)
     NTW_FILE_OPTION(share_read, _share_access, FILE_SHARE_READ, |=)
@@ -108,18 +92,159 @@ namespace ntw::obj {
     NTW_FILE_OPTION(writeable_ownership, _access, WRITE_OWNER, |=)
     NTW_FILE_OPTION(appendable_data, _access, FILE_APPEND_DATA, |=)
 
-    // FileAttributes; multiple allowed
-    NTW_FILE_OPTION(reset_attributes, _attributes, 0, =);
+    NTW_FILE_ATTRIBUTE_OPTION(reset_attributes, _attributes, 0, =);
+    NTW_FILE_ATTRIBUTE_OPTION(archive, _attributes, FILE_ATTRIBUTE_ARCHIVE, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(encrypted, _attributes, FILE_ATTRIBUTE_ENCRYPTED, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(hidden, _attributes, FILE_ATTRIBUTE_HIDDEN, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(normal, _attributes, FILE_ATTRIBUTE_NORMAL, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(offline, _attributes, FILE_ATTRIBUTE_OFFLINE, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(readonly, _attributes, FILE_ATTRIBUTE_READONLY, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(system, _attributes, FILE_ATTRIBUTE_SYSTEM, |=)
+    NTW_FILE_ATTRIBUTE_OPTION(temporary, _attributes, FILE_ATTRIBUTE_TEMPORARY, |=)
 
-    NTW_FILE_OPTION(archive, _attributes, FILE_ATTRIBUTE_ARCHIVE, |=)
-    NTW_FILE_OPTION(encrypted, _attributes, FILE_ATTRIBUTE_ENCRYPTED, |=)
-    NTW_FILE_OPTION(hidden, _attributes, FILE_ATTRIBUTE_HIDDEN, |=)
-    NTW_FILE_OPTION(normal, _attributes, FILE_ATTRIBUTE_NORMAL, |=)
-    NTW_FILE_OPTION(offline, _attributes, FILE_ATTRIBUTE_OFFLINE, |=)
-    NTW_FILE_OPTION(readonly, _attributes, FILE_ATTRIBUTE_READONLY, |=)
-    NTW_FILE_OPTION(system, _attributes, FILE_ATTRIBUTE_SYSTEM, |=)
-    NTW_FILE_OPTION(temporary, _attributes, FILE_ATTRIBUTE_TEMPORARY, |=)
+    NTW_PIPE_OPTION(async, _completion_mode, FILE_PIPE_COMPLETE_OPERATION, =)
+    NTW_PIPE_OPTION(sync, _completion_mode, FILE_PIPE_QUEUE_OPERATION, =)
+    NTW_PIPE_OPTION(reset_type, _type, 0, =)
+    NTW_PIPE_OPTION(byte_stream, _type, FILE_PIPE_MESSAGE_MODE, &= ~)
+    NTW_PIPE_OPTION(message_stream, _type, FILE_PIPE_MESSAGE_TYPE, |=)
+    NTW_PIPE_OPTION(accept_remote_clients, _type, FILE_PIPE_ACCEPT_REMOTE_CLIENTS, |=)
+    NTW_PIPE_OPTION(reject_remote_clients, _type, FILE_PIPE_REJECT_REMOTE_CLIENTS, |=)
 
-} // namespace ntw::obj
+    NTW_INLINE constexpr pipe_options_builder&
+    pipe_options_builder::qouta(unsigned long inbound, unsigned long outbound)
+    {
+        _inbound_qouta  = inbound;
+        _outbound_qouta = outbound;
+        return *this;
+    }
 
+    NTW_INLINE constexpr pipe_options_builder&
+    pipe_options_builder::inbound_qouta(unsigned long qouta)
+    {
+        _inbound_qouta = qouta;
+        return *this;
+    }
+
+    NTW_INLINE constexpr pipe_options_builder&
+    pipe_options_builder::outbound_qouta(unsigned long qouta)
+    {
+        _outbound_qouta = qouta;
+        return *this;
+    }
+
+
+    NTW_INLINE constexpr pipe_options_builder&
+    pipe_options_builder::instances_limit(unsigned long limit)
+    {
+        _instances_limit = limit;
+        return *this;
+    }
+
+    // default = 5 seconds
+    NTW_INLINE constexpr pipe_options_builder&
+    pipe_options_builder::timeout(std::int64_t& nanoseconds)
+    {
+        // the timeout is a negative value
+        if(nanoseconds > 0)
+            nanoseconds = -nanoseconds;
+        _timeout = nanoseconds;
+        return *this;
+    }
+
+
+    template<class Derived>
+    template<class StringRef>
+    NT_FN base_file<Derived>::open(const StringRef& path, const file_options& options) noexcept
+    {
+        auto            upath      = make_ustr(path);
+        auto            attributes = make_attributes(&upath, OBJ_CASE_INSENSITIVE);
+        IO_STATUS_BLOCK status_block;
+
+        void*      temp_handle = nullptr;
+        const auto status      = LI_NT(NtCreateFile)(&temp_handle,
+                                                options._access,
+                                                &attributes,
+                                                &status_block,
+                                                nullptr,
+                                                options._attributes,
+                                                options._share_access,
+                                                options._disposition,
+                                                options._create_flags,
+                                                nullptr,
+                                                0);
+
+        if(NT_SUCCESS(status))
+            _handle.reset(temp_handle);
+
+        return status;
+    }
+
+
+    template<class Derived>
+    template<class StringRef>
+    NT_FN base_file<Derived>::open_as_pipe(const StringRef& path, const pipe_options& options) noexcept
+    {
+        auto            upath      = make_ustr(path);
+        auto            attributes = ntw::make_attributes(&upath, OBJ_CASE_INSENSITIVE);
+        IO_STATUS_BLOCK iosb;
+        auto            timeout     = make_large_int(options._timeout);
+        void*           temp_handle = nullptr;
+        // if you want to use MESSAGE bullshit you can't just use the same macros
+        const auto status = LI_NT(NtCreateNamedPipeFile)(&temp_handle,
+                                                         options._access,
+                                                         &attributes,
+                                                         &iosb,
+                                                         options._share_access,
+                                                         options._disposition,
+                                                         options._create_options,
+                                                         options._type,
+                                                         options._type & 1,
+                                                         options._completion_mode,
+                                                         options._instances_limit,
+                                                         options._inbound_qouta,
+                                                         options._outbound_qouta,
+                                                         &timeout);
+
+        if(NT_SUCCESS(status)) {
+            // looking at IDA if iosb.Information == 1 ERROR_ALREADY_EXISTS ?
+            if(iosb.Information == 1)
+                return STATUS_OBJECT_NAME_EXISTS;
+            else
+                _handle.reset(temp_handle);
+        }
+
+        return status;
+    }
+
+    template<class Derived>
+    NT_FN base_file<Derived>::size(std::uint64_t& size_out) const noexcept
+    {
+        IO_STATUS_BLOCK           status_block;
+        FILE_STANDARD_INFORMATION info;
+        const auto                status = LI_NT(NtQueryInformationFile)(_handle.get(),
+                                                          &status_block,
+                                                          &info,
+                                                          unsigned{ sizeof(info) },
+                                                          FileStandardInformation);
+        if(NT_SUCCESS(status))
+            size_out = static_cast<std::uint64_t>(info.EndOfFile.QuadPart);
+
+        return status;
+    }
+
+    template<class Derived>
+    template<class StringRef /* wstring_view or UNICODE_STRING */>
+    NT_FN base_file<Derived>::destroy(const StringRef& path, bool case_sensitive) noexcept
+    {
+        auto upath      = make_ustr(path);
+        auto attributes = make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
+        return LI_NT(NtDeleteFile)(&attributes);
+    }
+
+
+} // namespace ntw::obj::detail
+
+#undef NTW_BUILDER_OPTION
 #undef NTW_FILE_OPTION
+#undef NTW_FILE_ATTRIBUTE_OPTION
+#undef NTW_PIPE_OPTION
