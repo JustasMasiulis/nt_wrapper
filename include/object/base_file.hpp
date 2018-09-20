@@ -184,6 +184,7 @@ namespace ntw::obj {
 
     namespace detail {
 
+        /// \brief Contains APIs that are common between basic_file and async_file
         template<class Derived>
         class base_file {
             using handle_type = typename Derived::handle_type;
@@ -199,17 +200,35 @@ namespace ntw::obj {
             NTW_INLINE handle_type& handle() noexcept { return _handle; }
             NTW_INLINE const handle_type& handle() const noexcept { return _handle; }
 
-            template<class StringRef /* wstring_view or UNICODE_STRING */>
+            /// \brief Opens file using NtCreateFile API.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
+            template<class StringRef>
             NT_FN open(const StringRef&    path,
                        const file_options& options = Derived::options) noexcept;
 
-            template<class StringRef /* wstring_view or UNICODE_STRING */>
+
+            /// \brief Opens named pipe using NtCreateNamedPipeFile API.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
+            /// \warning The API is likely to change as the pipe functionality may be moved
+            ///          out of file into its own wrapper
+            template<class StringRef>
             NT_FN open_as_pipe(const StringRef&    path,
                                const pipe_options& options = Derived::pipe_options) noexcept;
 
+            /// \brief Queries opened file size using NtQueryInformationFile API.
+            /// \param size_out The variable that will be receiving the file size
+            ///                 in case of success.
             NT_FN size(std::uint64_t& size_out) const noexcept;
 
-            template<class StringRef /* wstring_view or UNICODE_STRING */>
+            /// \brief Deletes opened file using NtDeleteFile API.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param case_sensitive Whether the filename is case sensitive.
+            template<class StringRef>
             NT_FN static destroy(const StringRef& path, bool case_sensitive = false) noexcept;
         };
 
