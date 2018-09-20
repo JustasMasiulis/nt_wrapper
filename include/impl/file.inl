@@ -16,127 +16,9 @@
 
 #pragma once
 #include "../object/file.hpp"
-#include "../util.hpp"
 
 namespace ntw::obj::detail {
 
-    template<class Handle>
-    NT_FN basic_file<Handle>::_open(UNICODE_STRING path,
-                                    bool           create_if_not_existing,
-                                    unsigned long  access_flags,
-                                    unsigned long  create_flags) noexcept
-    {
-        constexpr unsigned long share_flags =
-            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-
-        const unsigned long file_open_flags =
-            (create_if_not_existing ? FILE_OPEN_IF : FILE_OPEN);
-
-        access_flags |= SYNCHRONIZE;
-        create_flags |= FILE_SYNCHRONOUS_IO_NONALERT;
-
-        auto            attributes = make_attributes(&path, OBJ_CASE_INSENSITIVE);
-        IO_STATUS_BLOCK status_block;
-
-        void*      temp_handle = nullptr;
-        const auto status =
-            LI_NT(NtCreateFile)(&temp_handle,
-                                   access_flags,
-                                   &attributes,
-                                   &status_block,
-                                   nullptr,
-                                   FILE_ATTRIBUTE_NORMAL,
-                                   share_flags,
-                                   file_open_flags,
-                                   create_flags,
-                                   nullptr,
-                                   0);
-
-        if(NT_SUCCESS(status))
-            _handle.reset(temp_handle);
-
-        return status;
-
-    }
-
-    template<class Handle>
-    template<class StringRef>
-    NT_FN basic_file<Handle>::open_dir(const StringRef& path,
-                                       bool             create_if_not_existing,
-                                       unsigned long    access_flags) noexcept
-    {
-        return _open(
-            make_ustr(path), create_if_not_existing, access_flags, FILE_DIRECTORY_FILE);
-    }
-
-    template<class Handle>
-    template<class StringRef>
-    NT_FN basic_file<Handle>::open(const StringRef& path,
-                                   bool             create_if_not_existing,
-                                   unsigned long    access_flags) noexcept
-    {
-        return _open(make_ustr(path),
-                     create_if_not_existing,
-                     access_flags,
-                     FILE_NON_DIRECTORY_FILE);
-    }
-
-    template<class Handle>
-    NT_FN basic_file<Handle>::open_as_pipe(UNICODE_STRING name,
-                                           unsigned long  in_max,
-                                           unsigned long  out_max,
-                                           unsigned long  instances,
-                                           LARGE_INTEGER  timeout) noexcept
-    {
-        // there are a few other flags we don't give a shit about
-        constexpr unsigned long open_mode = GENERIC_READ | GENERIC_WRITE | SYNCHRONIZE;
-
-        auto            attributes = ntw::make_attributes(&name, OBJ_CASE_INSENSITIVE);
-        IO_STATUS_BLOCK iosb;
-
-        void*      temp_handle = nullptr;
-        // if you want to use MESSAGE bullshit you can't just use the same macros
-        const auto status = LI_NT(NtCreateNamedPipeFile)(&temp_handle,
-                                                   open_mode,
-                                                   &attributes,
-                                                   &iosb,
-                                                   FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                                   FILE_OPEN_IF,
-                                                   FILE_SYNCHRONOUS_IO_NONALERT,
-                                                   PIPE_TYPE_BYTE,
-                                                   PIPE_READMODE_BYTE,
-                                                   PIPE_WAIT,
-                                                   instances,
-                                                   in_max,
-                                                   out_max,
-                                                   &timeout);
-
-        if(NT_SUCCESS(status)) {
-            // looking at IDA if iosb.Information == 1 ERROR_ALREADY_EXISTS ?
-            if (iosb.Information == 1)
-                return STATUS_OBJECT_NAME_EXISTS;
-            else
-                _handle.reset(temp_handle);
-        }
-
-        return status;
-    }
-
-    template<class Handle>
-    NT_FN basic_file<Handle>::size(std::uint64_t& size_out) const noexcept
-    {
-        IO_STATUS_BLOCK           status_block;
-        FILE_STANDARD_INFORMATION info;
-        const auto                status = LI_NT(NtQueryInformationFile)(_handle.get(),
-                                                          &status_block,
-                                                          &info,
-                                                          unsigned{ sizeof(info) },
-                                                          FileStandardInformation);
-        if(NT_SUCCESS(status))
-            size_out = static_cast<std::uint64_t>(info.EndOfFile.QuadPart);
-
-        return status;
-    }
     template<class Handle>
     NT_FN basic_file<Handle>::write(const void*    data,
                                     unsigned long  size,
@@ -145,7 +27,7 @@ namespace ntw::obj::detail {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   offset{ 0 };
 
-        const auto status = LI_NT(NtWriteFile)(_handle.get(),
+        const auto status = LI_NT(NtWriteFile)(handle().get(),
                                                nullptr,
                                                nullptr,
                                                nullptr,
@@ -166,7 +48,7 @@ namespace ntw::obj::detail {
     {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   offset{ 0 };
-        const auto      status = LI_NT(NtReadFile)(_handle.get(),
+        const auto      status = LI_NT(NtReadFile)(handle().get(),
                                               nullptr,
                                               nullptr,
                                               nullptr,
@@ -190,7 +72,7 @@ namespace ntw::obj::detail {
         IO_STATUS_BLOCK                  iosb        = { 0 };
 
         while(true) {
-            const auto status = LI_NT(NtQueryDirectoryFile)(_handle.get(),
+            const auto status = LI_NT(NtQueryDirectoryFile)(handle().get(),
                                                             nullptr,
                                                             nullptr,
                                                             nullptr,
@@ -241,7 +123,7 @@ namespace ntw::obj::detail {
         noexcept
     {
         IO_STATUS_BLOCK status_block{ 0 };
-        const auto      status = LI_NT(NtDeviceIoControlFile)(_handle.get(),
+        const auto      status = LI_NT(NtDeviceIoControlFile)(handle().get(),
                                                          nullptr,
                                                          nullptr,
                                                          nullptr,
@@ -275,15 +157,7 @@ namespace ntw::obj::detail {
                                  bytes_returned);
     }
 
-    template<class Handle>
-    template<class StringRef /* wstring_view or UNICODE_STRING */>
-    NT_FN basic_file<Handle>::destroy(const StringRef& path, bool case_sensitive) noexcept
-    {
-        auto upath = make_ustr(path);
-        auto attributes =
-            make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
-        return LI_NT(NtDeleteFile)(&attributes);
-    }
+
 
     template<class Callback, class... Args>
     NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args)
