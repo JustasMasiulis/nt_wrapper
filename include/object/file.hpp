@@ -15,8 +15,6 @@
  */
 
 #pragma once
-#include "handle.hpp"
-#include "../util.hpp"
 #include "base_file.hpp"
 
 namespace ntw::obj {
