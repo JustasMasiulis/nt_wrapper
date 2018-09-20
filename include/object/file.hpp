@@ -17,18 +17,14 @@
 #pragma once
 #include "handle.hpp"
 #include "../util.hpp"
+#include "base_file.hpp"
 
 namespace ntw::obj {
     namespace detail {
 
         template<class Handle>
-        class basic_file {
-            Handle _handle;
-
-            NT_FN _open(UNICODE_STRING path,
-                        bool           create_if_not_existing,
-                        unsigned long  access_flags,
-                        unsigned long  create_flags) noexcept;
+        class basic_file : public base_file<basic_file<Handle>> {
+            using base_type = base_file<basic_file<Handle>>;
 
         public:
             class disposer {
@@ -39,37 +35,15 @@ namespace ntw::obj {
                 NTW_INLINE ~disposer() { static_cast<void>(unique_file::destroy(_path)); }
             };
 
+            using handle_type = Handle;
+
             NTW_INLINE basic_file()  = default;
             NTW_INLINE ~basic_file() = default;
 
             template<class ObjectHandle>
             NTW_INLINE basic_file(const ObjectHandle& handle)
-                : _handle(unwrap_handle(handle))
+                : base_type(unwrap_handle(handle))
             {}
-
-            NTW_INLINE Handle& handle() noexcept { return _handle; }
-            NTW_INLINE const Handle& handle() const noexcept { return _handle; }
-
-
-            template<class StringRef /* wstring_view or UNICODE_STRING */>
-            NT_FN open_dir(const StringRef& path,
-                           bool             create_if_not_existing = false,
-                           unsigned long access_flags = FILE_READ_DATA | FILE_WRITE_DATA |
-                                                        DELETE) noexcept;
-
-            template<class StringRef /* wstring_view or UNICODE_STRING */>
-            NT_FN open(const StringRef& path,
-                       bool             create_if_not_existing = false,
-                       unsigned long    access_flags = FILE_READ_DATA | FILE_WRITE_DATA |
-                                                    DELETE) noexcept;
-
-            NT_FN open_as_pipe(UNICODE_STRING name,
-                               unsigned long  in_max,
-                               unsigned long  out_max,
-                               unsigned long  instances = -1,
-                               LARGE_INTEGER  timeout = make_large_int(-500000)) noexcept;
-
-            NT_FN size(std::uint64_t& size_out) const noexcept;
 
             NT_FN write(const void*    data,
                         unsigned long  size,
@@ -87,19 +61,13 @@ namespace ntw::obj {
                                     unsigned long  in_buffer_size,
                                     void*          out_buffer,
                                     unsigned long  out_buffer_size,
-                                    unsigned long* bytes_returned = nullptr) const
-                noexcept;
+                                    unsigned long* bytes_returned = nullptr) const noexcept;
 
             template<class InBuffer, class OutBuffer>
             NT_FN device_io_control(unsigned long   control_code,
                                     const InBuffer& in_buffer,
                                     OutBuffer&      out_buffer,
-                                    unsigned long*  bytes_returned = nullptr) const
-                noexcept;
-
-            template<class StringRef /* wstring_view or UNICODE_STRING */>
-            NT_FN static destroy(const StringRef& path,
-                                 bool             case_sensitive = false) noexcept;
+                                    unsigned long*  bytes_returned = nullptr) const noexcept;
         };
 
     } // namespace detail
