@@ -158,6 +158,10 @@ namespace ntw::obj::detail {
     template<class StringRef>
     NT_FN base_file<Derived>::open(const StringRef& path, const file_options& options) noexcept
     {
+		// by default the attributes should be set to normal
+        if(!options._attributes)
+            options.normal();
+
         auto            upath      = make_ustr(path);
         auto            attributes = make_attributes(&upath, OBJ_CASE_INSENSITIVE);
         IO_STATUS_BLOCK status_block;
@@ -171,7 +175,7 @@ namespace ntw::obj::detail {
                                                 options._attributes,
                                                 options._share_access,
                                                 options._disposition,
-                                                options._create_flags,
+                                                options._options,
                                                 nullptr,
                                                 0);
 
