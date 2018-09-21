@@ -42,14 +42,6 @@ namespace ntw::obj::detail {
     NTW_FILE_OPTION(share_delete, _share_access, FILE_SHARE_DELETE, |=)
     NTW_FILE_OPTION(share_all, _share_access, 0b111, =)
 
-    NTW_FILE_OPTION(reset_disposition, _disposition, 0, =)
-    NTW_FILE_OPTION(open, _disposition, FILE_OPEN, =)
-    NTW_FILE_OPTION(create, _disposition, FILE_CREATE, =)
-    NTW_FILE_OPTION(supersede, _disposition, FILE_SUPERSEDE, =)
-    NTW_FILE_OPTION(overwrite, _disposition, FILE_OVERWRITE, =)
-    NTW_FILE_OPTION(open_or_create, _disposition, FILE_OPEN_IF, =)
-    NTW_FILE_OPTION(overwrite_or_create, _disposition, FILE_OVERWRITE_IF, =)
-
     NTW_FILE_OPTION(reset_create_options, _options, 0, =)
     NTW_FILE_OPTION(directory, _options, FILE_DIRECTORY_FILE, |=)
     NTW_FILE_OPTION(non_directory, _options, FILE_NON_DIRECTORY_FILE, |=)
@@ -112,6 +104,13 @@ namespace ntw::obj::detail {
     NTW_PIPE_OPTION(accept_remote_clients, _type, FILE_PIPE_ACCEPT_REMOTE_CLIENTS, |=)
     NTW_PIPE_OPTION(reject_remote_clients, _type, FILE_PIPE_REJECT_REMOTE_CLIENTS, |=)
 
+    template<class Base>
+    NTW_INLINE constexpr file_options_builder<Base> file_options_builder<Base>::copy() const
+    {
+        return *this;
+    }
+
+
     NTW_INLINE constexpr pipe_options_builder&
     pipe_options_builder::qouta(unsigned long inbound, unsigned long outbound)
     {
@@ -153,17 +152,12 @@ namespace ntw::obj::detail {
         return *this;
     }
 
-
-    template<class Derived>
-    template<class StringRef>
-    NT_FN base_file<Derived>::open(const StringRef& path, const file_options& options) noexcept
+    template<class Traits>
+    NT_FN base_file<Traits>::_open(UNICODE_STRING      path,
+                                   const file_options& options,
+                                   unsigned long       disposition) noexcept
     {
-		// by default the attributes should be set to normal
-        if(!options._attributes)
-            options.normal();
-
-        auto            upath      = make_ustr(path);
-        auto            attributes = make_attributes(&upath, OBJ_CASE_INSENSITIVE);
+        auto            attributes = make_attributes(&path, OBJ_CASE_INSENSITIVE);
         IO_STATUS_BLOCK status_block;
 
         void*      temp_handle = nullptr;
@@ -172,9 +166,10 @@ namespace ntw::obj::detail {
                                                 &attributes,
                                                 &status_block,
                                                 nullptr,
-                                                options._attributes,
+                                                options._attributes ? options._attributes
+                                                                    : FILE_ATTRIBUTE_NORMAL,
                                                 options._share_access,
-                                                options._disposition,
+                                                disposition,
                                                 options._options,
                                                 nullptr,
                                                 0);
@@ -186,10 +181,58 @@ namespace ntw::obj::detail {
     }
 
 
+    template<class Traits>
+    template<class StringRef>
+    NT_FN base_file<Traits>::open(const StringRef& path, const file_options& options) noexcept
+    {
+        return _open(make_ustr(path), options, FILE_OPEN);
+    }
+
+    template<class Traits>
+    template<class StringRef>
+    NT_FN base_file<Traits>::create(const StringRef&    path,
+                                    const file_options& options) noexcept
+    {
+        return _open(make_ustr(path), options, FILE_CREATE);
+    }
+
+    template<class Traits>
+    template<class StringRef>
+    NT_FN base_file<Traits>::supersede(const StringRef&    path,
+                                       const file_options& options) noexcept
+    {
+        return _open(make_ustr(path), options, FILE_SUPERSEDE);
+    }
+
+    template<class Traits>
+    template<class StringRef>
+    NT_FN base_file<Traits>::overwrite(const StringRef&    path,
+                                       const file_options& options) noexcept
+    {
+        return _open(make_ustr(path), options, FILE_OVERWRITE);
+    }
+
+    template<class Traits>
+    template<class StringRef>
+    NT_FN base_file<Traits>::open_or_create(const StringRef&    path,
+                                            const file_options& options) noexcept
+    {
+        return _open(make_ustr(path), options, FILE_OPEN_IF);
+    }
+
+    template<class Traits>
+    template<class StringRef>
+    NT_FN base_file<Traits>::overwrite_or_create(const StringRef&    path,
+                                                 const file_options& options) noexcept
+    {
+        return _open(make_ustr(path), options, FILE_OVERWRITE_IF);
+    }
+
+
     template<class Derived>
     template<class StringRef>
-    NT_FN base_file<Derived>::open_as_pipe(const StringRef&    path,
-                                           const pipe_options& options) noexcept
+    NT_FN base_file<Derived>::open_as_pipe(const StringRef&         path,
+                                           const obj::pipe_options& options) noexcept
     {
         auto            upath      = make_ustr(path);
         auto            attributes = ntw::make_attributes(&upath, OBJ_CASE_INSENSITIVE);

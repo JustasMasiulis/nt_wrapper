@@ -103,7 +103,6 @@ namespace ntw::obj {
             ACCESS_MASK   _access       = 0;
             unsigned long _share_access = 0;
             unsigned long _options      = 0;
-            unsigned long _disposition  = FILE_MAXIMUM_DISPOSITION + 1;
             // NOTE: if a need arises for extended attributes support please open a ticket
             // and I'll add a function and data members for it
 
@@ -113,6 +112,8 @@ namespace ntw::obj {
         public:
             constexpr file_options_builder() = default;
 
+            NTW_INLINE constexpr file_options_builder copy() const;
+
             // clang-format off
 			// ShareAccess; multiple allowed
 			NTW_INLINE constexpr file_options_builder& reset_share_access();
@@ -121,16 +122,6 @@ namespace ntw::obj {
 			NTW_INLINE constexpr file_options_builder& share_read(); // FILE_SHARE_READ
 			NTW_INLINE constexpr file_options_builder& share_write(); // FILE_SHARE_WRITE
 			NTW_INLINE constexpr file_options_builder& share_delete(); // FILE_SHARE_DELETE
-
-			// CreateDisposition; 1 allowed
-			NTW_INLINE constexpr file_options_builder& reset_disposition();
-
-			NTW_INLINE constexpr file_options_builder& open(); // FILE_OPEN
-			NTW_INLINE constexpr file_options_builder& create(); // FILE_CREATE
-			NTW_INLINE constexpr file_options_builder& supersede(); // FILE_SUPERSEDE
-			NTW_INLINE constexpr file_options_builder& overwrite(); // FILE_OVERWRITE
-			NTW_INLINE constexpr file_options_builder& open_or_create(); // FILE_OPEN_IF
-			NTW_INLINE constexpr file_options_builder& overwrite_or_create(); // FILE_OVERWRITE_IF
 
 			// CreateOptions; multiple allowed
 			NTW_INLINE constexpr file_options_builder& reset_create_options();
@@ -194,10 +185,17 @@ namespace ntw::obj {
             using handle_type = typename Traits::handle_type;
             handle_type _handle;
 
+            NT_FN _open(UNICODE_STRING      path,
+                        const file_options& options,
+                        unsigned long       disposition) noexcept;
+
         protected:
             NTW_INLINE ~base_file() = default;
 
         public:
+            constexpr static auto options      = Traits::options;
+            constexpr static auto pipe_options = Traits::pipe_options;
+
             NTW_INLINE base_file() = default;
             NTW_INLINE base_file(void* handle) noexcept : _handle(handle) {}
 
@@ -209,8 +207,24 @@ namespace ntw::obj {
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
             template<class StringRef>
-            NT_FN open(const StringRef&    path,
-                       const file_options& options = Traits::options) noexcept;
+            NT_FN open(const StringRef& path, const file_options& opt = options) noexcept;
+
+            template<class StringRef>
+            NT_FN create(const StringRef& path, const file_options& opt = options) noexcept;
+
+            template<class StringRef>
+            NT_FN supersede(const StringRef& path, const file_options& opt = options) noexcept;
+
+            template<class StringRef>
+            NT_FN overwrite(const StringRef& path, const file_options& opt = options) noexcept;
+
+            template<class StringRef>
+            NT_FN open_or_create(const StringRef&    path,
+                                 const file_options& opt = options) noexcept;
+
+            template<class StringRef>
+            NT_FN overwrite_or_create(const StringRef&    path,
+                                      const file_options& opt = options) noexcept;
 
 
             /// \brief Opens named pipe using NtCreateNamedPipeFile API.
@@ -220,8 +234,8 @@ namespace ntw::obj {
             /// \warning The API is likely to change as the pipe functionality may be moved
             ///          out of file into its own wrapper
             template<class StringRef>
-            NT_FN open_as_pipe(const StringRef&    path,
-                               const pipe_options& options = Traits::pipe_options) noexcept;
+            NT_FN open_as_pipe(const StringRef&         path,
+                               const obj::pipe_options& opt = pipe_options) noexcept;
 
             /// \brief Queries opened file size using NtQueryInformationFile API.
             /// \param size_out The variable that will be receiving the file size
