@@ -32,7 +32,8 @@ namespace ntw::obj {
             friend class base_file;
 
         protected:
-            ~file_attributes_builder() = default;
+            constexpr file_attributes_builder() = default;
+            ~file_attributes_builder()          = default;
 
         public:
             // clang-format off
@@ -51,9 +52,9 @@ namespace ntw::obj {
         };
 
         class pipe_options_builder {
-            unsigned long _inbound_qouta; // uninitialized
-            unsigned long _outbound_qouta; // uninitialized
-            unsigned long _completion_mode; // uninitialized
+            unsigned long _inbound_qouta   = 0;
+            unsigned long _outbound_qouta  = 0;
+            unsigned long _completion_mode = 2;
             unsigned long _type            = 0;
             unsigned long _instances_limit = -1;
             std::int64_t  _timeout         = -500000;
@@ -62,7 +63,8 @@ namespace ntw::obj {
             friend class base_file;
 
         protected:
-            ~pipe_options_builder() = default;
+            constexpr pipe_options_builder() = default;
+            ~pipe_options_builder()          = default;
 
         public:
             // clang-format off
@@ -92,16 +94,16 @@ namespace ntw::obj {
 			NTW_INLINE constexpr pipe_options_builder& instances_limit(unsigned long limit);
 
 			// default = 5 seconds
-			NTW_INLINE constexpr pipe_options_builder& timeout(std::int64_t& nanoseconds);
+			NTW_INLINE constexpr pipe_options_builder& timeout(std::int64_t nanoseconds);
             // clang-format on
         };
 
         template<class Base>
-        class file_options_builder : Base {
+        class file_options_builder : public Base {
             ACCESS_MASK   _access       = 0;
             unsigned long _share_access = 0;
             unsigned long _options      = 0;
-            unsigned long _disposition; // uninitialized
+            unsigned long _disposition  = FILE_MAXIMUM_DISPOSITION + 1;
             // NOTE: if a need arises for extended attributes support please open a ticket
             // and I'll add a function and data members for it
 
@@ -109,6 +111,8 @@ namespace ntw::obj {
             friend class base_file;
 
         public:
+            constexpr file_options_builder() = default;
+
             // clang-format off
 			// ShareAccess; multiple allowed
 			NTW_INLINE constexpr file_options_builder& reset_share_access();
@@ -185,9 +189,9 @@ namespace ntw::obj {
     namespace detail {
 
         /// \brief Contains APIs that are common between basic_file and async_file
-        template<class Derived>
+        template<class Traits>
         class base_file {
-            using handle_type = typename Derived::handle_type;
+            using handle_type = typename Traits::handle_type;
             handle_type _handle;
 
         protected:
@@ -206,7 +210,7 @@ namespace ntw::obj {
             /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN open(const StringRef&    path,
-                       const file_options& options = Derived::options) noexcept;
+                       const file_options& options = Traits::options) noexcept;
 
 
             /// \brief Opens named pipe using NtCreateNamedPipeFile API.
@@ -217,7 +221,7 @@ namespace ntw::obj {
             ///          out of file into its own wrapper
             template<class StringRef>
             NT_FN open_as_pipe(const StringRef&    path,
-                               const pipe_options& options = Derived::pipe_options) noexcept;
+                               const pipe_options& options = Traits::pipe_options) noexcept;
 
             /// \brief Queries opened file size using NtQueryInformationFile API.
             /// \param size_out The variable that will be receiving the file size

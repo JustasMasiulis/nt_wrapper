@@ -144,7 +144,7 @@ namespace ntw::obj::detail {
 
     // default = 5 seconds
     NTW_INLINE constexpr pipe_options_builder&
-    pipe_options_builder::timeout(std::int64_t& nanoseconds)
+    pipe_options_builder::timeout(std::int64_t nanoseconds)
     {
         // the timeout is a negative value
         if(nanoseconds > 0)
