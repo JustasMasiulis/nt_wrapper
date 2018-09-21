@@ -22,10 +22,11 @@ namespace ntw::obj::detail {
     template<class Handle>
     NT_FN basic_file<Handle>::write(const void*    data,
                                     unsigned long  size,
+                                    std::int64_t   offset,
                                     unsigned long* written) const noexcept
     {
         IO_STATUS_BLOCK status_block;
-        LARGE_INTEGER   offset{ 0 };
+        LARGE_INTEGER   li_offset = make_large_int(offset);
 
         const auto status = LI_NT(NtWriteFile)(handle().get(),
                                                nullptr,
@@ -34,7 +35,7 @@ namespace ntw::obj::detail {
                                                &status_block,
                                                const_cast<void*>(data),
                                                size,
-                                               &offset,
+                                               &li_offset,
                                                nullptr);
         if(written && NT_SUCCESS(status))
             *written = static_cast<unsigned long>(status_block.Information);
@@ -44,18 +45,19 @@ namespace ntw::obj::detail {
     template<class Handle>
     NT_FN basic_file<Handle>::read(void*          buffer,
                                    unsigned long  size,
+                                   std::int64_t   offset,
                                    unsigned long* read) const noexcept
     {
         IO_STATUS_BLOCK status_block;
-        LARGE_INTEGER   offset{ 0 };
-        const auto      status = LI_NT(NtReadFile)(handle().get(),
+        LARGE_INTEGER   li_offset = make_large_int(offset);
+        const auto      status    = LI_NT(NtReadFile)(handle().get(),
                                               nullptr,
                                               nullptr,
                                               nullptr,
                                               &status_block,
                                               buffer,
                                               size,
-                                              &offset,
+                                              &li_offset,
                                               nullptr);
         if(read && NT_SUCCESS(status))
             *read = static_cast<unsigned long>(status_block.Information);
@@ -64,8 +66,8 @@ namespace ntw::obj::detail {
 
     template<class Handle>
     template<class Callback, class... Args>
-    NT_FN basic_file<Handle>::enum_contained_files(Callback callback,
-                                                   Args&&... args) const noexcept
+    NT_FN basic_file<Handle>::enum_contained_files(Callback callback, Args&&... args) const
+        noexcept
     {
         std::aligned_storage_t<2048u, 8> buffer;
         constexpr unsigned long          buffer_size = sizeof(buffer);
@@ -103,8 +105,7 @@ namespace ntw::obj::detail {
             // go to next file if the offset isnt 0, else get more infos
             if(file_info->NextEntryOffset) {
                 file_info = reinterpret_cast<FILE_DIRECTORY_INFORMATION*>(
-                    reinterpret_cast<std::uintptr_t>(file_info) +
-                    file_info->NextEntryOffset);
+                    reinterpret_cast<std::uintptr_t>(file_info) + file_info->NextEntryOffset);
 
                 goto goto_next_file;
             }
@@ -119,8 +120,7 @@ namespace ntw::obj::detail {
                                                 unsigned long  in_buffer_size,
                                                 void*          out_buffer,
                                                 unsigned long  out_buffer_size,
-                                                unsigned long* bytes_returned) const
-        noexcept
+                                                unsigned long* bytes_returned) const noexcept
     {
         IO_STATUS_BLOCK status_block{ 0 };
         const auto      status = LI_NT(NtDeviceIoControlFile)(handle().get(),
@@ -146,8 +146,7 @@ namespace ntw::obj::detail {
     NT_FN basic_file<Handle>::device_io_control(unsigned long   control_code,
                                                 const InBuffer& in_buffer,
                                                 OutBuffer&      out_buffer,
-                                                unsigned long*  bytes_returned) const
-        noexcept
+                                                unsigned long*  bytes_returned) const noexcept
     {
         return device_io_control(control_code,
                                  ::std::addressof(in_buffer),
@@ -156,7 +155,6 @@ namespace ntw::obj::detail {
                                  sizeof(OutBuffer),
                                  bytes_returned);
     }
-
 
 
     template<class Callback, class... Args>

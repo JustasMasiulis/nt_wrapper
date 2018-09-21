@@ -18,11 +18,23 @@
 #include "base_file.hpp"
 
 namespace ntw::obj {
+
     namespace detail {
 
         template<class Handle>
-        class basic_file : public base_file<basic_file<Handle>> {
-            using base_type = base_file<basic_file<Handle>>;
+        struct file_traits {
+            using handle_type = Handle;
+
+            constexpr static auto options =
+                file_options{}.full_access().share_all().sync_io_nonalert();
+
+            constexpr static auto pipe_options =
+                ntw::obj::pipe_options{}.share_all().full_access().sync().byte_stream();
+        };
+
+        template<class Handle>
+        class basic_file : public base_file<file_traits<Handle>> {
+            using base_type = base_file<file_traits<Handle>>;
 
         public:
             class disposer {
@@ -33,7 +45,7 @@ namespace ntw::obj {
                 NTW_INLINE ~disposer() { static_cast<void>(unique_file::destroy(_path)); }
             };
 
-            using handle_type = Handle;
+            using handle_type = typename Handle;
 
             NTW_INLINE basic_file()  = default;
             NTW_INLINE ~basic_file() = default;
@@ -45,12 +57,17 @@ namespace ntw::obj {
 
             NT_FN write(const void*    data,
                         unsigned long  size,
+                        std::int64_t   offset  = 0,
                         unsigned long* written = nullptr) const noexcept;
 
             NT_FN
-            read(void* buffer, unsigned long size, unsigned long* read = nullptr) const
-                noexcept;
+            read(void*          buffer,
+                 unsigned long  size,
+                 std::int64_t   offset = 0,
+                 unsigned long* read   = nullptr) const noexcept;
 
+            /// \warning Likely to change as directory apis may be moved into their own
+            /// abstraction
             template<class Callback, class... Args>
             NT_FN enum_contained_files(Callback callback, Args&&... args) const noexcept;
 
