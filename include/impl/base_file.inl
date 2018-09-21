@@ -40,6 +40,7 @@ namespace ntw::obj::detail {
     NTW_FILE_OPTION(share_read, _share_access, FILE_SHARE_READ, |=)
     NTW_FILE_OPTION(share_write, _share_access, FILE_SHARE_WRITE, |=)
     NTW_FILE_OPTION(share_delete, _share_access, FILE_SHARE_DELETE, |=)
+    NTW_FILE_OPTION(share_all, _share_access, 0b111, =)
 
     NTW_FILE_OPTION(reset_disposition, _disposition, 0, =)
     NTW_FILE_OPTION(open, _disposition, FILE_OPEN, =)
@@ -49,6 +50,7 @@ namespace ntw::obj::detail {
     NTW_FILE_OPTION(open_or_create, _disposition, FILE_OPEN_IF, =)
     NTW_FILE_OPTION(overwrite_or_create, _disposition, FILE_OVERWRITE_IF, =)
 
+    NTW_FILE_OPTION(reset_create_options, _options, 0, =)
     NTW_FILE_OPTION(directory, _options, FILE_DIRECTORY_FILE, |=)
     NTW_FILE_OPTION(non_directory, _options, FILE_NON_DIRECTORY_FILE, |=)
     NTW_FILE_OPTION(write_trough, _options, FILE_WRITE_THROUGH, |=)
@@ -83,7 +85,7 @@ namespace ntw::obj::detail {
     NTW_FILE_OPTION(readable_data, _access, FILE_READ_DATA, |=)
     NTW_FILE_OPTION(readable_attributes, _access, FILE_READ_ATTRIBUTES, |=)
     NTW_FILE_OPTION(readable_extended_attributes, _access, FILE_READ_EA, |=)
-    NTW_FILE_OPTION(readable_access_control, READ_CONTROL, |=)
+    NTW_FILE_OPTION(readable_access_control, _access, READ_CONTROL, |=)
 
     NTW_FILE_OPTION(writeable_data, _access, FILE_WRITE_DATA, |=)
     NTW_FILE_OPTION(writeable_attributes, _access, FILE_WRITE_ATTRIBUTES, |=)
@@ -182,7 +184,8 @@ namespace ntw::obj::detail {
 
     template<class Derived>
     template<class StringRef>
-    NT_FN base_file<Derived>::open_as_pipe(const StringRef& path, const pipe_options& options) noexcept
+    NT_FN base_file<Derived>::open_as_pipe(const StringRef&    path,
+                                           const pipe_options& options) noexcept
     {
         auto            upath      = make_ustr(path);
         auto            attributes = ntw::make_attributes(&upath, OBJ_CASE_INSENSITIVE);
