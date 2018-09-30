@@ -15,7 +15,7 @@
  */
 
 #pragma once
-#include "../object/base_file.hpp"
+#include "../io/base_file.hpp"
 
 #define NTW_BUILDER_OPTION(builder, function_name, member, value, op) \
     NTW_INLINE constexpr builder& builder::function_name()            \
@@ -34,7 +34,7 @@
 #define NTW_PIPE_OPTION(name, member, value, op) \
     NTW_BUILDER_OPTION(pipe_options_builder, name, member, value, op)
 
-namespace ntw::obj::detail {
+namespace ntw::io::detail {
 
     NTW_FILE_OPTION(reset_share_access, _share_access, 0, =)
     NTW_FILE_OPTION(share_read, _share_access, FILE_SHARE_READ, |=)
@@ -232,7 +232,7 @@ namespace ntw::obj::detail {
     template<class Derived>
     template<class StringRef>
     NT_FN base_file<Derived>::open_as_pipe(const StringRef&         path,
-                                           const obj::pipe_options& options) noexcept
+                                           const io::pipe_options& options) noexcept
     {
         auto            upath      = make_ustr(path);
         auto            attributes = ntw::make_attributes(&upath, OBJ_CASE_INSENSITIVE);

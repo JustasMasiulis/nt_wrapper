@@ -15,9 +15,9 @@
  */
 
 #pragma once
-#include "../object/file.hpp"
+#include "../io/file.hpp"
 
-namespace ntw::obj::detail {
+namespace ntw::io {
 
     template<class Handle>
     NT_FN basic_file<Handle>::write(const void*    data,
@@ -193,4 +193,4 @@ namespace ntw::obj::detail {
         return STATUS_SUCCESS;
     }
 
-} // namespace ntw::obj::detail
+} // namespace ntw::io
