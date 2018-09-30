@@ -1,10 +1,10 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include <object/file.hpp>
+#include <io/async_file.hpp>
 
 TEST_CASE("file attribute options")
 {
-    constexpr auto opt = ntw::obj::file_options{}
+    constexpr auto opt = ntw::io::file_options{}
                              .archive()
                              .encrypted()
                              .hidden()
@@ -18,23 +18,14 @@ TEST_CASE("file attribute options")
 
 TEST_CASE("common file options")
 {
-    constexpr auto share_options = ntw::obj::file_options{}
+    constexpr auto share_options = ntw::io::file_options{}
                                        .share_all()
                                        .share_read()
                                        .share_write()
                                        .share_delete()
                                        .reset_share_access();
 
-    constexpr auto disposition_options = ntw::obj::file_options{}
-                                             .open()
-                                             .create()
-                                             .supersede()
-                                             .overwrite()
-                                             .open_or_create()
-                                             .overwrite_or_create()
-                                             .reset_disposition();
-
-    constexpr auto create_options = ntw::obj::file_options{}
+    constexpr auto create_options = ntw::io::file_options{}
                                         .directory()
                                         .non_directory()
                                         .write_trough()
@@ -53,7 +44,7 @@ TEST_CASE("common file options")
                                         .complete_if_oplocked()
                                         .reset_create_options();
 
-    constexpr auto access_options = ntw::obj::file_options{}
+    constexpr auto access_options = ntw::io::file_options{}
                                         .deleteable()
                                         .synchronizable()
                                         .executeable()
@@ -77,7 +68,7 @@ TEST_CASE("common file options")
 
 TEST_CASE("pipe options")
 {
-    constexpr auto opt = ntw::obj::pipe_options{}
+    constexpr auto opt = ntw::io::pipe_options{}
                              .qouta(1, 1)
                              .inbound_qouta(2)
                              .outbound_qouta(2)
@@ -92,5 +83,18 @@ TEST_CASE("pipe options")
                              .timeout(-5000);
 }
 
+TEST_CASE("file")
+{
 
-TEST_CASE("file") { ntw::obj::unique_file f; }
+    ntw::io::unique_async_file f;
+    f.open(std::wstring_view{ L"\\??\\C:\\Users\\justa\\OneDrive\\Desktop\\test.txt" });
+
+	ntw::io::async_query query([](auto& q) { __debugbreak();
+		});
+    char buf[]{ 'a', 'b', 'c', 'd','e','f','g','h','i','j','k','l','z','x' };
+    if(auto status = f.write(buf, sizeof(buf), 0, query); status == STATUS_PENDING) {
+        auto timeout = ntw::make_large_int(-10'000'000);
+        status = LI_NT(NtWaitForSingleObject)(f.handle().get(), TRUE, &timeout);
+        __debugbreak();
+	}
+}
