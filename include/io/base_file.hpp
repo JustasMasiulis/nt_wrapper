@@ -131,8 +131,6 @@ namespace ntw::io {
 			NTW_INLINE constexpr file_options_builder& write_trough(); // FILE_WRITE_THROUGH
 			NTW_INLINE constexpr file_options_builder& sequential_access(); // FILE_SEQUENTIAL_ONLY
 			NTW_INLINE constexpr file_options_builder& random_access(); // FILE_RANDOM_ACCESS
-			NTW_INLINE constexpr file_options_builder& sync_io_alert(); // FILE_SYNCHRONOUS_IO_ALERT
-			NTW_INLINE constexpr file_options_builder& sync_io_nonalert(); // FILE_SYNCHRONOUS_IO_NONALERT
 			NTW_INLINE constexpr file_options_builder& create_tree_connection(); // FILE_CREATE_TREE_CONNECTION
 			NTW_INLINE constexpr file_options_builder& no_ea_knownledge(); // FILE_NO_EA_KNOWLEDGE
 			NTW_INLINE constexpr file_options_builder& open_reparse_point(); // FILE_OPEN_REPARSE_POINT

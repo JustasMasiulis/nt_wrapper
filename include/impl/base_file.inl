@@ -48,8 +48,6 @@ namespace ntw::io::detail {
     NTW_FILE_OPTION(write_trough, _options, FILE_WRITE_THROUGH, |=)
     NTW_FILE_OPTION(sequential_access, _options, FILE_SEQUENTIAL_ONLY, |=)
     NTW_FILE_OPTION(random_access, _options, FILE_RANDOM_ACCESS, |=)
-    NTW_FILE_OPTION(sync_io_alert, _options, FILE_SYNCHRONOUS_IO_ALERT, |=)
-    NTW_FILE_OPTION(sync_io_nonalert, _options, FILE_SYNCHRONOUS_IO_NONALERT, |=)
     NTW_FILE_OPTION(create_tree_connection, _options, FILE_CREATE_TREE_CONNECTION, |=)
     NTW_FILE_OPTION(no_ea_knownledge, _options, FILE_NO_EA_KNOWLEDGE, |=)
     NTW_FILE_OPTION(open_reparse_point, _options, FILE_OPEN_REPARSE_POINT, |=)
@@ -157,22 +155,10 @@ namespace ntw::io::detail {
                                    const file_options& options,
                                    unsigned long       disposition) noexcept
     {
-        auto            attributes = make_attributes(&path, OBJ_CASE_INSENSITIVE);
-        IO_STATUS_BLOCK status_block;
+        auto  attributes  = make_attributes(&path, OBJ_CASE_INSENSITIVE);
+        void* temp_handle = nullptr;
 
-        void*      temp_handle = nullptr;
-        const auto status      = LI_NT(NtCreateFile)(&temp_handle,
-                                                options._access,
-                                                &attributes,
-                                                &status_block,
-                                                nullptr,
-                                                options._attributes ? options._attributes
-                                                                    : FILE_ATTRIBUTE_NORMAL,
-                                                options._share_access,
-                                                disposition,
-                                                options._options,
-                                                nullptr,
-                                                0);
+        const auto status = Traits::open(temp_handle, attributes, options, disposition);
 
         if(NT_SUCCESS(status))
             _handle.reset(temp_handle);
@@ -230,43 +216,6 @@ namespace ntw::io::detail {
 
 
     template<class Derived>
-    template<class StringRef>
-    NT_FN base_file<Derived>::open_as_pipe(const StringRef&         path,
-                                           const io::pipe_options& options) noexcept
-    {
-        auto            upath      = make_ustr(path);
-        auto            attributes = ntw::make_attributes(&upath, OBJ_CASE_INSENSITIVE);
-        IO_STATUS_BLOCK iosb;
-        auto            timeout     = make_large_int(options._timeout);
-        void*           temp_handle = nullptr;
-        // if you want to use MESSAGE bullshit you can't just use the same macros
-        const auto status = LI_NT(NtCreateNamedPipeFile)(&temp_handle,
-                                                         options._access,
-                                                         &attributes,
-                                                         &iosb,
-                                                         options._share_access,
-                                                         options._disposition,
-                                                         options._create_options,
-                                                         options._type,
-                                                         options._type & 1,
-                                                         options._completion_mode,
-                                                         options._instances_limit,
-                                                         options._inbound_qouta,
-                                                         options._outbound_qouta,
-                                                         &timeout);
-
-        if(NT_SUCCESS(status)) {
-            // looking at IDA if iosb.Information == 1 ERROR_ALREADY_EXISTS ?
-            if(iosb.Information == 1)
-                return STATUS_OBJECT_NAME_EXISTS;
-            else
-                _handle.reset(temp_handle);
-        }
-
-        return status;
-    }
-
-    template<class Derived>
     NT_FN base_file<Derived>::size(std::uint64_t& size_out) const noexcept
     {
         IO_STATUS_BLOCK           status_block;
@@ -292,7 +241,7 @@ namespace ntw::io::detail {
     }
 
 
-} // namespace ntw::obj::detail
+} // namespace ntw::io::detail
 
 #undef NTW_BUILDER_OPTION
 #undef NTW_FILE_OPTION
