@@ -94,8 +94,6 @@ namespace ntw::io::detail {
     NTW_FILE_ATTRIBUTE_OPTION(system, _attributes, FILE_ATTRIBUTE_SYSTEM, |=)
     NTW_FILE_ATTRIBUTE_OPTION(temporary, _attributes, FILE_ATTRIBUTE_TEMPORARY, |=)
 
-    NTW_PIPE_OPTION(async, _completion_mode, FILE_PIPE_COMPLETE_OPERATION, =)
-    NTW_PIPE_OPTION(sync, _completion_mode, FILE_PIPE_QUEUE_OPERATION, =)
     NTW_PIPE_OPTION(reset_type, _type, 0, =)
     NTW_PIPE_OPTION(byte_stream, _type, FILE_PIPE_MESSAGE_MODE, &= ~)
     NTW_PIPE_OPTION(message_stream, _type, FILE_PIPE_MESSAGE_TYPE, |=)

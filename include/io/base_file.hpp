@@ -54,7 +54,6 @@ namespace ntw::io {
         class pipe_options_builder {
             unsigned long _inbound_qouta   = 0;
             unsigned long _outbound_qouta  = 0;
-            unsigned long _completion_mode = 2;
             unsigned long _type            = 0;
             unsigned long _instances_limit = -1;
             std::int64_t  _timeout         = -500000;
@@ -73,10 +72,6 @@ namespace ntw::io {
 															 unsigned long outbound);
 			NTW_INLINE constexpr pipe_options_builder& inbound_qouta(unsigned long qouta);
 			NTW_INLINE constexpr pipe_options_builder& outbound_qouta(unsigned long qouta);
-
-			// CompletionMode; ; must be specified; 1 allowed
-			NTW_INLINE constexpr pipe_options_builder& async(); // FILE_PIPE_COMPLETE_OPERATION
-			NTW_INLINE constexpr pipe_options_builder& sync(); // FILE_PIPE_QUEUE_OPERATION
 
 			// NamedPipeType; byte stream is default; 1 allowed
 			// resets NamedPipeType back to byte stream and clears other flags
