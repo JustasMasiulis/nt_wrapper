@@ -20,10 +20,24 @@
 namespace ntw::io {
 
     template<class Handle>
-    class basic_pipe : public basic_file<Handle> {
-        using base_type = basic_file<Handle>;
+    struct pipe_traits {
+        using handle_type  = Handle;
+        using options_type = pipe_options;
 
-		NT_FN _fs_ctl(unsigned long code) const;
+        constexpr static auto options =
+            ntw::io::pipe_options{}.share_all().full_access().sync().byte_stream();
+
+        NT_FN static open(void*&              handle,
+                          OBJECT_ATTRIBUTES&  attributes,
+                          const options_type& options,
+                          unsigned long       disposition);
+    };
+
+    template<class Handle, class Traits = pipe_traits<Handle>>
+    class basic_pipe : public basic_file<Handle, Traits> {
+        using base_type = basic_file<Handle, Traits>;
+
+        NT_FN _fs_ctl(unsigned long code) const;
 
     public:
         NTW_INLINE basic_pipe()  = default;
