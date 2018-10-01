@@ -21,18 +21,20 @@ namespace ntw::io {
 
     template<class Handle>
     struct file_traits {
-        using handle_type = Handle;
+        using handle_type  = Handle;
+        using options_type = file_options;
 
-        constexpr static auto options =
-            file_options{}.full_access().share_all().sync_io_nonalert();
+        constexpr static auto options = file_options{}.full_access().share_all();
 
-        constexpr static auto pipe_options =
-            ntw::io::pipe_options{}.share_all().full_access().sync().byte_stream();
+        NT_FN static open(void*&              handle,
+                          OBJECT_ATTRIBUTES&  attributes,
+                          const options_type& options,
+                          unsigned long       disposition);
     };
 
-    template<class Handle>
-    class basic_file : public detail::base_file<file_traits<Handle>> {
-        using base_type = base_file<file_traits<Handle>>;
+    template<class Handle, class Traits = file_traits<Handle>>
+    class basic_file : public detail::base_file<Traits> {
+        using base_type = base_file<Traits>;
 
     public:
         class disposer {
