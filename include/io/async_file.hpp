@@ -73,15 +73,28 @@ namespace ntw::io {
         using handle_type = Handle;
 
         constexpr static auto options =
-            file_options{}.full_access().share_all().non_directory();
+            file_options{}.full_access().share_all();
 
         constexpr static auto pipe_options =
             ntw::io::pipe_options{}.share_all().full_access().sync().byte_stream();
     };
 
     template<class Handle>
-    class basic_async_file : public detail::base_file<async_file_traits<Handle>> {
-        using base_type = detail::base_file<async_file_traits<Handle>>;
+    struct async_file_traits {
+        using handle_type  = Handle;
+        using options_type = file_options;
+
+        constexpr static auto options = file_options{}.full_access().share_all();
+
+        NT_FN static open(void*&              handle,
+                          OBJECT_ATTRIBUTES&  attributes,
+                          const options_type& options,
+                          unsigned long       disposition);
+    };
+
+    template<class Handle, class Traits = async_file_traits<Handle>>
+    class basic_async_file : public detail::base_file<Traits> {
+        using base_type = detail::base_file<Traits>;
 
     public:
         NTW_INLINE basic_async_file()  = default;

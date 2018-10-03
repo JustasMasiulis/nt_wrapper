@@ -19,12 +19,33 @@
 
 namespace ntw::io {
 
-    template<class Traits>
+    template<class Handle, class Traits>
+    NT_FN static async_file_traits<Handle>::open(void*&              handle,
+                                                 OBJECT_ATTRIBUTES&  attributes,
+                                                 const options_type& options,
+                                                 unsigned long       disposition)
+    {
+        IO_STATUS_BLOCK status_block;
+        return LI_NT(NtCreateFile)(&temp_handle,
+                                   options._access,
+                                   &attributes,
+                                   &status_block,
+                                   nullptr,
+                                   options._attributes ? options._attributes
+                                                       : FILE_ATTRIBUTE_NORMAL,
+                                   options._share_access,
+                                   disposition,
+                                   options._options | FILE_NON_DIRECTORY_FILE,
+                                   nullptr,
+                                   0);
+    }
+
+    template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Traits>::write(const void*   data,
-                                          unsigned long size,
-                                          std::int64_t  offset,
-                                          QueryData&    query) const noexcept
+    NT_FN basic_async_file<Handle, Traits>::write(const void*   data,
+                                                  unsigned long size,
+                                                  std::int64_t  offset,
+                                                  QueryData&    query) const noexcept
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
 
@@ -41,12 +62,12 @@ namespace ntw::io {
                                   nullptr);
     }
 
-    template<class Traits>
+    template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Traits>::read(void*         buffer,
-                                         unsigned long size,
-                                         std::int64_t  offset,
-                                         QueryData&    query) const noexcept
+    NT_FN basic_async_file<Handle, Traits>::read(void*         buffer,
+                                                 unsigned long size,
+                                                 std::int64_t  offset,
+                                                 QueryData&    query) const noexcept
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
         return LI_NT(NtReadFile)(handle().get(),
@@ -62,13 +83,14 @@ namespace ntw::io {
                                  nullptr);
     }
 
-    template<class Handle>
-    NT_FN basic_async_file<Handle>::device_io_control(unsigned long  control_code,
-                                                      const void*    in_buffer,
-                                                      unsigned long  in_buffer_size,
-                                                      void*          out_buffer,
-                                                      unsigned long  out_buffer_size,
-                                                      unsigned long* bytes_returned) const
+    template<class Handle, class Traits>
+    NT_FN
+    basic_async_file<Handle, Traits>::device_io_control(unsigned long  control_code,
+                                                        const void*    in_buffer,
+                                                        unsigned long  in_buffer_size,
+                                                        void*          out_buffer,
+                                                        unsigned long  out_buffer_size,
+                                                        unsigned long* bytes_returned) const
         noexcept
     {
         IO_STATUS_BLOCK status_block{ 0 };
@@ -90,12 +112,13 @@ namespace ntw::io {
         return status;
     }
 
-    template<class Handle>
+    template<class Handle, class Traits>
     template<class InBuffer, class OutBuffer>
-    NT_FN basic_async_file<Handle>::device_io_control(unsigned long   control_code,
-                                                      const InBuffer& in_buffer,
-                                                      OutBuffer&      out_buffer,
-                                                      unsigned long*  bytes_returned) const
+    NT_FN
+    basic_async_file<Handle, Traits>::device_io_control(unsigned long   control_code,
+                                                        const InBuffer& in_buffer,
+                                                        OutBuffer&      out_buffer,
+                                                        unsigned long*  bytes_returned) const
         noexcept
     {
         return device_io_control(control_code,
