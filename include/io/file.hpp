@@ -63,11 +63,6 @@ namespace ntw::io {
              std::int64_t   offset = 0,
              unsigned long* read   = nullptr) const noexcept;
 
-        /// \warning Likely to change as directory apis may be moved into their own
-        /// abstraction
-        template<class Callback, class... Args>
-        NT_FN enum_contained_files(Callback callback, Args&&... args) const noexcept;
-
         NT_FN device_io_control(unsigned long  control_code,
                                 const void*    in_buffer,
                                 unsigned long  in_buffer_size,

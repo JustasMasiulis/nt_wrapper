@@ -89,56 +89,6 @@ namespace ntw::io {
     }
 
     template<class Handle, class Traits>
-    template<class Callback, class... Args>
-    NT_FN basic_file<Handle, Traits>::enum_contained_files(Callback callback,
-                                                           Args&&... args) const noexcept
-    {
-        std::aligned_storage_t<2048u, 8> buffer;
-        constexpr unsigned long          buffer_size = sizeof(buffer);
-        IO_STATUS_BLOCK                  iosb        = { 0 };
-
-        while(true) {
-            const auto status = LI_NT(NtQueryDirectoryFile)(handle().get(),
-                                                            nullptr,
-                                                            nullptr,
-                                                            nullptr,
-                                                            &iosb,
-                                                            &buffer,
-                                                            buffer_size,
-                                                            FileDirectoryInformation,
-                                                            FALSE,
-                                                            nullptr,
-                                                            FALSE);
-            // check the status if there are any more files
-            if(!NT_SUCCESS(status)) {
-                if(status == STATUS_NO_MORE_FILES)
-                    return STATUS_SUCCESS;
-
-                return status;
-            }
-            // I have a feeling this could introduce an infinite loop
-            else if(iosb.Information == 0)
-                continue;
-
-            auto file_info = reinterpret_cast<FILE_DIRECTORY_INFORMATION*>(&buffer);
-
-            // goto is pretty gay but I cannot use this macro with a nested loop
-        goto_next_file:
-            NTW_CALLBACK_BREAK_IF_FALSE(callback, *file_info, args...);
-
-            // go to next file if the offset isnt 0, else get more infos
-            if(file_info->NextEntryOffset) {
-                file_info = reinterpret_cast<FILE_DIRECTORY_INFORMATION*>(
-                    reinterpret_cast<std::uintptr_t>(file_info) + file_info->NextEntryOffset);
-
-                goto goto_next_file;
-            }
-        }
-
-        return STATUS_SUCCESS;
-    }
-
-    template<class Handle, class Traits>
     NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long  control_code,
                                                         const void*    in_buffer,
                                                         unsigned long  in_buffer_size,
