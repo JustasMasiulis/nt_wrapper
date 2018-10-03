@@ -41,12 +41,12 @@ namespace ntw::io {
 
     public:
         NTW_INLINE basic_pipe()  = default;
-        NTW_INLINE ~basic_pipe() = default;
 
         template<class ObjectHandle>
         NTW_INLINE basic_pipe(const ObjectHandle& handle) : base_type(handle)
         {}
 
+		// TODO: add more pipe functionality for messages
         NT_FN listen() const;
         NT_FN disconnect() const;
     };

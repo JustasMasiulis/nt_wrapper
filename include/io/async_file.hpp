@@ -72,8 +72,7 @@ namespace ntw::io {
     struct async_file_traits {
         using handle_type = Handle;
 
-        constexpr static auto options =
-            file_options{}.full_access().share_all();
+        constexpr static auto options = file_options{}.full_access().share_all();
 
         constexpr static auto pipe_options =
             ntw::io::pipe_options{}.share_all().full_access().sync().byte_stream();
@@ -116,18 +115,19 @@ namespace ntw::io {
         read(void* buffer, unsigned long size, std::int64_t offset, QueryData& query) const
             noexcept;
 
-        NT_FN device_io_control(unsigned long  control_code,
-                                const void*    in_buffer,
-                                unsigned long  in_buffer_size,
-                                void*          out_buffer,
-                                unsigned long  out_buffer_size,
-                                unsigned long* bytes_returned = nullptr) const noexcept;
+        template<class QueryData>
+        NT_FN device_io_control(unsigned long control_code,
+                                const void*   in_buffer,
+                                unsigned long in_buffer_size,
+                                void*         out_buffer,
+                                unsigned long out_buffer_size,
+                                QueryData&    query) const noexcept;
 
-        template<class InBuffer, class OutBuffer>
+        template<class InBuffer, class OutBuffer, class QueryData>
         NT_FN device_io_control(unsigned long   control_code,
                                 const InBuffer& in_buffer,
                                 OutBuffer&      out_buffer,
-                                unsigned long*  bytes_returned = nullptr) const noexcept;
+                                QueryData&      query) const noexcept;
     };
 
     using unique_async_file = basic_async_file<unique_handle>;

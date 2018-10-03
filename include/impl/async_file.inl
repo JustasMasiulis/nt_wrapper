@@ -84,49 +84,43 @@ namespace ntw::io {
     }
 
     template<class Handle, class Traits>
-    NT_FN
-    basic_async_file<Handle, Traits>::device_io_control(unsigned long  control_code,
-                                                        const void*    in_buffer,
-                                                        unsigned long  in_buffer_size,
-                                                        void*          out_buffer,
-                                                        unsigned long  out_buffer_size,
-                                                        unsigned long* bytes_returned) const
-        noexcept
+    template<class QueryData>
+    NT_FN basic_async_file<Handle, Traits>::device_io_control(unsigned long control_code,
+                                                              const void*   in_buffer,
+                                                              unsigned long in_buffer_size,
+                                                              void*         out_buffer,
+                                                              unsigned long out_buffer_size,
+                                                              QueryData& query) const noexcept
     {
         IO_STATUS_BLOCK status_block{ 0 };
-        const auto      status = LI_NT(NtDeviceIoControlFile)(handle().get(),
-                                                         nullptr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         &status_block,
-                                                         control_code,
-                                                         const_cast<void*>(in_buffer),
-                                                         in_buffer_size,
-                                                         out_buffer,
-                                                         out_buffer_size);
-
-        // set the bytes returned if we are successfull
-        if(bytes_returned && NT_SUCCESS(status))
-            *bytes_returned = static_cast<unsigned long>(status_block.Information);
-
-        return status;
+        return LI_NT(NtDeviceIoControlFile)(
+            handle().get(),
+            nullptr,
+            [](void* context, IO_STATUS_BLOCK*, unsigned long) {
+                QueryData::on_completion(context);
+            },
+            query.reference(),
+            &status_block,
+            control_code,
+            const_cast<void*>(in_buffer),
+            in_buffer_size,
+            out_buffer,
+            out_buffer_size);
     }
 
     template<class Handle, class Traits>
-    template<class InBuffer, class OutBuffer>
-    NT_FN
-    basic_async_file<Handle, Traits>::device_io_control(unsigned long   control_code,
-                                                        const InBuffer& in_buffer,
-                                                        OutBuffer&      out_buffer,
-                                                        unsigned long*  bytes_returned) const
-        noexcept
+    template<class InBuffer, class OutBuffer, class QueryData>
+    NT_FN basic_async_file<Handle, Traits>::device_io_control(unsigned long   control_code,
+                                                              const InBuffer& in_buffer,
+                                                              OutBuffer&      out_buffer,
+                                                              QueryData& query) const noexcept
     {
         return device_io_control(control_code,
                                  ::std::addressof(in_buffer),
                                  sizeof(InBuffer),
                                  ::std::addressof(out_buffer),
                                  sizeof(OutBuffer),
-                                 bytes_returned);
+                                 query);
     }
 
 } // namespace ntw::io
