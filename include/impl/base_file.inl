@@ -43,8 +43,6 @@ namespace ntw::io::detail {
     NTW_FILE_OPTION(share_all, _share_access, 0b111, =)
 
     NTW_FILE_OPTION(reset_create_options, _options, 0, =)
-    NTW_FILE_OPTION(directory, _options, FILE_DIRECTORY_FILE, |=)
-    NTW_FILE_OPTION(non_directory, _options, FILE_NON_DIRECTORY_FILE, |=)
     NTW_FILE_OPTION(write_trough, _options, FILE_WRITE_THROUGH, |=)
     NTW_FILE_OPTION(sequential_access, _options, FILE_SEQUENTIAL_ONLY, |=)
     NTW_FILE_OPTION(random_access, _options, FILE_RANDOM_ACCESS, |=)

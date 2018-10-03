@@ -121,8 +121,6 @@ namespace ntw::io {
 			// CreateOptions; multiple allowed
 			NTW_INLINE constexpr file_options_builder& reset_create_options();
 
-			NTW_INLINE constexpr file_options_builder& directory(); // FILE_DIRECTORY_FILE
-			NTW_INLINE constexpr file_options_builder& non_directory(); // FILE_NON_DIRECTORY_FILE
 			NTW_INLINE constexpr file_options_builder& write_trough(); // FILE_WRITE_THROUGH
 			NTW_INLINE constexpr file_options_builder& sequential_access(); // FILE_SEQUENTIAL_ONLY
 			NTW_INLINE constexpr file_options_builder& random_access(); // FILE_RANDOM_ACCESS
