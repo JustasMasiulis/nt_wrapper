@@ -34,7 +34,7 @@ namespace ntw::io {
 
     template<class Handle, class Traits = file_traits<Handle>>
     class basic_file : public detail::base_file<Traits> {
-        using base_type = base_file<Traits>;
+        using base_type = detail::base_file<Traits>;
 
     public:
         class disposer {

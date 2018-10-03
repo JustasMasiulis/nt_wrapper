@@ -19,12 +19,15 @@
 
 namespace ntw::io {
 
-    template<class Handle>
+    template<class Handle, class Traits>
     NT_FN file_traits<Handle>::(void*&              handle,
                                 OBJECT_ATTRIBUTES&  attributes,
                                 const options_type& options,
                                 unsigned long       disposition)
     {
+        constexpr unsigned long extra_options =
+            FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE;
+
         IO_STATUS_BLOCK status_block;
         return LI_NT(NtCreateFile)(&temp_handle,
                                    options._access | SYNCHRONIZE,
@@ -35,16 +38,16 @@ namespace ntw::io {
                                                        : FILE_ATTRIBUTE_NORMAL,
                                    options._share_access,
                                    disposition,
-                                   options._options | FILE_SYNCHRONOUS_IO_NONALERT,
+                                   options._options | extra_options,
                                    nullptr,
                                    0);
     }
 
-    template<class Handle>
-    NT_FN basic_file<Handle>::write(const void*    data,
-                                    unsigned long  size,
-                                    std::int64_t   offset,
-                                    unsigned long* written) const noexcept
+    template<class Handle, class Traits>
+    NT_FN basic_file<Handle, Traits>::write(const void*    data,
+                                            unsigned long  size,
+                                            std::int64_t   offset,
+                                            unsigned long* written) const noexcept
     {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   li_offset = make_large_int(offset);
@@ -63,11 +66,11 @@ namespace ntw::io {
         return status;
     }
 
-    template<class Handle>
-    NT_FN basic_file<Handle>::read(void*          buffer,
-                                   unsigned long  size,
-                                   std::int64_t   offset,
-                                   unsigned long* read) const noexcept
+    template<class Handle, class Traits>
+    NT_FN basic_file<Handle, Traits>::read(void*          buffer,
+                                           unsigned long  size,
+                                           std::int64_t   offset,
+                                           unsigned long* read) const noexcept
     {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   li_offset = make_large_int(offset);
@@ -85,10 +88,10 @@ namespace ntw::io {
         return status;
     }
 
-    template<class Handle>
+    template<class Handle, class Traits>
     template<class Callback, class... Args>
-    NT_FN basic_file<Handle>::enum_contained_files(Callback callback, Args&&... args) const
-        noexcept
+    NT_FN basic_file<Handle, Traits>::enum_contained_files(Callback callback,
+                                                           Args&&... args) const noexcept
     {
         std::aligned_storage_t<2048u, 8> buffer;
         constexpr unsigned long          buffer_size = sizeof(buffer);
@@ -135,13 +138,14 @@ namespace ntw::io {
         return STATUS_SUCCESS;
     }
 
-    template<class Handle>
-    NT_FN basic_file<Handle>::device_io_control(unsigned long  control_code,
-                                                const void*    in_buffer,
-                                                unsigned long  in_buffer_size,
-                                                void*          out_buffer,
-                                                unsigned long  out_buffer_size,
-                                                unsigned long* bytes_returned) const noexcept
+    template<class Handle, class Traits>
+    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long  control_code,
+                                                        const void*    in_buffer,
+                                                        unsigned long  in_buffer_size,
+                                                        void*          out_buffer,
+                                                        unsigned long  out_buffer_size,
+                                                        unsigned long* bytes_returned) const
+        noexcept
     {
         IO_STATUS_BLOCK status_block{ 0 };
         const auto      status = LI_NT(NtDeviceIoControlFile)(handle().get(),
@@ -162,12 +166,13 @@ namespace ntw::io {
         return status;
     }
 
-    template<class Handle>
+    template<class Handle, class Traits>
     template<class InBuffer, class OutBuffer>
-    NT_FN basic_file<Handle>::device_io_control(unsigned long   control_code,
-                                                const InBuffer& in_buffer,
-                                                OutBuffer&      out_buffer,
-                                                unsigned long*  bytes_returned) const noexcept
+    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long   control_code,
+                                                        const InBuffer& in_buffer,
+                                                        OutBuffer&      out_buffer,
+                                                        unsigned long*  bytes_returned) const
+        noexcept
     {
         return device_io_control(control_code,
                                  ::std::addressof(in_buffer),
