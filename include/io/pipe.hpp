@@ -25,7 +25,7 @@ namespace ntw::io {
         using options_type = pipe_options;
 
         constexpr static auto options =
-            ntw::io::pipe_options{}.share_all().full_access().sync().byte_stream();
+            ntw::io::pipe_options{}.share_all().full_access().byte_stream();
 
         NT_FN static open(void*&              handle,
                           OBJECT_ATTRIBUTES&  attributes,

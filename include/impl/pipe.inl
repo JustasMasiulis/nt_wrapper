@@ -28,12 +28,12 @@ namespace ntw::io {
         IO_STATUS_BLOCK iosb;
         auto            timeout = make_large_int(options._timeout);
         return LI_NT(NtCreateNamedPipeFile)(&temp_handle,
-                                            options._access,
+                                            options._access | SYNCHRONIZE,
                                             &attributes,
                                             &iosb,
                                             options._share_access,
                                             disposition,
-                                            options._create_options,
+                                            options._create_options | FILE_SYNCHRONOUS_IO_NONALERT,
                                             options._type,
                                             options._type & 1,
                                             FILE_PIPE_QUEUE_OPERATION,

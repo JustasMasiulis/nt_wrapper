@@ -217,17 +217,6 @@ namespace ntw::io {
             NT_FN overwrite_or_create(const StringRef&    path,
                                       const file_options& opt = options) noexcept;
 
-
-            /// \brief Opens named pipe using NtCreateNamedPipeFile API.
-            /// \param path The path to file.
-            ///             May be either an UNICODE_STRING or std::wstring_view.
-            /// \param options The options used while opening the file.
-            /// \warning The API is likely to change as the pipe functionality may be moved
-            ///          out of file into its own wrapper
-            template<class StringRef>
-            NT_FN open_as_pipe(const StringRef&         path,
-                               const io::pipe_options& opt = pipe_options) noexcept;
-
             /// \brief Queries opened file size using NtQueryInformationFile API.
             /// \param size_out The variable that will be receiving the file size
             ///                 in case of success.
