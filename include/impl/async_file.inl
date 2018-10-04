@@ -19,7 +19,7 @@
 
 namespace ntw::io {
 
-    template<class Handle, class Traits>
+    template<class Handle>
     NT_FN static async_file_traits<Handle>::open(void*&              handle,
                                                  OBJECT_ATTRIBUTES&  attributes,
                                                  const options_type& options,

@@ -70,16 +70,6 @@ namespace ntw::io {
 
     template<class Handle>
     struct async_file_traits {
-        using handle_type = Handle;
-
-        constexpr static auto options = file_options{}.full_access().share_all();
-
-        constexpr static auto pipe_options =
-            ntw::io::pipe_options{}.share_all().full_access().sync().byte_stream();
-    };
-
-    template<class Handle>
-    struct async_file_traits {
         using handle_type  = Handle;
         using options_type = file_options;
 
