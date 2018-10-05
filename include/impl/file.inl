@@ -20,30 +20,6 @@
 namespace ntw::io {
 
     template<class Handle, class Traits>
-    NT_FN file_traits<Handle>::(void*&              handle,
-                                OBJECT_ATTRIBUTES&  attributes,
-                                const options_type& options,
-                                unsigned long       disposition)
-    {
-        constexpr unsigned long extra_options =
-            FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE;
-
-        IO_STATUS_BLOCK status_block;
-        return LI_NT(NtCreateFile)(&temp_handle,
-                                   options._access | SYNCHRONIZE,
-                                   &attributes,
-                                   &status_block,
-                                   nullptr,
-                                   options._attributes ? options._attributes
-                                                       : FILE_ATTRIBUTE_NORMAL,
-                                   options._share_access,
-                                   disposition,
-                                   options._options | extra_options,
-                                   nullptr,
-                                   0);
-    }
-
-    template<class Handle, class Traits>
     NT_FN basic_file<Handle, Traits>::write(const void*    data,
                                             unsigned long  size,
                                             std::int64_t   offset,

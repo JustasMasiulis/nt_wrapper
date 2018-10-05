@@ -15,24 +15,11 @@
  */
 
 #pragma once
-#include "base_file.hpp"
+#include "traits/file.hpp"
 
 namespace ntw::io {
 
-    template<class Handle>
-    struct file_traits {
-        using handle_type  = Handle;
-        using options_type = file_options;
-
-        constexpr static auto options = file_options{}.full_access().share_all();
-
-        NT_FN static open(void*&              handle,
-                          OBJECT_ATTRIBUTES&  attributes,
-                          const options_type& options,
-                          unsigned long       disposition);
-    };
-
-    template<class Handle, class Traits = file_traits<Handle>>
+    template<class Handle, class Traits = traits::file_traits<Handle>>
     class basic_file : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
 
