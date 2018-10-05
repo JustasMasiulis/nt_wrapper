@@ -20,31 +20,6 @@
 namespace ntw::io {
 
     template<class Handle>
-    NT_FN pipe_traits<Handle>::open(void*&              handle,
-                                    OBJECT_ATTRIBUTES&  attributes,
-                                    const options_type& options,
-                                    unsigned long       disposition)
-    {
-        IO_STATUS_BLOCK iosb;
-        auto            timeout = make_large_int(options._timeout);
-        return LI_NT(NtCreateNamedPipeFile)(&temp_handle,
-                                            options._access | SYNCHRONIZE,
-                                            &attributes,
-                                            &iosb,
-                                            options._share_access,
-                                            disposition,
-                                            options._create_options | FILE_SYNCHRONOUS_IO_NONALERT,
-                                            options._type,
-                                            options._type & 1,
-                                            FILE_PIPE_QUEUE_OPERATION,
-                                            options._instances_limit,
-                                            options._inbound_qouta,
-                                            options._outbound_qouta,
-                                            &timeout);
-    }
-
-
-    template<class Handle>
     NT_FN basic_pipe<Handle>::_fs_ctl(unsigned long code) const
     {
         IO_STATUS_BLOCK iosb;
