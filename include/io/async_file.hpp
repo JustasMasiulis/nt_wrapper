@@ -15,9 +15,7 @@
  */
 
 #pragma once
-#include "../native_peb.hpp"
-#include "base_file.hpp"
-#include <atomic>
+#include "traits/file.hpp"
 
 namespace ntw::io {
 
@@ -68,20 +66,7 @@ namespace ntw::io {
         NTW_INLINE constexpr static void on_completion(void*) noexcept {}
     };
 
-    template<class Handle>
-    struct async_file_traits {
-        using handle_type  = Handle;
-        using options_type = file_options;
-
-        constexpr static auto options = file_options{}.full_access().share_all();
-
-        NT_FN static open(void*&              handle,
-                          OBJECT_ATTRIBUTES&  attributes,
-                          const options_type& options,
-                          unsigned long       disposition);
-    };
-
-    template<class Handle, class Traits = async_file_traits<Handle>>
+    template<class Handle, class Traits = traits::async_file_traits<Handle>>
     class basic_async_file : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
 

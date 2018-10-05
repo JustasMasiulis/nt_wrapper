@@ -19,27 +19,6 @@
 
 namespace ntw::io {
 
-    template<class Handle>
-    NT_FN static async_file_traits<Handle>::open(void*&              handle,
-                                                 OBJECT_ATTRIBUTES&  attributes,
-                                                 const options_type& options,
-                                                 unsigned long       disposition)
-    {
-        IO_STATUS_BLOCK status_block;
-        return LI_NT(NtCreateFile)(&temp_handle,
-                                   options._access,
-                                   &attributes,
-                                   &status_block,
-                                   nullptr,
-                                   options._attributes ? options._attributes
-                                                       : FILE_ATTRIBUTE_NORMAL,
-                                   options._share_access,
-                                   disposition,
-                                   options._options | FILE_NON_DIRECTORY_FILE,
-                                   nullptr,
-                                   0);
-    }
-
     template<class Handle, class Traits>
     template<class QueryData>
     NT_FN basic_async_file<Handle, Traits>::write(const void*   data,
