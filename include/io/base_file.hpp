@@ -40,6 +40,7 @@ namespace ntw::io {
 			// FileAttributes; multiple allowed
 			NTW_INLINE constexpr file_attributes_builder& reset_attributes();
 
+			// TOOD: add bool args to be able to toggle flags more easily
 			NTW_INLINE constexpr file_attributes_builder& archive(); // FILE_ATTRIBUTE_ARCHIVE
 			NTW_INLINE constexpr file_attributes_builder& encrypted(); // FILE_ATTRIBUTE_ENCRYPTED
 			NTW_INLINE constexpr file_attributes_builder& hidden(); // FILE_ATTRIBUTE_HIDDEN
@@ -184,8 +185,7 @@ namespace ntw::io {
             NTW_INLINE ~base_file() = default;
 
         public:
-            constexpr static auto options      = Traits::options;
-            constexpr static auto pipe_options = Traits::pipe_options;
+            constexpr static auto options = Traits::options;
 
             NTW_INLINE base_file() = default;
             NTW_INLINE base_file(void* handle) noexcept : _handle(handle) {}
@@ -228,10 +228,25 @@ namespace ntw::io {
             /// \param case_sensitive Whether the filename is case sensitive.
             template<class StringRef>
             NT_FN static destroy(const StringRef& path, bool case_sensitive = false) noexcept;
+
+            template<class Buffer, NTW_QUERY_BUFFER_REQUIREMENT>
+            NT_FN info(FILE_INFORMATION_CLASS info_class,
+                       Buffer&        buffer,
+                       unsigned long  size     = sizeof(Buffer),
+                       unsigned long* returned = nullptr) const noexcept;
+
+            template<class Callback, class... Args, NTW_QUERY_CALLBACK_REQUIREMENT>
+            NT_FN info(FILE_INFORMATION_CLASS info_class, Callback cb, Args&&... args) const
+                noexcept;
+
+            template<class Buffer>
+            NT_FN set_info(FILE_INFORMATION_CLASS info_class,
+                           Buffer&       buffer,
+                           unsigned long info_size) const noexcept;
         };
 
     } // namespace detail
 
-} // namespace ntw::obj
+} // namespace ntw::io
 
 #include "../impl/base_file.inl"

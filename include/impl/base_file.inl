@@ -211,8 +211,8 @@ namespace ntw::io::detail {
     }
 
 
-    template<class Derived>
-    NT_FN base_file<Derived>::size(std::uint64_t& size_out) const noexcept
+    template<class Traits>
+    NT_FN base_file<Traits>::size(std::uint64_t& size_out) const noexcept
     {
         IO_STATUS_BLOCK           status_block;
         FILE_STANDARD_INFORMATION info;
@@ -227,15 +227,50 @@ namespace ntw::io::detail {
         return status;
     }
 
-    template<class Derived>
+    template<class Traits>
     template<class StringRef /* wstring_view or UNICODE_STRING */>
-    NT_FN base_file<Derived>::destroy(const StringRef& path, bool case_sensitive) noexcept
+    NT_FN base_file<Traits>::destroy(const StringRef& path, bool case_sensitive) noexcept
     {
         auto upath      = make_ustr(path);
         auto attributes = make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
         return LI_NT(NtDeleteFile)(&attributes);
     }
 
+    template<class Traits>
+    template<class Buffer, class>
+    NT_FN base_file<Traits>::info(FILE_INFORMATION_CLASS info_class,
+                                  Buffer&                buffer,
+                                  unsigned long          size,
+                                  unsigned long*         returned) const noexcept
+    {
+        IO_STATUS_BLOCK iosb;
+        const auto      status = LI_NT(NtQueryInformationFile)(
+            handle().get(), &iosb, ::std::addressof(buffer), size, info_class);
+        if(returned && NT_SUCCESS(status))
+            *returned = iosb.Information;
+
+        return status;
+    }
+
+    template<class Traits>
+    template<class Callback, class... Args, class>
+    NT_FN base_file<Traits>::info(FILE_INFORMATION_CLASS info_class,
+                                  Callback               cb,
+                                  Args&&... args) const noexcept
+    {
+        NTW_IMPLEMENT_QUERY_CALLBACK
+    }
+
+    template<class Traits>
+    template<class Buffer>
+    NT_FN base_file<Traits>::set_info(FILE_INFORMATION_CLASS info_class,
+                                      Buffer&                buffer,
+                                      unsigned long          info_size) const noexcept
+    {
+        IO_STATUS_BLOCK iosb;
+        return LI_NT(NtSetInformationFile)(
+            handle().get(), &iosb, ::std::addressof(buffer), info_size, info_class);
+    }
 
 } // namespace ntw::io::detail
 
