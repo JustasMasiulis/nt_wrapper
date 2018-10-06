@@ -19,8 +19,8 @@
 
 namespace ntw::io {
 
-    template<class Handle>
-    NT_FN basic_pipe<Handle>::_fs_ctl(unsigned long code) const
+    template<class Handle, class Traits>
+    NT_FN basic_pipe<Handle, Traits>::_fs_ctl(unsigned long code) const
     {
         IO_STATUS_BLOCK iosb;
         return LI_NT(NtFsControlFile)(handle().get(),
@@ -35,14 +35,14 @@ namespace ntw::io {
                                       nullptr);
     }
 
-    template<class Handle>
-    NT_FN basic_pipe<Handle>::listen()
+    template<class Handle, class Traits>
+    NT_FN basic_pipe<Handle, Traits>::listen() const
     {
         return _fs_ctl(FSCTL_PIPE_LISTEN);
     }
 
-    template<class Handle>
-    NT_FN basic_pipe<Handle>::disconnect() const
+    template<class Handle, class Traits>
+    NT_FN basic_pipe<Handle, Traits>::disconnect() const
     {
         return _fs_ctl(FSCTL_PIPE_DISCONNECT);
     }
