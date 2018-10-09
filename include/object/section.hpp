@@ -41,17 +41,15 @@ namespace ntw::obj {
                          unsigned long page_protection,
                          unsigned long alloc_attributes) noexcept
             {
-                static_assert(sizeof(std::int64_t) == sizeof(LARGE_INTEGER));
-                static_assert(alignof(std::int64_t) == alignof(LARGE_INTEGER));
-
+                auto       li_max_size = make_large_int(max_size);
                 void*      temp_handle = nullptr;
                 const auto status = LI_NT(NtCreateSection)(&temp_handle,
-                                              SECTION_ALL_ACCESS,
-                                              nullptr,
-                                              reinterpret_cast<LARGE_INTEGER*>(&max_size),
-                                              page_protection,
-                                              alloc_attributes,
-                                              nullptr);
+                                                           SECTION_ALL_ACCESS,
+                                                           nullptr,
+                                                           &li_max_size,
+                                                           page_protection,
+                                                           alloc_attributes,
+                                                           nullptr);
 
                 if(NT_SUCCESS(status))
                     _handle.reset(temp_handle);
@@ -59,9 +57,32 @@ namespace ntw::obj {
                 return status;
             }
 
-            template<class ProcessHandle>
+            template<class StringRef>
+            NT_FN open(const StringRef& name,
+                       unsigned long    access) noexcept
+            {
+                auto       uname = make_ustr(name);
+                auto       attributes = make_attributes(&uname, OBJ_CASE_INSENSITIVE);
+                void*      temp_handle = nullptr;
+                const auto status = LI_NT(NtOpenSection)(&temp_handle,
+                                                         access,
+                                                         &attributes);
+
+                if(NT_SUCCESS(status))
+                    _handle.reset(temp_handle);
+
+                return status;
+            }
+
+            NT_FN extend(std::int64_t new_size) noexcept
+            {
+                auto li_new_size = make_large_int(new_size);
+                return LI_NT(NtExtendSection)(_handle.get(), &li_new_size);
+            }
+
+            template<class ProcessHandle, class Address>
             NT_FN map(const ProcessHandle& process,
-                      void**               base,
+                      Address&             base,
                       std::size_t          commit_size,
                       unsigned long        protection) noexcept
             {
@@ -69,7 +90,7 @@ namespace ntw::obj {
                 SIZE_T view_size;
                 return LI_NT(NtMapViewOfSection)(_handle.get(),
                                                  unwrap_handle(process),
-                                                 base,
+                                                 address_cast<void**>(&base),
                                                  0,
                                                  commit_size,
                                                  &offset,
@@ -79,10 +100,10 @@ namespace ntw::obj {
                                                  protection);
             }
 
-            template<class ProcessHandle>
-            NT_FN static unmap(const ProcessHandle& process, void* base) noexcept
+            template<class ProcessHandle, class Address>
+            NT_FN static unmap(const ProcessHandle& process, Address base) noexcept
             {
-                return LI_NT(NtUnmapViewOfSection)(unwrap_handle(process), base);
+                return LI_NT(NtUnmapViewOfSection)(unwrap_handle(process), address_cast<void*>(base));
             }
         };
 
