@@ -25,7 +25,7 @@ namespace ntw::io {
     {
         IO_STATUS_BLOCK iosb;
         return LI_NT(NtFsControlFile)(handle().get(),
-                                      nullptr,
+                                      query.event(),
                                       [](void* context, IO_STATUS_BLOCK* iosb, unsigned long) {
                                           QueryData::on_completion(context);
                                       },

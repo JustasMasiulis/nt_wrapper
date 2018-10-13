@@ -29,7 +29,7 @@ namespace ntw::io {
         LARGE_INTEGER li_offset = make_large_int(offset);
 
         return LI_NT(NtWriteFile)(handle().get(),
-                                  nullptr,
+                                  query.event(),
                                   [](void* context, IO_STATUS_BLOCK* iosb, unsigned long) {
                                       QueryData::on_completion(context);
                                   },
@@ -50,7 +50,7 @@ namespace ntw::io {
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
         return LI_NT(NtReadFile)(handle().get(),
-                                 nullptr,
+                                 query.event(),
                                  [](void* context, IO_STATUS_BLOCK*, unsigned long) {
                                      QueryData::on_completion(context);
                                  },
@@ -74,7 +74,7 @@ namespace ntw::io {
         IO_STATUS_BLOCK status_block{ 0 };
         return LI_NT(NtDeviceIoControlFile)(
             handle().get(),
-            nullptr,
+            query.event(),
             [](void* context, IO_STATUS_BLOCK*, unsigned long) {
                 QueryData::on_completion(context);
             },

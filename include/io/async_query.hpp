@@ -38,6 +38,8 @@ namespace ntw::io {
 
         NTW_INLINE IO_STATUS_BLOCK& status_block() noexcept { return _iosb; }
 
+        NTW_INLINE constexpr void* event() const noexcept { return nullptr; }
+
         /// \brief Returns type erased pointer that will be passed to invoke in APC routine.
         NTW_INLINE void* reference() noexcept { return this; }
         /// \brief Invokes the callback after restoring the type of pointer received from
@@ -62,6 +64,8 @@ namespace ntw::io {
         }
 
         NTW_INLINE IO_STATUS_BLOCK& status_block() noexcept { return _iosb; }
+
+        NTW_INLINE constexpr void* event() const noexcept { return nullptr; }
 
         /// \brief Returns type erased pointer that will be passed to invoke in APC routine.
         NTW_INLINE void*                 reference() noexcept { return this; }
