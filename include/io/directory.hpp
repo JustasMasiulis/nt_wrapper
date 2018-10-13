@@ -25,17 +25,16 @@ namespace ntw::io {
         using options_type = file_options;
 
         constexpr static auto options =
-            ntw::io::pipe_options{}.share_all().full_access().byte_stream();
 
-        NT_FN static open(void*&              handle,
-                          OBJECT_ATTRIBUTES&  attributes,
-                          const options_type& options,
-                          unsigned long       disposition);
+            NT_FN static open(void*&              handle,
+                              OBJECT_ATTRIBUTES&  attributes,
+                              const options_type& options,
+                              unsigned long       disposition);
     };
 
-    template<class Handle, class Traits = pipe_traits<Handle>>
-    class basic_directory : public base_file<Traits> {
-        using base_type = base_file<Traits>;
+    template<class Handle, class Traits = directory_traits<Handle>>
+    class basic_directory : public detail::base_file<Traits> {
+        using base_type = detail::base_file<Traits>;
 
     public:
         NTW_INLINE basic_directory() = default;
@@ -45,8 +44,13 @@ namespace ntw::io {
             : base_type(unwrap_handle(handle))
         {}
 
+        template<std::size_t StaticBufferSize = 2048, class Callback, class... Args>
+        NT_FN enum_contents(Callback&& cb, Args&&... args) const noexcept;
+
         template<class Callback, class... Args>
-        NT_FN enum_contents(Callback cb, Args&& args) const noexcept;
+        NT_FN
+        enum_contents(void* buffer_begin, void* buffer_end, Callback cb, Args&&... args) const
+            noexcept;
     };
 
     using unique_directory = basic_directory<unique_handle>;
@@ -54,4 +58,4 @@ namespace ntw::io {
 
 } // namespace ntw::io
 
-#include "../impl/async_file.inl"
+#include "../impl/directory.inl"
