@@ -121,7 +121,11 @@
     }
 #endif
 
-namespace ntw { namespace detail {
+namespace ntw { 
+	
+	using ulong_t = unsigned long;
+	
+	namespace detail {
 
     template<class T>
     struct callback_invoker {
