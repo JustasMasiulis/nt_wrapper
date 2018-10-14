@@ -56,24 +56,44 @@ namespace ntw::io {
         NT_FN read(byte_span<ulong_t> buffer, std::int64_t offset, QueryData& query) const
             noexcept;
 
+        /// \brief Sends a control code to a device driver using NtDeviceIoControl API.
+        /// \param control_code The control code that will be sent.
+        /// \param input The input buffer.
+        /// \param output The output buffer.
+        /// \param query The query data including completion callback etc.
         template<class QueryData>
         NT_FN device_io_control(ulong_t             control_code,
                                 cbyte_span<ulong_t> input,
                                 byte_span<ulong_t>  output,
                                 QueryData&          query) const noexcept;
 
+        /// \brief Sends a control code to a device driver using NtDeviceIoControl API.
+        /// \param control_code The control code that will be sent.
+        /// \param input The input buffer.
+        /// \param output The output buffer.
+        /// \param query The query data including completion callback etc.
         template<class Input, class Output, class QueryData>
         NT_FN device_io_control(ulong_t      control_code,
                                 const Input& input,
                                 Output&      output,
                                 QueryData&   query) const noexcept;
 
+        /// \brief Sends a control code to a file system or file system filter driver
+        /// driver using NtFsControlFile API.
+        /// \param control_code The control code that
+        /// will be sent. \param input The input buffer. \param output The output buffer.
+        /// \param query The query data including completion callback etc.
         template<class QueryData>
         NT_FN fs_control(ulong_t             control_code,
                          cbyte_span<ulong_t> input,
                          byte_span<ulong_t>  output,
                          QueryData&          query) const noexcept;
 
+        /// \brief Sends a control code to a file system or file system filter driver
+        /// driver using NtFsControlFile API.
+        /// \param control_code The control code that
+        /// will be sent. \param input The input buffer. \param output The output buffer.
+        /// \param query The query data including completion callback etc.
         template<class Input, class Output, class QueryData>
         NT_FN fs_control(ulong_t      control_code,
                          const Input& input,
