@@ -17,6 +17,7 @@
 #pragma once
 #include "traits/file.hpp"
 #include "async_query.hpp"
+#include "byte_span.hpp"
 
 namespace ntw::io {
 
@@ -33,34 +34,28 @@ namespace ntw::io {
         {}
 
         /// \brief Writes data to file using NtWriteFile API.
-        /// \param data The data to write to file.
-        /// \param size The size of data to write to the file.
+		/// \param data The data that will be written to the file.
         /// \param offset The offset from the beggining of file to write data to.
         /// \param query The query object containing optional event, callback, etc.
         template<class QueryData>
-        NT_FN write(const void*   data,
-                    unsigned long size,
-                    std::int64_t  offset,
-                    QueryData&    query) const noexcept;
+        NT_FN write(cbyte_span<unsigned long> data,
+                    std::int64_t             offset,
+                    QueryData&               query) const noexcept;
 
         /// \brief Reads data from file using NtReadFile API.
-        /// \param data The buffer into which data will be read.
-        /// \param size The size of data to read from the file.
+        /// \param buffer The buffer into which the data will be read.
         /// \param offset The offset from the beggining of file to read data from.
         /// \param query The query object containing optional event, callback, etc.
         template<class QueryData>
-        NT_FN read(void*         buffer,
-                   unsigned long size,
-                   std::int64_t  offset,
-                   QueryData&    query) const noexcept;
+        NT_FN read(byte_span<unsigned long> buffer,
+                   std::int64_t             offset,
+                   QueryData&               query) const noexcept;
 
         template<class QueryData>
-        NT_FN device_io_control(unsigned long control_code,
-                                const void*   in_buffer,
-                                unsigned long in_buffer_size,
-                                void*         out_buffer,
-                                unsigned long out_buffer_size,
-                                QueryData&    query) const noexcept;
+        NT_FN device_io_control(unsigned long             control_code,
+                                cbyte_span<unsigned long> input,
+                                byte_span<unsigned long>  output,
+                                QueryData&                query) const noexcept;
 
         template<class InBuffer, class OutBuffer, class QueryData>
         NT_FN device_io_control(unsigned long   control_code,

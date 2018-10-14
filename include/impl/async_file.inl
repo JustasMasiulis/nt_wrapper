@@ -21,84 +21,72 @@ namespace ntw::io {
 
     template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::write(const void*   data,
-                                                  unsigned long size,
-                                                  std::int64_t  offset,
-                                                  QueryData&    query) const noexcept
+    NT_FN basic_async_file<Handle, Traits>::write(cbyte_span<unsigned long> data,
+                                                  std::int64_t              offset,
+                                                  QueryData& query) const noexcept
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
-
         return LI_NT(NtWriteFile)(handle().get(),
                                   query.event(),
-                                  [](void* context, IO_STATUS_BLOCK* iosb, unsigned long) {
-                                      QueryData::on_completion(context);
-                                  },
+                                  detail::completion_routine<QueryData>(),
                                   query.reference(),
                                   &query.status_block(),
-                                  const_cast<void*>(data),
-                                  size,
+                                  const_cast<std::uint8_t*>(data.begin()),
+                                  data.size(),
                                   &li_offset,
                                   nullptr);
     }
 
     template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::read(void*         buffer,
-                                                 unsigned long size,
-                                                 std::int64_t  offset,
-                                                 QueryData&    query) const noexcept
+    NT_FN basic_async_file<Handle, Traits>::read(byte_span<unsigned long> data,
+                                                 std::int64_t              offset,
+                                                 QueryData& query) const noexcept
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
         return LI_NT(NtReadFile)(handle().get(),
                                  query.event(),
-                                 [](void* context, IO_STATUS_BLOCK*, unsigned long) {
-                                     QueryData::on_completion(context);
-                                 },
+                                 detail::completion_routine<QueryData>(),
                                  query.reference(),
                                  &query.status_block(),
-                                 buffer,
-                                 size,
+                                 data.begin(),
+                                 data.size(),
                                  &li_offset,
                                  nullptr);
     }
 
     template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::device_io_control(unsigned long control_code,
-                                                              const void*   in_buffer,
-                                                              unsigned long in_buffer_size,
-                                                              void*         out_buffer,
-                                                              unsigned long out_buffer_size,
-                                                              QueryData& query) const noexcept
+    NT_FN
+    basic_async_file<Handle, Traits>::device_io_control(unsigned long control_code,
+                                                        cbyte_span<unsigned long> input,
+                                                        byte_span<unsigned long>  output,
+                                                        QueryData& query) const noexcept
     {
-        IO_STATUS_BLOCK status_block{ 0 };
-        return LI_NT(NtDeviceIoControlFile)(
-            handle().get(),
-            query.event(),
-            [](void* context, IO_STATUS_BLOCK*, unsigned long) {
-                QueryData::on_completion(context);
-            },
-            query.reference(),
-            &status_block,
-            control_code,
-            const_cast<void*>(in_buffer),
-            in_buffer_size,
-            out_buffer,
-            out_buffer_size);
+        IO_STATUS_BLOCK status_block;
+        return LI_NT(NtDeviceIoControlFile)(handle().get(),
+                                            query.event(),
+                                            detail::completion_routine<QueryData>(),
+                                            query.reference(),
+                                            &status_block,
+                                            control_code,
+                                            const_cast<std::uint8_t*>(input.begin()),
+                                            input.size(),
+                                            output.begin(),
+                                            output.size());
     }
 
     template<class Handle, class Traits>
     template<class InBuffer, class OutBuffer, class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::device_io_control(unsigned long   control_code,
+    NT_FN basic_async_file<Handle, Traits>::device_io_control(unsigned long control_code,
                                                               const InBuffer& in_buffer,
                                                               OutBuffer&      out_buffer,
-                                                              QueryData& query) const noexcept
+                                                              QueryData&      query) const
+        noexcept
     {
         return device_io_control(control_code,
-                                 ::std::addressof(in_buffer),
-                                 sizeof(InBuffer),
-                                 ::std::addressof(out_buffer),
-                                 sizeof(OutBuffer),
+                                 { ::std::addressof(in_buffer), sizeof(InBuffer) },
+                                 { ::std::addressof(out_buffer), sizeof(OutBuffer) },
                                  query);
     }
 
