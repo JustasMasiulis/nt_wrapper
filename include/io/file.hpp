@@ -24,15 +24,14 @@ namespace ntw::io {
     class basic_file : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
 
+        template<class Fn, class QueryData>
+        NT_FN _control(Fn                  fn,
+                       ulong_t             control_code,
+                       cbyte_span<ulong_t> input,
+                       byte_span<ulong_t>  output,
+                       ulong_t*            returned) const noexcept;
+
     public:
-        class disposer {
-            std::wstring_view _path;
-
-        public:
-            NTW_INLINE disposer(std::wstring_view file_path) : _path(file_path) {}
-            NTW_INLINE ~disposer() { static_cast<void>(unique_file::destroy(_path)); }
-        };
-
         NTW_INLINE basic_file() = default;
 
         template<class ObjectHandle>

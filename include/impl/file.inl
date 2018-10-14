@@ -20,9 +20,37 @@
 namespace ntw::io {
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::write(cbyte_span<unsigned long> buffer,
-                                            std::int64_t              offset,
-                                            unsigned long* written) const noexcept
+    template<class Fn, class QueryData>
+    NT_FN basic_file<Handle, Traits>::_control(Fn                  fn,
+                                               ulong_t             control_code,
+                                               cbyte_span<ulong_t> input,
+                                               byte_span<ulong_t>  output,
+                                               ulong_t* returned) const noexcept
+    {
+        IO_STATUS_BLOCK status_block;
+
+        const auto status = fn(handle().get(),
+                               nullptr,
+                               nullptr,
+                               nullptr,
+                               &status_block,
+                               control_code,
+                               const_cast<std::uint8_t*>(input.begin()),
+                               input.size(),
+                               output.begin(),
+                               output.size());
+
+        // set the bytes returned if we are successfull
+        if(returned && NT_SUCCESS(status))
+            *returned = static_cast<ulong_t>(status_block.Information);
+
+        return status;
+    }
+
+    template<class Handle, class Traits>
+    NT_FN basic_file<Handle, Traits>::write(cbyte_span<ulong_t> buffer,
+                                            std::int64_t        offset,
+                                            ulong_t*            written) const noexcept
     {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   li_offset = make_large_int(offset);
@@ -37,14 +65,14 @@ namespace ntw::io {
                                                &li_offset,
                                                nullptr);
         if(written && NT_SUCCESS(status))
-            *written = static_cast<unsigned long>(status_block.Information);
+            *written = static_cast<ulong_t>(status_block.Information);
         return status;
     }
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::read(byte_span<unsigned long> buffer,
-                                           std::int64_t             offset,
-                                           unsigned long*           read) const noexcept
+    NT_FN basic_file<Handle, Traits>::read(byte_span<ulong_t> buffer,
+                                           std::int64_t       offset,
+                                           ulong_t*           read) const noexcept
     {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   li_offset = make_large_int(offset);
@@ -58,44 +86,26 @@ namespace ntw::io {
                                               &li_offset,
                                               nullptr);
         if(read && NT_SUCCESS(status))
-            *read = static_cast<unsigned long>(status_block.Information);
+            *read = static_cast<ulong_t>(status_block.Information);
         return status;
     }
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long control_code,
-                                                        cbyte_span<unsigned long> input,
-                                                        byte_span<unsigned long>  output,
-                                                        unsigned long* returned) const
-        noexcept
+    NT_FN basic_file<Handle, Traits>::device_io_control(ulong_t             control_code,
+                                                        cbyte_span<ulong_t> input,
+                                                        byte_span<ulong_t>  output,
+                                                        ulong_t* returned) const noexcept
     {
-        IO_STATUS_BLOCK status_block{ 0 };
-        const auto      status =
-            LI_NT(NtDeviceIoControlFile)(handle().get(),
-                                         nullptr,
-                                         nullptr,
-                                         nullptr,
-                                         &status_block,
-                                         control_code,
-                                         const_cast<std::uint8_t*>(input.begin()),
-                                         input.size(),
-                                         output.begin(),
-                                         output.size());
-
-        // set the bytes returned if we are successfull
-        if(returned && NT_SUCCESS(status))
-            *returned = static_cast<unsigned long>(status_block.Information);
-
-        return status;
+        return _control(
+            LI_NT(NtDeviceIoControlFile), control_code, input, output, returned);
     }
 
     template<class Handle, class Traits>
     template<class Input, class Output>
-    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long  control_code,
-                                                        const Input&   input,
-                                                        Output&        output,
-                                                        unsigned long* returned) const
-        noexcept
+    NT_FN basic_file<Handle, Traits>::device_io_control(ulong_t      control_code,
+                                                        const Input& input,
+                                                        Output&      output,
+                                                        ulong_t* returned) const noexcept
     {
         return device_io_control(control_code,
                                  { ::std::addressof(in_buffer), sizeof(InBuffer) },
@@ -104,37 +114,20 @@ namespace ntw::io {
     }
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::fs_control(unsigned long             control_code,
-                                                 cbyte_span<unsigned long> input,
-                                                 byte_span<unsigned long>  output,
-                                                 unsigned long* returned) const noexcept
+    NT_FN basic_file<Handle, Traits>::fs_control(ulong_t             control_code,
+                                                 cbyte_span<ulong_t> input,
+                                                 byte_span<ulong_t>  output,
+                                                 ulong_t* returned) const noexcept
     {
-        IO_STATUS_BLOCK status_block;
-        const auto      status =
-            LI_NT(NtFsControlFile)(handle().get(),
-                                   nullptr,
-                                   nullptr,
-                                   nullptr,
-                                   &status_block,
-                                   control_code,
-                                   const_cast<std::uint8_t*>(input.begin()),
-                                   input.size(),
-                                   output.begin(),
-                                   output.size());
-
-        // set the bytes returned if we are successfull
-        if(returned && NT_SUCCESS(status))
-            *returned = static_cast<unsigned long>(status_block.Information);
-
-        return status;
+        return _control(LI_NT(NtFsControlFile), control_code, input, output, returned);
     }
 
     template<class Handle, class Traits>
     template<class Input, class Output>
-    NT_FN basic_file<Handle, Traits>::fs_control(unsigned long  control_code,
-                                                 const Input&   input,
-                                                 Output&        output,
-                                                 unsigned long* returned) const noexcept
+    NT_FN basic_file<Handle, Traits>::fs_control(ulong_t      control_code,
+                                                 const Input& input,
+                                                 Output&      output,
+                                                 ulong_t*     returned) const noexcept
     {
         return fs_control(control_code,
                           { ::std::addressof(in_buffer), sizeof(InBuffer) },
