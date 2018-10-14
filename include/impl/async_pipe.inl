@@ -21,35 +21,16 @@ namespace ntw::io {
 
     template<class Handle, class Traits>
     template<class Query>
-    NT_FN basic_async_pipe<Handle, Traits>::_fs_ctl(unsigned long code, Query& query) const
-    {
-        IO_STATUS_BLOCK iosb;
-        return LI_NT(NtFsControlFile)(handle().get(),
-                                      query.event(),
-                                      [](void* context, IO_STATUS_BLOCK* iosb, unsigned long) {
-                                          QueryData::on_completion(context);
-                                      },
-                                      query.reference(),
-                                      &iosb,
-                                      code,
-                                      nullptr,
-                                      nullptr,
-                                      nullptr,
-                                      nullptr);
-    }
-
-    template<class Handle, class Traits>
-    template<class Query>
     NT_FN basic_async_pipe<Handle, Traits>::listen(Query& query) const
     {
-        return _fs_ctl(FSCTL_PIPE_LISTEN, query);
+        return fs_control(FSCTL_PIPE_LISTEN, {}, {}, query);
     }
 
     template<class Handle, class Traits>
     template<class Query>
     NT_FN basic_async_pipe<Handle, Traits>::disconnect(Query& query) const
     {
-        return _fs_ctl(FSCTL_PIPE_DISCONNECT, query);
+        return fs_control(FSCTL_PIPE_DISCONNECT, {}, {}, query);
     }
 
 } // namespace ntw::io

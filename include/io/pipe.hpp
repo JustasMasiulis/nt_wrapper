@@ -24,8 +24,6 @@ namespace ntw::io {
     class basic_pipe : public basic_file<Handle, Traits> {
         using base_type = basic_file<Handle, Traits>;
 
-        NT_FN _fs_ctl(unsigned long code) const;
-
     public:
         NTW_INLINE basic_pipe() = default;
 
@@ -34,8 +32,8 @@ namespace ntw::io {
         {}
 
         // TODO: add more pipe functionality for messages
-        NT_FN listen() const;
-        NT_FN disconnect() const;
+        NT_FN listen() const noexcept;
+        NT_FN disconnect() const noexcept;
     };
 
     using unique_pipe = basic_pipe<unique_handle>;

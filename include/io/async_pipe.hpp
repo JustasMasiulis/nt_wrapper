@@ -24,9 +24,6 @@ namespace ntw::io {
     class basic_async_pipe : public basic_async_file<Handle, Traits> {
         using base_type = basic_async_file<Handle, Traits>;
 
-        template<class Query>
-        NT_FN _fs_ctl(unsigned long code, Query& query) const;
-
     public:
         NTW_INLINE basic_async_pipe() = default;
 
