@@ -26,8 +26,9 @@ namespace ntw::io {
                                                          Callback cb,
                                                          Args&&... args) const noexcept
     {
-        const auto buffer_size = static_cast<unsigned long>(
-            static_cast<std::uint8_t*>(buffer_end) - static_cast<std::uint8_t*>(buffer_begin));
+        const auto buffer_size =
+            static_cast<unsigned long>(static_cast<std::uint8_t*>(buffer_end) -
+                                       static_cast<std::uint8_t*>(buffer_begin));
 
         IO_STATUS_BLOCK iosb = { 0 };
 
@@ -70,7 +71,8 @@ namespace ntw::io {
             // go to next file if the offset isnt 0, else get more infos
             if(file_info->NextEntryOffset) {
                 file_info = reinterpret_cast<FILE_DIRECTORY_INFORMATION*>(
-                    reinterpret_cast<std::uintptr_t>(file_info) + file_info->NextEntryOffset);
+                    reinterpret_cast<std::uintptr_t>(file_info) +
+                    file_info->NextEntryOffset);
 
                 goto goto_next_file;
             }
@@ -81,12 +83,50 @@ namespace ntw::io {
 
     template<class Handle, class Traits>
     template<std::size_t StaticBufferSize, class Callback, class... Args>
-    NT_FN basic_directory<Handle, Traits>::enum_contents(Callback&& cb, Args&&... args) const
-        noexcept
+    NT_FN basic_directory<Handle, Traits>::enum_contents(Callback&& cb,
+                                                         Args&&... args) const noexcept
     {
         std::aligned_storage_t<StaticBufferSize, 8> buffer;
-        return enum_contents(
-            &buffer, &buffer + 1, std::forward<Callback>(cb), std::forward<Args>(args)...);
+        return enum_contents(&buffer,
+                             &buffer + 1,
+                             std::forward<Callback>(cb),
+                             std::forward<Args>(args)...);
+    }
+
+    template<class Callback, class... Args>
+    NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args)
+    {
+        ntw::unique_handle handle;
+
+        {
+            auto attributes = ntw::make_attributes(&name, 0);
+            ret_on_err(LI_NT(NtOpenDirectoryObject)(
+                handle.addressof(), DIRECTORY_QUERY | DIRECTORY_TRAVERSE, &attributes));
+        }
+
+        std::aligned_storage_t<2048u, 8> buffer;
+        constexpr unsigned long          buffer_size = sizeof(buffer);
+        unsigned long                    ctx = 0, ret_len = 0;
+
+        while(true) {
+            const auto status = LI_NT(NtQueryDirectoryObject)(
+                handle.get(), &buffer, buffer_size, FALSE, FALSE, &ctx, &ret_len);
+
+            if(status == STATUS_NO_MORE_ENTRIES)
+                return STATUS_SUCCESS;
+            else if(!NT_SUCCESS(status))
+                return status;
+
+            auto ptr = reinterpret_cast<OBJECT_DIRECTORY_INFORMATION*>(&buffer);
+            // can't break out of 2 loops...
+        goto_next_iteration:
+            if(ptr->Name.Buffer != nullptr && ptr->TypeName.Buffer != nullptr) {
+                NTW_CALLBACK_BREAK_IF_FALSE(callback, *ptr++, args...);
+                goto goto_next_iteration;
+            }
+        }
+
+        return STATUS_SUCCESS;
     }
 
 } // namespace ntw::io

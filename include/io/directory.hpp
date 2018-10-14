@@ -57,6 +57,9 @@ namespace ntw::io {
     using unique_directory = basic_directory<unique_handle>;
     using directory_ref    = basic_directory<handle_ref>;
 
+    template<class Callback, class... Args>
+    NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args);
+
 } // namespace ntw::io
 
 #include "../impl/directory.inl"
