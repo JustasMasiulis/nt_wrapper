@@ -39,35 +39,35 @@ namespace ntw::io {
             : base_type(unwrap_handle(handle))
         {}
 
-        NT_FN write(cbyte_span<unsigned long> buffer,
-                    std::int64_t              offset  = 0,
-                    unsigned long*            written = nullptr) const noexcept;
+        NT_FN write(cbyte_span<ulong_t> buffer,
+                    std::int64_t        offset  = 0,
+                    ulong_t*            written = nullptr) const noexcept;
 
-        NT_FN read(byte_span<unsigned long> buffer,
-                   std::int64_t             offset = 0,
-                   unsigned long*           read   = nullptr) const noexcept;
+        NT_FN read(byte_span<ulong_t> buffer,
+                   std::int64_t       offset = 0,
+                   ulong_t*           read   = nullptr) const noexcept;
 
-        NT_FN device_io_control(unsigned long             control_code,
-                                cbyte_span<unsigned long> input,
-                                byte_span<unsigned long>  output,
-                                unsigned long* returned = nullptr) const noexcept;
+        NT_FN device_io_control(ulong_t             control_code,
+                                cbyte_span<ulong_t> input,
+                                byte_span<ulong_t>  output,
+                                ulong_t*            returned = nullptr) const noexcept;
 
         template<class InBuffer, class OutBuffer>
-        NT_FN device_io_control(unsigned long   control_code,
+        NT_FN device_io_control(ulong_t         control_code,
                                 const InBuffer& input,
                                 OutBuffer&      output,
-                                unsigned long*  returned = nullptr) const noexcept;
+                                ulong_t*        returned = nullptr) const noexcept;
 
-        NT_FN fs_control(unsigned long             control_code,
-                         cbyte_span<unsigned long> input,
-                         byte_span<unsigned long>  output,
-                         unsigned long*            returned = nullptr) const noexcept;
+        NT_FN fs_control(ulong_t             control_code,
+                         cbyte_span<ulong_t> input,
+                         byte_span<ulong_t>  output,
+                         ulong_t*            returned = nullptr) const noexcept;
 
         template<class Input, class Output>
-        NT_FN fs_control(unsigned long  control_code,
-                         const Input&   input,
-                         Output&        output,
-                         unsigned long* returned = nullptr) const noexcept;
+        NT_FN fs_control(ulong_t      control_code,
+                         const Input& input,
+                         Output&      output,
+                         ulong_t*     returned = nullptr) const noexcept;
     };
 
     using unique_file = basic_file<unique_handle>;
