@@ -25,7 +25,7 @@ namespace ntw {
         T*   _ptr  = nullptr;
         Size _size = 0;
 
-        using void_pointer = std::conditional_t<std::is_const<T>, const void*, void*>;
+        using void_pointer = std::conditional_t<std::is_const_v<T>, const void*, void*>;
 
     public:
         using value_type = T;
