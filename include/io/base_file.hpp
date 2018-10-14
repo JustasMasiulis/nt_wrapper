@@ -201,13 +201,16 @@ namespace ntw::io {
             NT_FN open(const StringRef& path, const file_options& opt = options) noexcept;
 
             template<class StringRef>
-            NT_FN create(const StringRef& path, const file_options& opt = options) noexcept;
+            NT_FN create(const StringRef&    path,
+                         const file_options& opt = options) noexcept;
 
             template<class StringRef>
-            NT_FN supersede(const StringRef& path, const file_options& opt = options) noexcept;
+            NT_FN supersede(const StringRef&    path,
+                            const file_options& opt = options) noexcept;
 
             template<class StringRef>
-            NT_FN overwrite(const StringRef& path, const file_options& opt = options) noexcept;
+            NT_FN overwrite(const StringRef&    path,
+                            const file_options& opt = options) noexcept;
 
             template<class StringRef>
             NT_FN open_or_create(const StringRef&    path,
@@ -227,22 +230,24 @@ namespace ntw::io {
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param case_sensitive Whether the filename is case sensitive.
             template<class StringRef>
-            NT_FN static destroy(const StringRef& path, bool case_sensitive = false) noexcept;
+            NT_FN static destroy(const StringRef& path,
+                                 bool             case_sensitive = false) noexcept;
 
             template<class Buffer, NTW_QUERY_BUFFER_REQUIREMENT>
             NT_FN info(FILE_INFORMATION_CLASS info_class,
-                       Buffer&        buffer,
-                       unsigned long  size     = sizeof(Buffer),
-                       unsigned long* returned = nullptr) const noexcept;
+                       Buffer&                buffer,
+                       unsigned long          size     = sizeof(Buffer),
+                       unsigned long*         returned = nullptr) const noexcept;
 
             template<class Callback, class... Args, NTW_QUERY_CALLBACK_REQUIREMENT>
-            NT_FN info(FILE_INFORMATION_CLASS info_class, Callback cb, Args&&... args) const
-                noexcept;
+            NT_FN info(FILE_INFORMATION_CLASS info_class,
+                       Callback               cb,
+                       Args&&... args) const noexcept;
 
             template<class Buffer>
             NT_FN set_info(FILE_INFORMATION_CLASS info_class,
-                           Buffer&       buffer,
-                           unsigned long info_size) const noexcept;
+                           Buffer&                buffer,
+                           unsigned long          info_size) const noexcept;
         };
 
     } // namespace detail

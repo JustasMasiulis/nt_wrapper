@@ -22,9 +22,9 @@ namespace ntw::io::traits {
     template<class Handle, bool Synchronous>
     struct basic_file_traits {
         using handle_type  = Handle;
-        using options_type = pipe_options;
+        using options_type = file_options;
 
-        constexpr static auto options = ntw::io::file_options{}.share_all().full_access();
+        constexpr static auto options = options_type{}.share_all().full_access();
 
         NT_FN static open(void*&              handle,
                           OBJECT_ATTRIBUTES&  attributes,
