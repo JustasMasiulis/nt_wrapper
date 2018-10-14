@@ -21,18 +21,13 @@ namespace ntw::io {
 
     template<class Handle, class Traits>
     template<class Callback, class... Args>
-    NT_FN basic_directory<Handle, Traits>::enum_contents(void*    buffer_begin,
-                                                         void*    buffer_end,
-                                                         Callback cb,
-                                                         Args&&... args) const noexcept
+    NT_FN basic_directory<Handle, Traits>::enum_contents(byte_span<ulong_t> buffer,
+                                                         Callback           cb,
+                                                         Args&&... args) const
     {
-        const auto buffer_size =
-            static_cast<unsigned long>(static_cast<std::uint8_t*>(buffer_end) -
-                                       static_cast<std::uint8_t*>(buffer_begin));
-
-        IO_STATUS_BLOCK iosb = { 0 };
-
-        bool restart_scan = true;
+        IO_STATUS_BLOCK iosb;
+        bool            restart_scan = true;
+        const auto      size         = buffer.size();
 
         while(true) {
             const auto status = LI_NT(NtQueryDirectoryFile)(_handle.get(),
@@ -40,8 +35,8 @@ namespace ntw::io {
                                                             nullptr,
                                                             nullptr,
                                                             &iosb,
-                                                            buffer_begin,
-                                                            buffer_size,
+                                                            buffer.begin(),
+                                                            size,
                                                             FileDirectoryInformation,
                                                             FALSE,
                                                             nullptr,
@@ -61,8 +56,8 @@ namespace ntw::io {
             else if(iosb.Information == 0)
                 continue;
 
-            auto file_info =
-                std::launder(static_cast<FILE_DIRECTORY_INFORMATION*>(buffer_begin));
+            auto file_info = std::launder(
+                reinterpret_cast<FILE_DIRECTORY_INFORMATION*>(buffer.begin()));
 
             // goto is bad but I cannot use this macro with a nested loop
         goto_next_file:
@@ -84,11 +79,10 @@ namespace ntw::io {
     template<class Handle, class Traits>
     template<std::size_t StaticBufferSize, class Callback, class... Args>
     NT_FN basic_directory<Handle, Traits>::enum_contents(Callback&& cb,
-                                                         Args&&... args) const noexcept
+                                                         Args&&... args) const
     {
         std::aligned_storage_t<StaticBufferSize, 8> buffer;
-        return enum_contents(&buffer,
-                             &buffer + 1,
+        return enum_contents({ &buffer, sizeof(buffer) },
                              std::forward<Callback>(cb),
                              std::forward<Args>(args)...);
     }
@@ -105,8 +99,8 @@ namespace ntw::io {
         }
 
         std::aligned_storage_t<2048u, 8> buffer;
-        constexpr unsigned long          buffer_size = sizeof(buffer);
-        unsigned long                    ctx = 0, ret_len = 0;
+        constexpr ulong_t                buffer_size = sizeof(buffer);
+        ulong_t                          ctx = 0, ret_len = 0;
 
         while(true) {
             const auto status = LI_NT(NtQueryDirectoryObject)(

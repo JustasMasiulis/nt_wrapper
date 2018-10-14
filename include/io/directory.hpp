@@ -37,7 +37,7 @@ namespace ntw::io {
         /// \tparam StaticBufferSize the size of buffer that will be used for storing
         /// entries.
         template<std::size_t StaticBufferSize = 2048, class Callback, class... Args>
-        NT_FN enum_contents(Callback&& callback, Args&&... args) const noexcept;
+        NT_FN enum_contents(Callback&& callback, Args&&... args) const;
 
         /// \brief Enumerates contents of directory using NtQueryDirectoryFile API.
         /// \param buffer_begin The beginning of a buffer that will be used to store the
@@ -48,10 +48,7 @@ namespace ntw::io {
         /// directory.
         /// \param args Arguments that will be passed to the callback function.
         template<class Callback, class... Args>
-        NT_FN enum_contents(void*    buffer_begin,
-                            void*    buffer_end,
-                            Callback cb,
-                            Args&&... args) const noexcept;
+        NT_FN enum_contents(byte_span<ulong_t> buffer, Callback cb, Args&&... args) const;
     };
 
     using unique_directory = basic_directory<unique_handle>;
