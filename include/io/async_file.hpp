@@ -25,6 +25,13 @@ namespace ntw::io {
     class basic_async_file : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
 
+        template<class Fn, class QueryData>
+        NT_FN _control(Fn                  fn,
+                       ulong_t             control_code,
+                       cbyte_span<ulong_t> input,
+                       byte_span<ulong_t>  output,
+                       QueryData&          query) const noexcept;
+
     public:
         NTW_INLINE basic_async_file() = default;
 
@@ -34,34 +41,44 @@ namespace ntw::io {
         {}
 
         /// \brief Writes data to file using NtWriteFile API.
-		/// \param data The data that will be written to the file.
+        /// \param data The data that will be written to the file.
         /// \param offset The offset from the beggining of file to write data to.
         /// \param query The query object containing optional event, callback, etc.
         template<class QueryData>
-        NT_FN write(cbyte_span<unsigned long> data,
-                    std::int64_t             offset,
-                    QueryData&               query) const noexcept;
+        NT_FN write(cbyte_span<ulong_t> data, std::int64_t offset, QueryData& query) const
+            noexcept;
 
         /// \brief Reads data from file using NtReadFile API.
         /// \param buffer The buffer into which the data will be read.
         /// \param offset The offset from the beggining of file to read data from.
         /// \param query The query object containing optional event, callback, etc.
         template<class QueryData>
-        NT_FN read(byte_span<unsigned long> buffer,
-                   std::int64_t             offset,
-                   QueryData&               query) const noexcept;
+        NT_FN read(byte_span<ulong_t> buffer, std::int64_t offset, QueryData& query) const
+            noexcept;
 
         template<class QueryData>
-        NT_FN device_io_control(unsigned long             control_code,
-                                cbyte_span<unsigned long> input,
-                                byte_span<unsigned long>  output,
-                                QueryData&                query) const noexcept;
+        NT_FN device_io_control(ulong_t             control_code,
+                                cbyte_span<ulong_t> input,
+                                byte_span<ulong_t>  output,
+                                QueryData&          query) const noexcept;
 
-        template<class InBuffer, class OutBuffer, class QueryData>
-        NT_FN device_io_control(unsigned long   control_code,
-                                const InBuffer& in_buffer,
-                                OutBuffer&      out_buffer,
-                                QueryData&      query) const noexcept;
+        template<class Input, class Output, class QueryData>
+        NT_FN device_io_control(ulong_t      control_code,
+                                const Input& input,
+                                Output&      output,
+                                QueryData&   query) const noexcept;
+
+        template<class QueryData>
+        NT_FN fs_control(ulong_t             control_code,
+                         cbyte_span<ulong_t> input,
+                         byte_span<ulong_t>  output,
+                         QueryData&          query) const noexcept;
+
+        template<class Input, class Output, class QueryData>
+        NT_FN fs_control(ulong_t      control_code,
+                         const Input& input,
+                         Output&      output,
+                         QueryData&   query) const noexcept;
     };
 
     using unique_async_file = basic_async_file<unique_handle>;

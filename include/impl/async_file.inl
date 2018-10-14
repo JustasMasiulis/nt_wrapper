@@ -20,9 +20,29 @@
 namespace ntw::io {
 
     template<class Handle, class Traits>
+    template<class Fn, class QueryData>
+    NT_FN basic_async_file<Handle, Traits>::_control(Fn                  fn,
+                                                     ulong_t             control_code,
+                                                     cbyte_span<ulong_t> input,
+                                                     byte_span<ulong_t>  output,
+                                                     QueryData& query) const noexcept
+    {
+        return fn(handle().get(),
+                  query.event(),
+                  detail::completion_routine<QueryData>(),
+                  query.reference(),
+                  &query.status_block(),
+                  control_code,
+                  const_cast<std::uint8_t*>(input.begin()),
+                  input.size(),
+                  output.begin(),
+                  output.size());
+    }
+
+    template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::write(cbyte_span<unsigned long> data,
-                                                  std::int64_t              offset,
+    NT_FN basic_async_file<Handle, Traits>::write(cbyte_span<ulong_t> data,
+                                                  std::int64_t        offset,
                                                   QueryData& query) const noexcept
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
@@ -39,9 +59,9 @@ namespace ntw::io {
 
     template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::read(byte_span<unsigned long> data,
-                                                 std::int64_t              offset,
-                                                 QueryData& query) const noexcept
+    NT_FN basic_async_file<Handle, Traits>::read(byte_span<ulong_t> data,
+                                                 std::int64_t       offset,
+                                                 QueryData&         query) const noexcept
     {
         LARGE_INTEGER li_offset = make_large_int(offset);
         return LI_NT(NtReadFile)(handle().get(),
@@ -57,37 +77,50 @@ namespace ntw::io {
 
     template<class Handle, class Traits>
     template<class QueryData>
-    NT_FN
-    basic_async_file<Handle, Traits>::device_io_control(unsigned long control_code,
-                                                        cbyte_span<unsigned long> input,
-                                                        byte_span<unsigned long>  output,
-                                                        QueryData& query) const noexcept
+    NT_FN basic_async_file<Handle, Traits>::device_io_control(ulong_t control_code,
+                                                              cbyte_span<ulong_t> input,
+                                                              byte_span<ulong_t>  output,
+                                                              QueryData& query) const
+        noexcept
     {
-        IO_STATUS_BLOCK status_block;
-        return LI_NT(NtDeviceIoControlFile)(handle().get(),
-                                            query.event(),
-                                            detail::completion_routine<QueryData>(),
-                                            query.reference(),
-                                            &status_block,
-                                            control_code,
-                                            const_cast<std::uint8_t*>(input.begin()),
-                                            input.size(),
-                                            output.begin(),
-                                            output.size());
+        return _control(LI_NT(NtDeviceIoControlFile), control_code, input, output, query);
     }
 
     template<class Handle, class Traits>
-    template<class InBuffer, class OutBuffer, class QueryData>
-    NT_FN basic_async_file<Handle, Traits>::device_io_control(unsigned long control_code,
-                                                              const InBuffer& in_buffer,
-                                                              OutBuffer&      out_buffer,
-                                                              QueryData&      query) const
+    template<class Input, class Output, class QueryData>
+    NT_FN basic_async_file<Handle, Traits>::device_io_control(ulong_t      control_code,
+                                                              const Input& input,
+                                                              Output&      output,
+                                                              QueryData&   query) const
         noexcept
     {
         return device_io_control(control_code,
-                                 { ::std::addressof(in_buffer), sizeof(InBuffer) },
-                                 { ::std::addressof(out_buffer), sizeof(OutBuffer) },
+                                 { ::std::addressof(input), sizeof(Input) },
+                                 { ::std::addressof(output), sizeof(Output) },
                                  query);
+    }
+
+    template<class Handle, class Traits>
+    template<class QueryData>
+    NT_FN basic_async_file<Handle, Traits>::fs_control(ulong_t             control_code,
+                                                       cbyte_span<ulong_t> input,
+                                                       byte_span<ulong_t>  output,
+                                                       QueryData& query) const noexcept
+    {
+        return _control(LI_NT(NtFsControlFile), control_code, input, output, query);
+    }
+
+    template<class Handle, class Traits>
+    template<class Input, class Output, class QueryData>
+    NT_FN basic_async_file<Handle, Traits>::fs_control(ulong_t      control_code,
+                                                       const Input& input,
+                                                       Output&      output,
+                                                       QueryData&   query) const noexcept
+    {
+        return fs_control(control_code,
+                          { ::std::addressof(input), sizeof(Input) },
+                          { ::std::addressof(output), sizeof(Output) },
+                          query);
     }
 
 } // namespace ntw::io
