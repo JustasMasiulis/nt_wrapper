@@ -30,8 +30,11 @@ namespace ntw::io {
         NTW_INLINE async_query(const Callback& callback) : Callback(callback) {}
 
         NTW_INLINE NTSTATUS status() const noexcept { return _iosb.Status; }
-        NTW_INLINE std::uintptr_t transferred() const noexcept { return _iosb.Information; }
-        NTW_INLINE explicit       operator bool() const noexcept
+        NTW_INLINE std::uintptr_t transferred() const noexcept
+        {
+            return _iosb.Information;
+        }
+        NTW_INLINE explicit operator bool() const noexcept
         {
             return status() != STATUS_PENDING;
         }
@@ -40,7 +43,8 @@ namespace ntw::io {
 
         NTW_INLINE constexpr void* event() const noexcept { return nullptr; }
 
-        /// \brief Returns type erased pointer that will be passed to invoke in APC routine.
+        /// \brief Returns type erased pointer that will be passed to invoke in APC
+        /// routine.
         NTW_INLINE void* reference() noexcept { return this; }
         /// \brief Invokes the callback after restoring the type of pointer received from
         /// reference
@@ -50,15 +54,17 @@ namespace ntw::io {
         }
     };
 
-
     template<>
     class async_query<void> {
         IO_STATUS_BLOCK _iosb;
 
     public:
         NTW_INLINE NTSTATUS status() const noexcept { return _iosb.Status; }
-        NTW_INLINE std::uintptr_t transferred() const noexcept { return _iosb.Information; }
-        NTW_INLINE explicit       operator bool() const noexcept
+        NTW_INLINE std::uintptr_t transferred() const noexcept
+        {
+            return _iosb.Information;
+        }
+        NTW_INLINE explicit operator bool() const noexcept
         {
             return status() != STATUS_PENDING;
         }
@@ -67,9 +73,22 @@ namespace ntw::io {
 
         NTW_INLINE constexpr void* event() const noexcept { return nullptr; }
 
-        /// \brief Returns type erased pointer that will be passed to invoke in APC routine.
+        /// \brief Returns type erased pointer that will be passed to invoke in APC
+        /// routine.
         NTW_INLINE void*                 reference() noexcept { return this; }
         NTW_INLINE constexpr static void on_completion(void*) noexcept {}
     };
+
+    namespace detail {
+
+        template<class Query>
+        NTW_INLINE constexpr auto completion_routine() noexcept
+        {
+            return [](void* context, IO_STATUS_BLOCK* iosb, unsigned long) {
+                Query::on_completion(context);
+            };
+        }
+
+    } // namespace detail
 
 } // namespace ntw::io
