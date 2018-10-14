@@ -26,7 +26,7 @@ namespace ntw::io {
         class base_file;
 
         class file_attributes_builder {
-            unsigned long _attributes = 0;
+            ulong_t _attributes = 0;
 
             template<class Derived>
             friend class base_file;
@@ -53,11 +53,11 @@ namespace ntw::io {
         };
 
         class pipe_options_builder {
-            unsigned long _inbound_qouta   = 0;
-            unsigned long _outbound_qouta  = 0;
-            unsigned long _type            = 0;
-            unsigned long _instances_limit = -1;
-            std::int64_t  _timeout         = -500000;
+            ulong_t      _inbound_qouta   = 0;
+            ulong_t      _outbound_qouta  = 0;
+            ulong_t      _type            = 0;
+            ulong_t      _instances_limit = -1;
+            std::int64_t _timeout         = -500000;
 
             template<class Derived>
             friend class base_file;
@@ -69,10 +69,10 @@ namespace ntw::io {
         public:
             // clang-format off
 			// must be specified
-			NTW_INLINE constexpr pipe_options_builder& qouta(unsigned long inbound,
-															 unsigned long outbound);
-			NTW_INLINE constexpr pipe_options_builder& inbound_qouta(unsigned long qouta);
-			NTW_INLINE constexpr pipe_options_builder& outbound_qouta(unsigned long qouta);
+			NTW_INLINE constexpr pipe_options_builder& qouta(ulong_t inbound,
+															 ulong_t outbound);
+			NTW_INLINE constexpr pipe_options_builder& inbound_qouta(ulong_t qouta);
+			NTW_INLINE constexpr pipe_options_builder& outbound_qouta(ulong_t qouta);
 
 			// NamedPipeType; byte stream is default; 1 allowed
 			// resets NamedPipeType back to byte stream and clears other flags
@@ -87,7 +87,7 @@ namespace ntw::io {
 			NTW_INLINE constexpr pipe_options_builder& reject_remote_clients(); // FILE_PIPE_REJECT_REMOTE_CLIENTS
 
 			// default = unlimited
-			NTW_INLINE constexpr pipe_options_builder& instances_limit(unsigned long limit);
+			NTW_INLINE constexpr pipe_options_builder& instances_limit(ulong_t limit);
 
 			// default = 5 seconds
 			NTW_INLINE constexpr pipe_options_builder& timeout(std::int64_t nanoseconds);
@@ -96,9 +96,9 @@ namespace ntw::io {
 
         template<class Base>
         class file_options_builder : public Base {
-            ACCESS_MASK   _access       = 0;
-            unsigned long _share_access = 0;
-            unsigned long _options      = 0;
+            ACCESS_MASK _access       = 0;
+            ulong_t     _share_access = 0;
+            ulong_t     _options      = 0;
             // NOTE: if a need arises for extended attributes support please open a ticket
             // and I'll add a function and data members for it
 
@@ -179,7 +179,7 @@ namespace ntw::io {
 
             NT_FN _open(UNICODE_STRING      path,
                         const file_options& options,
-                        unsigned long       disposition) noexcept;
+                        ulong_t             disposition) noexcept;
 
         protected:
             NTW_INLINE ~base_file() = default;
@@ -236,18 +236,18 @@ namespace ntw::io {
             template<class Buffer, NTW_QUERY_BUFFER_REQUIREMENT>
             NT_FN info(FILE_INFORMATION_CLASS info_class,
                        Buffer&                buffer,
-                       unsigned long          size     = sizeof(Buffer),
-                       unsigned long*         returned = nullptr) const noexcept;
+                       ulong_t                size     = sizeof(Buffer),
+                       ulong_t*               returned = nullptr) const noexcept;
 
             template<class Callback, class... Args, NTW_QUERY_CALLBACK_REQUIREMENT>
             NT_FN info(FILE_INFORMATION_CLASS info_class,
                        Callback               cb,
-                       Args&&... args) const noexcept;
+                       Args&&... args) const;
 
             template<class Buffer>
             NT_FN set_info(FILE_INFORMATION_CLASS info_class,
                            Buffer&                buffer,
-                           unsigned long          info_size) const noexcept;
+                           ulong_t                info_size) const noexcept;
         };
 
     } // namespace detail

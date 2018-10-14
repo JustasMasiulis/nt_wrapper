@@ -99,45 +99,46 @@ namespace ntw::io::detail {
     NTW_PIPE_OPTION(reject_remote_clients, _type, FILE_PIPE_REJECT_REMOTE_CLIENTS, |=)
 
     template<class Base>
-    NTW_INLINE constexpr file_options_builder<Base> file_options_builder<Base>::copy() const
+    NTW_INLINE constexpr file_options_builder<Base>
+    file_options_builder<Base>::copy() const
     {
         return *this;
     }
 
 
-    NTW_INLINE constexpr pipe_options_builder&
-    pipe_options_builder::qouta(unsigned long inbound, unsigned long outbound)
+    NTW_INLINE constexpr pipe_options_builder& pipe_options_builder::qouta(
+        ulong_t inbound, ulong_t outbound)
     {
         _inbound_qouta  = inbound;
         _outbound_qouta = outbound;
         return *this;
     }
 
-    NTW_INLINE constexpr pipe_options_builder&
-    pipe_options_builder::inbound_qouta(unsigned long qouta)
+    NTW_INLINE constexpr pipe_options_builder& pipe_options_builder::inbound_qouta(
+        ulong_t qouta)
     {
         _inbound_qouta = qouta;
         return *this;
     }
 
-    NTW_INLINE constexpr pipe_options_builder&
-    pipe_options_builder::outbound_qouta(unsigned long qouta)
+    NTW_INLINE constexpr pipe_options_builder& pipe_options_builder::outbound_qouta(
+        ulong_t qouta)
     {
         _outbound_qouta = qouta;
         return *this;
     }
 
 
-    NTW_INLINE constexpr pipe_options_builder&
-    pipe_options_builder::instances_limit(unsigned long limit)
+    NTW_INLINE constexpr pipe_options_builder& pipe_options_builder::instances_limit(
+        ulong_t limit)
     {
         _instances_limit = limit;
         return *this;
     }
 
     // default = 5 seconds
-    NTW_INLINE constexpr pipe_options_builder&
-    pipe_options_builder::timeout(std::int64_t nanoseconds)
+    NTW_INLINE constexpr pipe_options_builder& pipe_options_builder::timeout(
+        std::int64_t nanoseconds)
     {
         // the timeout is a negative value
         if(nanoseconds > 0)
@@ -149,7 +150,7 @@ namespace ntw::io::detail {
     template<class Traits>
     NT_FN base_file<Traits>::_open(UNICODE_STRING      path,
                                    const file_options& options,
-                                   unsigned long       disposition) noexcept
+                                   ulong_t             disposition) noexcept
     {
         auto  attributes  = make_attributes(&path, OBJ_CASE_INSENSITIVE);
         void* temp_handle = nullptr;
@@ -165,7 +166,8 @@ namespace ntw::io::detail {
 
     template<class Traits>
     template<class StringRef>
-    NT_FN base_file<Traits>::open(const StringRef& path, const file_options& options) noexcept
+    NT_FN base_file<Traits>::open(const StringRef&    path,
+                                  const file_options& options) noexcept
     {
         return _open(make_ustr(path), options, FILE_OPEN);
     }
@@ -231,8 +233,9 @@ namespace ntw::io::detail {
     template<class StringRef /* wstring_view or UNICODE_STRING */>
     NT_FN base_file<Traits>::destroy(const StringRef& path, bool case_sensitive) noexcept
     {
-        auto upath      = make_ustr(path);
-        auto attributes = make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
+        auto upath = make_ustr(path);
+        auto attributes =
+            make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
         return LI_NT(NtDeleteFile)(&attributes);
     }
 
@@ -240,8 +243,8 @@ namespace ntw::io::detail {
     template<class Buffer, class>
     NT_FN base_file<Traits>::info(FILE_INFORMATION_CLASS info_class,
                                   Buffer&                buffer,
-                                  unsigned long          size,
-                                  unsigned long*         returned) const noexcept
+                                  ulong_t                size,
+                                  ulong_t*               returned) const noexcept
     {
         IO_STATUS_BLOCK iosb;
         const auto      status = LI_NT(NtQueryInformationFile)(
@@ -256,7 +259,7 @@ namespace ntw::io::detail {
     template<class Callback, class... Args, class>
     NT_FN base_file<Traits>::info(FILE_INFORMATION_CLASS info_class,
                                   Callback               cb,
-                                  Args&&... args) const noexcept
+                                  Args&&... args) const
     {
         NTW_IMPLEMENT_QUERY_CALLBACK
     }
@@ -265,7 +268,7 @@ namespace ntw::io::detail {
     template<class Buffer>
     NT_FN base_file<Traits>::set_info(FILE_INFORMATION_CLASS info_class,
                                       Buffer&                buffer,
-                                      unsigned long          info_size) const noexcept
+                                      ulong_t                info_size) const noexcept
     {
         IO_STATUS_BLOCK iosb;
         return LI_NT(NtSetInformationFile)(
