@@ -22,8 +22,8 @@ namespace ntw {
 
     template<class T, class Size>
     class basic_byte_span {
-        T*   _ptr;
-        Size _size;
+        T*   _ptr  = nullptr;
+        Size _size = 0;
 
         using void_pointer = std::conditional_t<std::is_const<T>, const void*, void*>;
 
@@ -33,12 +33,13 @@ namespace ntw {
         using iterator   = value_type*;
         using pointer    = value_type*;
 
-        NTW_INLINE constexpr basic_byte_span(void_pointer p, size_type size) noexcept
+        NTW_INLINE constexpr basic_byte_span() = default;
+
+        NTW_INLINE basic_byte_span(void_pointer p, size_type size) noexcept
             : _ptr(static_cast<pointer>(p)), _size(size)
         {}
 
-        NTW_INLINE constexpr basic_byte_span(void_pointer begin,
-                                             void_pointer end) noexcept
+        NTW_INLINE basic_byte_span(void_pointer begin, void_pointer end) noexcept
             : _ptr(static_cast<pointer>(begin))
         {
             // TODO add debug asserts
