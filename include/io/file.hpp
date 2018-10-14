@@ -16,6 +16,7 @@
 
 #pragma once
 #include "traits/file.hpp"
+#include "../byte_span.hpp"
 
 namespace ntw::io {
 
@@ -32,43 +33,47 @@ namespace ntw::io {
             NTW_INLINE ~disposer() { static_cast<void>(unique_file::destroy(_path)); }
         };
 
-        NTW_INLINE basic_file()  = default;
-        NTW_INLINE ~basic_file() = default;
+        NTW_INLINE basic_file() = default;
 
         template<class ObjectHandle>
-        NTW_INLINE basic_file(const ObjectHandle& handle) : base_type(unwrap_handle(handle))
+        NTW_INLINE basic_file(const ObjectHandle& handle)
+            : base_type(unwrap_handle(handle))
         {}
 
-        NT_FN write(const void*    data,
-                    unsigned long  size,
-                    std::int64_t   offset  = 0,
-                    unsigned long* written = nullptr) const noexcept;
+        NT_FN write(cbyte_span<unsigned long> buffer,
+                    std::int64_t              offset  = 0,
+                    unsigned long*            written = nullptr) const noexcept;
 
-        NT_FN
-        read(void*          buffer,
-             unsigned long  size,
-             std::int64_t   offset = 0,
-             unsigned long* read   = nullptr) const noexcept;
+        NT_FN read(byte_span<unsigned long> buffer,
+                   std::int64_t             offset = 0,
+                   unsigned long*           read   = nullptr) const noexcept;
 
-        NT_FN device_io_control(unsigned long  control_code,
-                                const void*    in_buffer,
-                                unsigned long  in_buffer_size,
-                                void*          out_buffer,
-                                unsigned long  out_buffer_size,
-                                unsigned long* bytes_returned = nullptr) const noexcept;
+        NT_FN device_io_control(unsigned long             control_code,
+                                cbyte_span<unsigned long> input,
+                                byte_span<unsigned long>  output,
+                                unsigned long* returned = nullptr) const noexcept;
 
         template<class InBuffer, class OutBuffer>
         NT_FN device_io_control(unsigned long   control_code,
-                                const InBuffer& in_buffer,
-                                OutBuffer&      out_buffer,
-                                unsigned long*  bytes_returned = nullptr) const noexcept;
+                                const InBuffer& input,
+                                OutBuffer&      output,
+                                unsigned long*  returned = nullptr) const noexcept;
+
+        NT_FN fs_control(unsigned long             control_code,
+                         cbyte_span<unsigned long> input,
+                         byte_span<unsigned long>  output,
+                         unsigned long*            returned = nullptr) const noexcept;
+
+        template<class Input, class Output>
+        NT_FN fs_control(unsigned long  control_code,
+                         const Input&   input,
+                         Output&        output,
+                         unsigned long* returned = nullptr) const noexcept;
     };
 
     using unique_file = basic_file<unique_handle>;
     using file_ref    = basic_file<handle_ref>;
 
-    template<class Callback, class... Args>
-    NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args);
 
 } // namespace ntw::io
 

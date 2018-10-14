@@ -20,9 +20,8 @@
 namespace ntw::io {
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::write(const void*    data,
-                                            unsigned long  size,
-                                            std::int64_t   offset,
+    NT_FN basic_file<Handle, Traits>::write(cbyte_span<unsigned long> buffer,
+                                            std::int64_t              offset,
                                             unsigned long* written) const noexcept
     {
         IO_STATUS_BLOCK status_block;
@@ -33,8 +32,8 @@ namespace ntw::io {
                                                nullptr,
                                                nullptr,
                                                &status_block,
-                                               const_cast<void*>(data),
-                                               size,
+                                               const_cast<std::uint8_t*>(buffer.begin()),
+                                               buffer.size(),
                                                &li_offset,
                                                nullptr);
         if(written && NT_SUCCESS(status))
@@ -43,10 +42,9 @@ namespace ntw::io {
     }
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::read(void*          buffer,
-                                           unsigned long  size,
-                                           std::int64_t   offset,
-                                           unsigned long* read) const noexcept
+    NT_FN basic_file<Handle, Traits>::read(byte_span<unsigned long> buffer,
+                                           std::int64_t             offset,
+                                           unsigned long*           read) const noexcept
     {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   li_offset = make_large_int(offset);
@@ -55,8 +53,8 @@ namespace ntw::io {
                                               nullptr,
                                               nullptr,
                                               &status_block,
-                                              buffer,
-                                              size,
+                                              buffer.begin(),
+                                              buffer.size(),
                                               &li_offset,
                                               nullptr);
         if(read && NT_SUCCESS(status))
@@ -65,84 +63,83 @@ namespace ntw::io {
     }
 
     template<class Handle, class Traits>
-    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long  control_code,
-                                                        const void*    in_buffer,
-                                                        unsigned long  in_buffer_size,
-                                                        void*          out_buffer,
-                                                        unsigned long  out_buffer_size,
-                                                        unsigned long* bytes_returned) const
+    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long control_code,
+                                                        cbyte_span<unsigned long> input,
+                                                        byte_span<unsigned long>  output,
+                                                        unsigned long* returned) const
         noexcept
     {
         IO_STATUS_BLOCK status_block{ 0 };
-        const auto      status = LI_NT(NtDeviceIoControlFile)(handle().get(),
-                                                         nullptr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         &status_block,
-                                                         control_code,
-                                                         const_cast<void*>(in_buffer),
-                                                         in_buffer_size,
-                                                         out_buffer,
-                                                         out_buffer_size);
+        const auto      status =
+            LI_NT(NtDeviceIoControlFile)(handle().get(),
+                                         nullptr,
+                                         nullptr,
+                                         nullptr,
+                                         &status_block,
+                                         control_code,
+                                         const_cast<std::uint8_t*>(input.begin()),
+                                         input.size(),
+                                         output.begin(),
+                                         output.size());
 
         // set the bytes returned if we are successfull
-        if(bytes_returned && NT_SUCCESS(status))
-            *bytes_returned = static_cast<unsigned long>(status_block.Information);
+        if(returned && NT_SUCCESS(status))
+            *returned = static_cast<unsigned long>(status_block.Information);
 
         return status;
     }
 
     template<class Handle, class Traits>
-    template<class InBuffer, class OutBuffer>
-    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long   control_code,
-                                                        const InBuffer& in_buffer,
-                                                        OutBuffer&      out_buffer,
-                                                        unsigned long*  bytes_returned) const
+    template<class Input, class Output>
+    NT_FN basic_file<Handle, Traits>::device_io_control(unsigned long  control_code,
+                                                        const Input&   input,
+                                                        Output&        output,
+                                                        unsigned long* returned) const
         noexcept
     {
         return device_io_control(control_code,
-                                 ::std::addressof(in_buffer),
-                                 sizeof(InBuffer),
-                                 ::std::addressof(out_buffer),
-                                 sizeof(OutBuffer),
-                                 bytes_returned);
+                                 { ::std::addressof(in_buffer), sizeof(InBuffer) },
+                                 { ::std::addressof(out_buffer), sizeof(OutBuffer) },
+                                 returned);
     }
 
-
-    template<class Callback, class... Args>
-    NT_FN enum_directory(UNICODE_STRING name, Callback callback, Args&&... args)
+    template<class Handle, class Traits>
+    NT_FN basic_file<Handle, Traits>::fs_control(unsigned long             control_code,
+                                                 cbyte_span<unsigned long> input,
+                                                 byte_span<unsigned long>  output,
+                                                 unsigned long* returned) const noexcept
     {
-        ntw::unique_handle handle;
+        IO_STATUS_BLOCK status_block;
+        const auto      status =
+            LI_NT(NtFsControlFile)(handle().get(),
+                                   nullptr,
+                                   nullptr,
+                                   nullptr,
+                                   &status_block,
+                                   control_code,
+                                   const_cast<std::uint8_t*>(input.begin()),
+                                   input.size(),
+                                   output.begin(),
+                                   output.size());
 
-        {
-            auto attributes = ntw::make_attributes(&name, 0);
-            ret_on_err(LI_NT(NtOpenDirectoryObject)(
-                handle.addressof(), DIRECTORY_QUERY | DIRECTORY_TRAVERSE, &attributes));
-        }
+        // set the bytes returned if we are successfull
+        if(returned && NT_SUCCESS(status))
+            *returned = static_cast<unsigned long>(status_block.Information);
 
-        std::aligned_storage_t<2048u, 8> buffer;
-        constexpr unsigned long          buffer_size = sizeof(buffer);
-        unsigned long                    ctx = 0, ret_len = 0;
+        return status;
+    }
 
-        while(true) {
-            const auto status = LI_NT(NtQueryDirectoryObject)(
-                handle.get(), &buffer, buffer_size, FALSE, FALSE, &ctx, &ret_len);
-
-            if(status == STATUS_NO_MORE_ENTRIES)
-                return STATUS_SUCCESS;
-            else if(!NT_SUCCESS(status))
-                return status;
-
-            auto ptr = reinterpret_cast<OBJECT_DIRECTORY_INFORMATION*>(&buffer);
-            // can't break out of 2 loops...
-        goto_next_iteration:
-            if(ptr->Name.Buffer != nullptr && ptr->TypeName.Buffer != nullptr) {
-                NTW_CALLBACK_BREAK_IF_FALSE(callback, *ptr++, args...);
-                goto goto_next_iteration;
-            }
-        }
-
-        return STATUS_SUCCESS;
+    template<class Handle, class Traits>
+    template<class Input, class Output>
+    NT_FN basic_file<Handle, Traits>::fs_control(unsigned long  control_code,
+                                                 const Input&   input,
+                                                 Output&        output,
+                                                 unsigned long* returned) const noexcept
+    {
+        return fs_control(control_code,
+                          { ::std::addressof(in_buffer), sizeof(InBuffer) },
+                          { ::std::addressof(out_buffer), sizeof(OutBuffer) },
+                          returned);
     }
 
 } // namespace ntw::io
