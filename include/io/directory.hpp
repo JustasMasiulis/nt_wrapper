@@ -15,24 +15,11 @@
  */
 
 #pragma once
-#include "base_file.hpp"
+#include "traits/directory.hpp"
 
 namespace ntw::io {
 
-    template<class Handle>
-    struct directory_traits {
-        using handle_type  = Handle;
-        using options_type = file_options;
-
-        constexpr static auto options =
-
-            NT_FN static open(void*&              handle,
-                              OBJECT_ATTRIBUTES&  attributes,
-                              const options_type& options,
-                              unsigned long       disposition);
-    };
-
-    template<class Handle, class Traits = directory_traits<Handle>>
+    template<class Handle, class Traits = traits::directory_traits<Handle>>
     class basic_directory : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
 
@@ -44,13 +31,27 @@ namespace ntw::io {
             : base_type(unwrap_handle(handle))
         {}
 
+        /// \brief Enumerates contents of directory using NtQueryDirectoryFile API.
+        /// \param callback Function that will be called for entry in a directory.
+        /// \param args Arguments that will be passed to the callback function.
+        /// \tparam StaticBufferSize the size of buffer that will be used for storing
+        /// entries.
         template<std::size_t StaticBufferSize = 2048, class Callback, class... Args>
-        NT_FN enum_contents(Callback&& cb, Args&&... args) const noexcept;
+        NT_FN enum_contents(Callback&& callback, Args&&... args) const noexcept;
 
+        /// \brief Enumerates contents of directory using NtQueryDirectoryFile API.
+        /// \param buffer_begin The beginning of a buffer that will be used to store the
+        /// file entries.
+        /// \param buffer_end The end of a buffer that will be used to store
+        /// the file entries.
+        /// \param callback Function that will be called for entry in a
+        /// directory.
+        /// \param args Arguments that will be passed to the callback function.
         template<class Callback, class... Args>
-        NT_FN
-        enum_contents(void* buffer_begin, void* buffer_end, Callback cb, Args&&... args) const
-            noexcept;
+        NT_FN enum_contents(void*    buffer_begin,
+                            void*    buffer_end,
+                            Callback cb,
+                            Args&&... args) const noexcept;
     };
 
     using unique_directory = basic_directory<unique_handle>;
