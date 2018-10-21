@@ -46,8 +46,8 @@ namespace ntw {
             const auto size = static_cast<pointer>(end) - static_cast<pointer>(begin);
             _size           = static_cast<size_type>(size);
         }
-
-        NTW_INLINE iterator begin() const noexcept { return _begin; }
+		
+        NTW_INLINE iterator begin() const noexcept { return _ptr; }
         NTW_INLINE iterator end() const noexcept { return _ptr + _size; }
         NTW_INLINE size_type size() const noexcept { return _size; }
     };
