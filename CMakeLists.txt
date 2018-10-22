@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(nt_wrapper VERSION 3.1.2 LANGUAGES CXX)
 
 include(CTest)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(NT_WRAPPER_TARGET_NAME         ${PROJECT_NAME})
 set(NT_WRAPPER_INCLUDE_INSTALL_DIR "include")
 set(NT_WRAPPER_INCLUDE_BUILD_DIR   "${PROJECT_SOURCE_DIR}/include/")

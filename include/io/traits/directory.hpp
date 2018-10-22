@@ -50,11 +50,11 @@ namespace ntw::io::traits {
                                    &attributes,
                                    &status_block,
                                    nullptr,
-                                   options._attributes ? options._attributes
+                                   options.attributes() ? options.attributes()
                                                        : FILE_ATTRIBUTE_NORMAL,
-                                   options._share_access,
+                                   options.data().share_access,
                                    disposition,
-                                   options._options | FILE_DIRECTORY_FILE |
+                                   options.data().options | FILE_DIRECTORY_FILE |
                                        (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
                                    nullptr,
                                    0);

@@ -49,22 +49,21 @@ namespace ntw::io::traits {
         auto            timeout = make_large_int(options._timeout);
         return LI_NT(NtCreateNamedPipeFile)(
             &temp_handle,
-            options._access | (Sync ? SYNCHRONIZE : 0),
+            options.data().access | (Sync ? SYNCHRONIZE : 0),
             &attributes,
             &iosb,
-            options._share_access,
+            options.data().share_access,
             disposition,
-            options._create_options | (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
-            options._type,
-            options._type & 1,
+            options.options | (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
+            options.pipe_data().type,
+            options.pipe_data().type & 1,
             Sync ? FILE_PIPE_QUEUE_OPERATION : FILE_PIPE_COMPLETE_OPERATION,
-            options._instances_limit,
-            options._inbound_qouta,
-            options._outbound_qouta,
+            options.pipe_data().instances_limit,
+            options.pipe_data().inbound_qouta,
+            options.pipe_data().outbound_qouta,
             &timeout);
 
 
     }; // namespace ntw::io::traits
-
 
 } // namespace ntw::io::traits

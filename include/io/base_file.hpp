@@ -22,20 +22,20 @@ namespace ntw::io {
 
     namespace detail {
 
-        template<class>
-        class base_file;
-
         class file_attributes_builder {
-            ulong_t _attributes = 0;
+            struct file_attributes_data {
+                ulong_t attributes;
+            };
 
-            template<class Derived>
-            friend class base_file;
+            file_attributes_data _data;
 
         protected:
             constexpr file_attributes_builder() = default;
             ~file_attributes_builder()          = default;
 
         public:
+            NTW_INLINE constexpr ulong_t attributes() const;
+
             // clang-format off
 			// FileAttributes; multiple allowed
 			NTW_INLINE constexpr file_attributes_builder& reset_attributes();
@@ -52,61 +52,72 @@ namespace ntw::io {
             // clang-format on
         };
 
-        class pipe_options_builder {
-            ulong_t      _inbound_qouta   = 0;
-            ulong_t      _outbound_qouta  = 0;
-            ulong_t      _type            = 0;
-            ulong_t      _instances_limit = -1;
-            std::int64_t _timeout         = -500000;
+        struct pipe_options_data {
+            ulong_t      inbound_qouta   = 0;
+            ulong_t      outbound_qouta  = 0;
+            ulong_t      type            = 0;
+            ulong_t      instances_limit = -1;
+            std::int64_t timeout         = -500000;
+        };
 
-            template<class Derived>
-            friend class base_file;
+        class pipe_options_builder {
+            pipe_options_data _data;
 
         protected:
             constexpr pipe_options_builder() = default;
             ~pipe_options_builder()          = default;
 
         public:
-            // clang-format off
-			// must be specified
-			NTW_INLINE constexpr pipe_options_builder& qouta(ulong_t inbound,
-															 ulong_t outbound);
-			NTW_INLINE constexpr pipe_options_builder& inbound_qouta(ulong_t qouta);
-			NTW_INLINE constexpr pipe_options_builder& outbound_qouta(ulong_t qouta);
+            NTW_INLINE constexpr const pipe_options_data& pipe_data() const;
 
-			// NamedPipeType; byte stream is default; 1 allowed
-			// resets NamedPipeType back to byte stream and clears other flags
-			NTW_INLINE constexpr pipe_options_builder& reset_type();
+            //  clang-format off
+            // must be specified
+            NTW_INLINE constexpr pipe_options_builder& qouta(ulong_t inbound,
+                                                             ulong_t outbound);
+            NTW_INLINE constexpr pipe_options_builder& inbound_qouta(ulong_t qouta);
+            NTW_INLINE constexpr pipe_options_builder& outbound_qouta(ulong_t qouta);
 
-			// also sets ReadMode to the same values
-			NTW_INLINE constexpr pipe_options_builder& byte_stream(); // FILE_PIPE_BYTE_STREAM_TYPE
-			NTW_INLINE constexpr pipe_options_builder& message_stream(); // FILE_PIPE_MESSAGE_TYPE
+            // NamedPipeType; byte stream is default; 1 allowed
+            // resets NamedPipeType back to byte stream and clears other flags
+            NTW_INLINE constexpr pipe_options_builder& reset_type();
 
-			// NamedPipeType; may be specified
-			NTW_INLINE constexpr pipe_options_builder& accept_remote_clients(); // FILE_PIPE_ACCEPT_REMOTE_CLIENTS
-			NTW_INLINE constexpr pipe_options_builder& reject_remote_clients(); // FILE_PIPE_REJECT_REMOTE_CLIENTS
+            // also sets ReadMode to the same values
+            NTW_INLINE constexpr pipe_options_builder&
+            byte_stream(); // FILE_PIPE_BYTE_STREAM_TYPE
+            NTW_INLINE constexpr pipe_options_builder&
+            message_stream(); // FILE_PIPE_MESSAGE_TYPE
 
-			// default = unlimited
-			NTW_INLINE constexpr pipe_options_builder& instances_limit(ulong_t limit);
+            // NamedPipeType; may be specified
+            NTW_INLINE constexpr pipe_options_builder&
+            accept_remote_clients(); // FILE_PIPE_ACCEPT_REMOTE_CLIENTS
+            NTW_INLINE constexpr pipe_options_builder&
+            reject_remote_clients(); // FILE_PIPE_REJECT_REMOTE_CLIENTS
 
-			// default = 5 seconds
-			NTW_INLINE constexpr pipe_options_builder& timeout(std::int64_t nanoseconds);
+            // default = unlimited
+            NTW_INLINE constexpr pipe_options_builder& instances_limit(ulong_t limit);
+
+            // default = 5 seconds
+            NTW_INLINE constexpr pipe_options_builder& timeout(std::int64_t nanoseconds);
             // clang-format on
+        };
+
+        struct file_options_data {
+            ACCESS_MASK access       = 0;
+            ulong_t     share_access = 0;
+            ulong_t     options      = 0;
         };
 
         template<class Base>
         class file_options_builder : public Base {
-            ACCESS_MASK _access       = 0;
-            ulong_t     _share_access = 0;
-            ulong_t     _options      = 0;
-            // NOTE: if a need arises for extended attributes support please open a ticket
+            file_options_data _data;
+            //  NOTE: if a need arises for extended attributes support please open a
+            //  ticket
             // and I'll add a function and data members for it
-
-            template<class Derived>
-            friend class base_file;
 
         public:
             constexpr file_options_builder() = default;
+
+            NTW_INLINE constexpr const file_options_data& data() const;
 
             NTW_INLINE constexpr file_options_builder copy() const;
 
@@ -250,6 +261,14 @@ namespace ntw::io {
                            ulong_t                info_size) const noexcept;
         };
 
+        NTW_INLINE constexpr ulong_t normalize_attributes(file_options& options) noexcept;
+        
+        template<bool Sync, class Options>
+        NTW_INLINE constexpr ulong_t synchronize_options(Options& options) noexcept;
+        
+        template<bool Sync, class Options>
+        NTW_INLINE constexpr ulong_t synchronize_access(Options& options) noexcept;
+        
     } // namespace detail
 
 } // namespace ntw::io

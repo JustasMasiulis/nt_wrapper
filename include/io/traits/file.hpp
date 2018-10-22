@@ -44,21 +44,21 @@ namespace ntw::io::traits {
                                                 const options_type& options,
                                                 unsigned long       disposition)
     {
+        const auto&     data = options.data();
         IO_STATUS_BLOCK status_block;
-        return LI_NT(NtCreateFile)(&temp_handle,
-                                   options._access | (Sync ? SYNCHRONIZE : 0),
+        return LI_NT(NtCreateFile)(&handle,
+                                   data.access | (Sync ? SYNCHRONIZE : 0),
                                    &attributes,
                                    &status_block,
                                    nullptr,
-                                   options._attributes ? options._attributes
-                                                       : FILE_ATTRIBUTE_NORMAL,
-                                   options._share_access,
+                                   options.attributes() ? options.attributes()
+                                                        : FILE_ATTRIBUTE_NORMAL,
+                                   data.share_access,
                                    disposition,
-                                   options._options | FILE_NON_DIRECTORY_FILE |
+                                   data.options | FILE_NON_DIRECTORY_FILE |
                                        (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
                                    nullptr,
                                    0);
     }; // namespace ntw::io::traits
-
 
 } // namespace ntw::io::traits
