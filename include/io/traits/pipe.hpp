@@ -49,12 +49,12 @@ namespace ntw::io::traits {
         auto            timeout = make_large_int(options._timeout);
         return LI_NT(NtCreateNamedPipeFile)(
             &temp_handle,
-            options.data().access | (Sync ? SYNCHRONIZE : 0),
+            detail::synchronize_access<Sync>(options),
             &attributes,
             &iosb,
             options.data().share_access,
             disposition,
-            options.options | (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
+            detail::synchronize_options<Sync>(options),
             options.pipe_data().type,
             options.pipe_data().type & 1,
             Sync ? FILE_PIPE_QUEUE_OPERATION : FILE_PIPE_COMPLETE_OPERATION,

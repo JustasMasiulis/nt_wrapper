@@ -261,13 +261,13 @@ namespace ntw::io {
                            ulong_t                info_size) const noexcept;
         };
 
-        NTW_INLINE constexpr ulong_t normalize_attributes(file_options& options) noexcept;
+        NTW_INLINE constexpr ulong_t normalize_attributes(const file_options& options) noexcept;
         
         template<bool Sync, class Options>
-        NTW_INLINE constexpr ulong_t synchronize_options(Options& options) noexcept;
+        NTW_INLINE constexpr ulong_t synchronize_options(const Options& options) noexcept;
         
         template<bool Sync, class Options>
-        NTW_INLINE constexpr ulong_t synchronize_access(Options& options) noexcept;
+        NTW_INLINE constexpr ulong_t synchronize_access(const Options& options) noexcept;
         
     } // namespace detail
 

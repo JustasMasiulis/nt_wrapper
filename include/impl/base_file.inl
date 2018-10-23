@@ -291,7 +291,7 @@ namespace ntw::io::detail {
             handle().get(), &iosb, ::std::addressof(buffer), info_size, info_class);
     }
 
-    NTW_INLINE constexpr ulong_t normalize_attributes(file_options& options) noexcept
+    NTW_INLINE constexpr ulong_t normalize_attributes(const file_options& options) noexcept
     {
         auto attr = options.attributes();
         if(!attr)
@@ -300,7 +300,7 @@ namespace ntw::io::detail {
         return attr;
     }
     template<bool Sync, class Options>
-    NTW_INLINE constexpr ulong_t synchronize_options(Options& options) noexcept
+    NTW_INLINE constexpr ulong_t synchronize_options(const Options& options) noexcept
     {
         auto opt = options.data().options;
         if constexpr(Sync)
@@ -309,7 +309,7 @@ namespace ntw::io::detail {
     }
 
     template<bool Sync, class Options>
-    NTW_INLINE constexpr ulong_t synchronize_access(Options& options) noexcept
+    NTW_INLINE constexpr ulong_t synchronize_access(const Options& options) noexcept
     {
         auto access = options.data().access;
         if constexpr(Sync)

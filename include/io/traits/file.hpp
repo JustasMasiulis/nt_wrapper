@@ -47,16 +47,15 @@ namespace ntw::io::traits {
         const auto&     data = options.data();
         IO_STATUS_BLOCK status_block;
         return LI_NT(NtCreateFile)(&handle,
-                                   data.access | (Sync ? SYNCHRONIZE : 0),
+                                   detail::synchronize_access<Sync>(options),
                                    &attributes,
                                    &status_block,
                                    nullptr,
-                                   options.attributes() ? options.attributes()
-                                                        : FILE_ATTRIBUTE_NORMAL,
+                                   detail::normalize_attributes(options),
                                    data.share_access,
                                    disposition,
-                                   data.options | FILE_NON_DIRECTORY_FILE |
-                                       (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
+                                   detail::synchronize_options<Sync>(options) |
+                                       FILE_NON_DIRECTORY_FILE,
                                    nullptr,
                                    0);
     }; // namespace ntw::io::traits

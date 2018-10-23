@@ -46,17 +46,15 @@ namespace ntw::io::traits {
     {
         IO_STATUS_BLOCK status_block;
         return LI_NT(NtCreateFile)(&temp_handle,
-                                   options._access | (Sync ? SYNCHRONIZE : 0),
+                                   detail::synchronize_access<Sync>(options),
                                    &attributes,
                                    &status_block,
                                    nullptr,
-                                   options.attributes() ? options.attributes()
-                                                       : FILE_ATTRIBUTE_NORMAL,
+                                   detail::normalize_attributes(options),
                                    options.data().share_access,
                                    disposition,
-                                   options.data().options | FILE_DIRECTORY_FILE |
-                                       (Sync ? FILE_SYNCHRONOUS_IO_NONALERT : 0),
-                                   nullptr,
+                                   detail::synchronize_options(options) |
+                                       FILE_DIRECTORY_FILE nullptr,
                                    0);
     };
 
