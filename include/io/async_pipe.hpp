@@ -20,6 +20,7 @@
 
 namespace ntw::io {
 
+    /// \brief Asynchronous pipe API.
     template<class Handle, class Traits = traits::async_pipe_traits<Handle>>
     class basic_async_pipe : public basic_async_file<Handle, Traits> {
         using base_type = basic_async_file<Handle, Traits>;
@@ -32,9 +33,12 @@ namespace ntw::io {
         {}
 
         // TODO: add more pipe functionality for messages
+
+        /// \brief Starts listening for new connections.
         template<class Query>
         NT_FN listen(Query& query) const;
 
+        /// \brief Starts the disconnection of a client.
         template<class Query>
         NT_FN disconnect(Query& query) const;
     };

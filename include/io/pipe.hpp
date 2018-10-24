@@ -32,7 +32,13 @@ namespace ntw::io {
         {}
 
         // TODO: add more pipe functionality for messages
+
+        /// \brief Blocks untill a named pipe connection is made.
+        /// \note ConnectNamedPipe equalient.
         NT_FN listen() const noexcept;
+
+        /// \brief Disconnects the named pipe server from client.
+        /// \note DisconnectNamedPipe qualient.
         NT_FN disconnect() const noexcept;
     };
 
