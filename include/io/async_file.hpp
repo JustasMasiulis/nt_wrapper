@@ -21,6 +21,7 @@
 
 namespace ntw::io {
 
+    /// \brief Asynchronous file API.
     template<class Handle, class Traits = traits::async_file_traits<Handle>>
     class basic_async_file : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
@@ -35,6 +36,7 @@ namespace ntw::io {
     public:
         NTW_INLINE basic_async_file() = default;
 
+        /// \brief Constructs basic_async_file using an object that stores a handle
         template<class ObjectHandle>
         NTW_INLINE basic_async_file(const ObjectHandle& handle)
             : base_type(unwrap_handle(handle))
@@ -78,10 +80,12 @@ namespace ntw::io {
                                 Output&      output,
                                 QueryData&   query) const noexcept;
 
+
         /// \brief Sends a control code to a file system or file system filter driver
-        /// driver using NtFsControlFile API.
-        /// \param control_code The control code that
-        /// will be sent. \param input The input buffer. \param output The output buffer.
+        /// using NtFsControlFile API.
+        /// \param control_code The control code that will be sent.
+        /// \param input The input buffer.
+        /// \param output The output buffer.
         /// \param query The query data including completion callback etc.
         template<class QueryData>
         NT_FN fs_control(ulong_t             control_code,
@@ -90,9 +94,10 @@ namespace ntw::io {
                          QueryData&          query) const noexcept;
 
         /// \brief Sends a control code to a file system or file system filter driver
-        /// driver using NtFsControlFile API.
-        /// \param control_code The control code that
-        /// will be sent. \param input The input buffer. \param output The output buffer.
+        /// using NtFsControlFile API.
+        /// \param control_code The control code that will be sent.
+        /// \param input The input buffer.
+        /// \param output The output buffer.
         /// \param query The query data including completion callback etc.
         template<class Input, class Output, class QueryData>
         NT_FN fs_control(ulong_t      control_code,

@@ -291,7 +291,8 @@ namespace ntw::io::detail {
             handle().get(), &iosb, ::std::addressof(buffer), info_size, info_class);
     }
 
-    NTW_INLINE constexpr ulong_t normalize_attributes(const file_options& options) noexcept
+    NTW_INLINE constexpr ulong_t normalize_attributes(
+        const file_options& options) noexcept
     {
         auto attr = options.attributes();
         if(!attr)
