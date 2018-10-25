@@ -204,29 +204,53 @@ namespace ntw::io {
             NTW_INLINE handle_type& handle() noexcept { return _handle; }
             NTW_INLINE const handle_type& handle() const noexcept { return _handle; }
 
-            /// \brief Opens file using NtCreateFile API.
+            /// \brief Opens file using NtCreateFile API. FILE_OPEN disposition is used.
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN open(const StringRef& path, const file_options& opt = options) noexcept;
 
+            /// \brief Opens file using NtCreateFile API. FILE_CREATE disposition is used.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN create(const StringRef&    path,
                          const file_options& opt = options) noexcept;
 
+            /// \brief Opens file using NtCreateFile API. FILE_SUPERSEDE disposition is
+            ///        used.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN supersede(const StringRef&    path,
                             const file_options& opt = options) noexcept;
 
+            /// \brief Opens file using NtCreateFile API. FILE_OVERWRITE disposition is
+            ///        used.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN overwrite(const StringRef&    path,
                             const file_options& opt = options) noexcept;
 
+            /// \brief Opens file using NtCreateFile API. FILE_OPEN_IF disposition is
+            ///        used.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN open_or_create(const StringRef&    path,
                                  const file_options& opt = options) noexcept;
 
+            /// \brief Opens file using NtCreateFile API. FILE_OVERWRITE_IF disposition is
+            ///        used.
+            /// \param path The path to file.
+            ///             May be either an UNICODE_STRING or std::wstring_view.
+            /// \param options The options used while opening the file.
             template<class StringRef>
             NT_FN overwrite_or_create(const StringRef&    path,
                                       const file_options& opt = options) noexcept;
@@ -235,6 +259,9 @@ namespace ntw::io {
             /// \param size_out The variable that will be receiving the file size
             ///                 in case of success.
             NT_FN size(std::uint64_t& size_out) const noexcept;
+
+            /// \brief Flushes the file buffer.
+            NT_FN flush() const noexcept;
 
             /// \brief Deletes opened file using NtDeleteFile API.
             /// \param path The path to file.
