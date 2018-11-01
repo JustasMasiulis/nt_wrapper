@@ -246,6 +246,13 @@ namespace ntw::io::detail {
     }
 
     template<class Traits>
+    NT_FN base_file<Traits>::flush() const noexcept
+    {
+        IO_STATUS_BLOCK iosb;
+        return LI_NT(NtFlushBuffersFile)(handle().get(), &iosb);
+    }
+    
+    template<class Traits>
     template<class StringRef /* wstring_view or UNICODE_STRING */>
     NT_FN base_file<Traits>::destroy(const StringRef& path, bool case_sensitive) noexcept
     {
