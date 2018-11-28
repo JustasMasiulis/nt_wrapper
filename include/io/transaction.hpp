@@ -76,11 +76,19 @@ namespace ntw::io {
         }
     };
 
-    struct transaction_guard {
-        template<class Handle>
-        NTW_INLINE transaction_guard(const Handle& handle)
-        {
+    class transaction_guard {
+        void* _handle;
 
+    public:
+        template<class Handle>
+        NTW_INLINE transaction_guard(const Handle& handle) noexcept
+            : _handle(std::exchange(local_teb().CurrentTransactionHandle,
+                                    unwrap_handle(handle)))
+        {}
+
+        NTW_INLINE ~transaction_guard() const noexcept
+        {
+            local_teb().CurrentTransactionHandle = _handle;
         }
     };
 
