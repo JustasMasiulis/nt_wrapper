@@ -95,14 +95,6 @@ namespace ntw::obj {
 
             NT_FN delete_key() const { return LI_NT(NtDeleteKey)(_handle.get()); }
 			
-			template<class Callback>
-            NT_FN enum_subkeys() {
-                NtEnumerateKey()
-
-				//KEY_BASIC_INFORMATION
-				NtEnumerateKey()
-			}
-
             template<class EventHandle>
             NT_FN notify_change(const EventHandle& event,
                                 unsigned long      filter,

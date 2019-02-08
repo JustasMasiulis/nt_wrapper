@@ -97,9 +97,9 @@ namespace ntw::io {
                               ACCESS_MASK      access = KEY_ALL_ACCESS)
         {
             return _open(LI_NT(NtOpenKeyTransactedEx),
-                  make_ustr(path),
-                  access,
-                  unwrap_handle(transaction));
+                         make_ustr(path),
+                         access,
+                         unwrap_handle(transaction));
         }
 
         template<class StringRef>
@@ -112,6 +112,58 @@ namespace ntw::io {
             return LI_NT(NtSetValueKey)(_handle.get(), &upath, 0, type, data, size);
         }
 
+        template<class StringRef, class T>
+        NT_FN get(const StringRef& path, T& buffer) const
+        {
+            std::aligned_storage_t<12 + sizeof(T)> storage;
+
+            auto       upath = make_ustr(path);
+            ULONG      retlen;
+            const auto status = LI_NT(NtQueryValueKey)(_handle.get(),
+                                                       &upath,
+                                                       KeyValuePartialInformation,
+                                                       &storage,
+                                                       sizeof(storage),
+                                                       &retlen);
+
+            // may be unaligned? pretty bad but :shrug:
+            if(NT_SUCCESS(status))
+                buffer = *reinterpret_cast<T*>(reinterpret_cast<char*>(&storage) + 12);
+
+            return status;
+        }
+
+        template<class StringRef, class Callback, class... Args>
+        NT_FN get(const StringRef& path, Callback cb, Args&&... args) const
+        {
+            memory::unique_alloc<KEY_VALUE_PARTIAL_INFORMATION_ALIGN64> info;
+
+            auto  upath  = make_ustr(path);
+            ULONG size   = 0;
+            auto  status = LI_NT(NtQueryValueKey)(_handle.get(),
+                                                 &upath,
+                                                 KeyValuePartialInformationAlign64,
+                                                 info.get(),
+                                                 size,
+                                                 &size);
+            if(status != STATUS_BUFFER_OVERFLOW)
+                return status;
+
+            ret_on_err(info.allocate(size, PAGE_READWRITE));
+
+            status = LI_NT(NtQueryValueKey)(_handle.get(),
+                                            &upath,
+                                            KeyValuePartialInformationAlign64,
+                                            info.get(),
+                                            size,
+                                            &size);
+
+            if(NT_SUCCESS(status))
+                cb(*info, std::forward<Args>(args)...);
+
+            return status;
+        }
+
         template<class StringRef>
         NT_FN set(const StringRef& path, ulong_t data) const
         {
@@ -120,15 +172,16 @@ namespace ntw::io {
 
         NT_FN destroy() const { return LI_NT(NtDeleteKey)(_handle.get()); }
 
-        template<std::size_t ExtraSize = 0, class KeyInfoType>
-        NT_FN subkey(KEY_INFORMATION_CLASS info_class, KeyInfoType& info, ulong_t index)
+        NT_FN subkey(KEY_INFORMATION_CLASS info_class,
+                     byte_span<ulong_t>    buffer,
+                     ulong_t               index)
         {
-            ulong_t result_size;
+            ulong_t result_size = 0;
             return LI_NT(NtEnumerateKey)(_handle.get(),
                                          index,
                                          info_class,
-                                         &info,
-                                         sizeof(KeyInfoType) + ExtraSize,
+                                         buffer.begin(),
+                                         buffer.size(),
                                          &result_size);
         }
 
@@ -138,13 +191,15 @@ namespace ntw::io {
                  class... Args>
         NT_FN enum_subkeys(KEY_INFORMATION_CLASS info_class, Callback cb, Args&&... args)
         {
-            KeyInfoType info;
+            std::aligned_storage_t<sizeof(KeyInfoType) + ExtraSize> storage;
             for(ulong_t i = 0;; ++i) {
-                const auto status = subkey<ExtraSize>(info_class, info, i);
+                const auto status =
+                    subkey<ExtraSize>(info_class, { &storage, sizeof(storage) }, i);
                 if(!NT_SUCCESS(status))
                     return status;
 
-                NTW_CALLBACK_BREAK_IF_FALSE(cb, info, args...);
+                NTW_CALLBACK_BREAK_IF_FALSE(
+                    cb, *reinterpret_cast<KeyInfoType*>(&storage), args...);
             }
 
             return STATUS_SUCCESS;
