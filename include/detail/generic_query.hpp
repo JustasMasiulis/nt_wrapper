@@ -17,22 +17,11 @@
 #pragma once
 #include "../memory.hpp"
 
-#define NTW_IMPLEMENT_QUERY_CALLBACK                                  \
-    const auto _local_thisptr = this;                                 \
-                                                                      \
-    struct _callback_query_callable {                                 \
-        decltype(_local_thisptr) _thisptr;                            \
-        template<class InfoClass>                                     \
-        NT_FN operator()(InfoClass      info_class,                   \
-                         void*          buffer,                       \
-                         unsigned long  size,                         \
-                         unsigned long* ret_size)                     \
-        {                                                             \
-            return thisptr->info(info_class, buffer, size, ret_size); \
-        }                                                             \
-    };                                                                \
-    ntw::detail::generic_query_can_fail(                              \
-        _callback_query_callable{ _local_thisptr }, cb, std::forward<Args>(args)...);
+#define NTW_IMPLEMENT_QUERY_CALLBACK                         \
+    ntw::detail::generic_query_can_fail(                     \
+        [&](auto&&... args) { return this->info(args...); }, \
+        cb,                                                  \
+        std::forward<Args>(args)...);
 
 namespace ntw::detail {
 

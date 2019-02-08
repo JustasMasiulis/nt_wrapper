@@ -33,6 +33,8 @@ namespace ntw::io {
                        ulong_t*            returned) const noexcept;
 
     public:
+        using basic_file::handle;
+
         NTW_INLINE basic_file() = default;
 
         template<class ObjectHandle>

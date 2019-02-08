@@ -29,7 +29,7 @@ namespace ntw::io {
     {
         IO_STATUS_BLOCK status_block;
 
-        const auto status = fn(handle().get(),
+        const auto status = fn(this->handle().get(),
                                nullptr,
                                nullptr,
                                nullptr,
@@ -55,7 +55,7 @@ namespace ntw::io {
         IO_STATUS_BLOCK status_block;
         LARGE_INTEGER   li_offset = make_large_int(offset);
 
-        const auto status = LI_NT(NtWriteFile)(handle().get(),
+        const auto status = LI_NT(NtWriteFile)(this->handle().get(),
                                                nullptr,
                                                nullptr,
                                                nullptr,
@@ -108,8 +108,8 @@ namespace ntw::io {
                                                         ulong_t* returned) const noexcept
     {
         return device_io_control(control_code,
-                                 { ::std::addressof(in_buffer), sizeof(InBuffer) },
-                                 { ::std::addressof(out_buffer), sizeof(OutBuffer) },
+                                 { ::std::addressof(input), sizeof(Input) },
+                                 { ::std::addressof(output), sizeof(Output) },
                                  returned);
     }
 
@@ -130,8 +130,8 @@ namespace ntw::io {
                                                  ulong_t*     returned) const noexcept
     {
         return fs_control(control_code,
-                          { ::std::addressof(in_buffer), sizeof(InBuffer) },
-                          { ::std::addressof(out_buffer), sizeof(OutBuffer) },
+                          { ::std::addressof(input), sizeof(Input) },
+                          { ::std::addressof(output), sizeof(Output) },
                           returned);
     }
 
