@@ -41,15 +41,35 @@ namespace ntw::io {
         }
 
         template<class Fn, class... Tx>
-        NT_FN _open(Fn f, UNICODE_STRING path, ACCESS_MASK access, Tx... tx)
+        NT_FN
+        _open(Fn f, UNICODE_STRING path, ACCESS_MASK access, void* root_handle, Tx... tx)
         {
-            auto attr = make_attributes(&path, OBJ_CASE_INSENSITIVE);
+            auto attr = make_attributes(&path, OBJ_CASE_INSENSITIVE, root_handle);
 
             void*      temp_handle = nullptr;
             const auto status      = f(&temp_handle, access, &attr, 0, tx...);
 
             if(NT_SUCCESS(status))
                 _handle.reset(temp_handle);
+
+            return status;
+        }
+
+        template<class T>
+        NT_FN _get(UNICODE_STRING path, T& x) const
+        {
+            std::aligned_storage_t<12 + sizeof(T)> storage;
+
+            ULONG      retlen;
+            const auto status = LI_NT(NtQueryValueKey)(_handle.get(),
+                                                       &path,
+                                                       KeyValuePartialInformation,
+                                                       &storage,
+                                                       sizeof(storage),
+                                                       &retlen);
+
+            if(NT_SUCCESS(status))
+                x = *reinterpret_cast<T*>(reinterpret_cast<char*>(&storage) + 12);
 
             return status;
         }
@@ -86,21 +106,26 @@ namespace ntw::io {
                            unwrap_handle(transaction));
         }
 
-        template<class StringRef>
-        NT_FN open(const StringRef& path, ACCESS_MASK access = KEY_ALL_ACCESS)
+        template<class StringRef, class RootHandle = nullptr_t>
+        NT_FN open(const StringRef&  path,
+                   ACCESS_MASK       access = KEY_ALL_ACCESS,
+                   const RootHandle& handle = nullptr)
         {
-            return _open(LI_NT(NtOpenKeyEx), make_ustr(path), access);
+            return _open(
+                LI_NT(NtOpenKeyEx), make_ustr(path), access, unwrap_handle(handle));
         }
 
-        template<class TxHandle, class StringRef>
-        NT_FN open_transacted(const TxHandle&  transaction,
-                              const StringRef& path,
-                              ACCESS_MASK      access = KEY_ALL_ACCESS)
+        template<class TxHandle, class StringRef, class RootHandle = nullptr_t>
+        NT_FN open_transacted(const TxHandle&   transaction,
+                              const StringRef&  path,
+                              ACCESS_MASK       access = KEY_ALL_ACCESS,
+                              const RootHandle& handle = nullptr)
         {
             return _open(LI_NT(NtOpenKeyTransactedEx),
                          make_ustr(path),
                          access,
-                         unwrap_handle(transaction));
+                         unwrap_handle(transaction),
+                         unwrap_handle(handle));
         }
 
         template<class StringRef>
@@ -113,23 +138,54 @@ namespace ntw::io {
             return LI_NT(NtSetValueKey)(_handle.get(), &upath, 0, type, data, size);
         }
 
-        template<class StringRef, class T>
-        NT_FN get(const StringRef& path, T& buffer) const
-        {
-            std::aligned_storage_t<12 + sizeof(T)> storage;
 
-            auto       upath = make_ustr(path);
-            ULONG      retlen;
+        template<class StringRef>
+        NT_FN query_value(const StringRef&            path,
+                          KEY_VALUE_INFORMATION_CLASS info_class,
+                          byte_span<ulong_t>          buffer) const
+        {
+            auto  upath = make_ustr(path);
+            ULONG retlen;
+            return LI_NT(NtQueryValueKey)(_handle.get(),
+                                          &upath,
+                                          info_class,
+                                          buffer.begin(),
+                                          buffer.size(),
+                                          &retlen);
+        }
+
+        template<class StringRef>
+        NT_FN get(const StringRef& path, std::uint32_t& dword) const
+        {
+            return _get(make_ustr(path), dword);
+        }
+
+        template<class StringRef>
+        NT_FN get(const StringRef& path, std::uint64_t& qword) const
+        {
+            return _get(make_ustr(path), qword);
+        }
+
+        template<std::size_t MaxSize, class StringRef, class Callback, class... Args>
+        NT_FN get(const StringRef& path, Callback cb, Args&&... args) const
+        {
+            std::aligned_storage_t<12 + MaxSize> storage;
+
+            auto       upath  = make_ustr(path);
+            ULONG      size   = 0;
             const auto status = LI_NT(NtQueryValueKey)(_handle.get(),
                                                        &upath,
                                                        KeyValuePartialInformation,
                                                        &storage,
                                                        sizeof(storage),
-                                                       &retlen);
-
-            // may be unaligned? pretty bad but :shrug:
-            if(NT_SUCCESS(status))
-                buffer = *reinterpret_cast<T*>(reinterpret_cast<char*>(&storage) + 12);
+                                                       &size);
+            if(NT_SUCCESS(status)) {
+                const auto info =
+                    reinterpret_cast<KEY_VALUE_PARTIAL_INFORMATION*>(&storage);
+                cb(static_cast<void*>(info->Data),
+                   info->DataLength,
+                   std::forward<Args>(args)...);
+            }
 
             return status;
         }
@@ -196,7 +252,10 @@ namespace ntw::io {
             for(ulong_t i = 0;; ++i) {
                 const auto status = subkey(info_class, { &storage, &storage + 1 }, i);
                 if(!NT_SUCCESS(status))
-                    return status;
+                    if(status == STATUS_NO_MORE_ENTRIES)
+                        return STATUS_SUCCESS;
+                    else
+                        return status;
 
                 NTW_CALLBACK_BREAK_IF_FALSE(
                     cb, *reinterpret_cast<KeyInfoType*>(&storage), args...);
