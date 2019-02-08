@@ -15,15 +15,9 @@
  */
 
 #pragma once
-#include "../util.hpp"
+#include "../object/handle.hpp"
 
-namespace ntw {
-
-	namespace detail {
-    
-
-	
-	}
+namespace ntw::io {
 
     template<class Handle>
     struct basic_registry_key {
@@ -94,7 +88,7 @@ namespace ntw {
         template<class StringRef>
         NT_FN open(const StringRef& path, ACCESS_MASK access = KEY_ALL_ACCESS)
         {
-            _open(LI_NT(NtOpenKeyEx), make_ustr(path), access);
+            return _open(LI_NT(NtOpenKeyEx), make_ustr(path), access);
         }
 
         template<class TxHandle, class StringRef>
@@ -102,7 +96,7 @@ namespace ntw {
                               const StringRef& path,
                               ACCESS_MASK      access = KEY_ALL_ACCESS)
         {
-            _open(LI_NT(NtOpenKeyTransactedEx),
+            return _open(LI_NT(NtOpenKeyTransactedEx),
                   make_ustr(path),
                   access,
                   unwrap_handle(transaction));
@@ -126,6 +120,36 @@ namespace ntw {
 
         NT_FN destroy() const { return LI_NT(NtDeleteKey)(_handle.get()); }
 
+        template<std::size_t ExtraSize = 0, class KeyInfoType>
+        NT_FN subkey(KEY_INFORMATION_CLASS info_class, KeyInfoType& info, ulong_t index)
+        {
+            ulong_t result_size;
+            return LI_NT(NtEnumerateKey)(_handle.get(),
+                                         index,
+                                         info_class,
+                                         &info,
+                                         sizeof(KeyInfoType) + ExtraSize,
+                                         &result_size);
+        }
+
+        template<class KeyInfoType,
+                 std::size_t ExtraSize = 0,
+                 class Callback,
+                 class... Args>
+        NT_FN enum_subkeys(KEY_INFORMATION_CLASS info_class, Callback cb, Args&&... args)
+        {
+            KeyInfoType info;
+            for(ulong_t i = 0;; ++i) {
+                const auto status = subkey<ExtraSize>(info_class, info, i);
+                if(!NT_SUCCESS(status))
+                    return status;
+
+                NTW_CALLBACK_BREAK_IF_FALSE(cb, info, args...);
+            }
+
+            return STATUS_SUCCESS;
+        }
+
         template<class EventHandle>
         NT_FN notify_change(const EventHandle& event,
                             unsigned long      filter,
@@ -145,4 +169,8 @@ namespace ntw {
         }
     };
 
-} // namespace ntw
+    using unique_registry_key = basic_registry_key<unique_handle>;
+    using registry_key_ref    = basic_registry_key<handle_ref>;
+
+
+} // namespace ntw::io

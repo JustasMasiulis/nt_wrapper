@@ -47,13 +47,14 @@ namespace ntw::obj {
                 ULONG disposition;
 
                 void*      temp_handle = nullptr;
-                const auto status = LI_NT(NtCreateKey)(&temp_handle,
-                                          access,
-                                          &attr,
-                                          0,
-                                          nullptr,
-                                          is_volatile ? REG_OPTION_VOLATILE : 0,
-                                          &disposition);
+                const auto status =
+                    LI_NT(NtCreateKey)(&temp_handle,
+                                       access,
+                                       &attr,
+                                       0,
+                                       nullptr,
+                                       is_volatile ? REG_OPTION_VOLATILE : 0,
+                                       &disposition);
 
                 if(NT_SUCCESS(status))
                     _handle.reset(temp_handle);
@@ -93,6 +94,14 @@ namespace ntw::obj {
             }
 
             NT_FN delete_key() const { return LI_NT(NtDeleteKey)(_handle.get()); }
+			
+			template<class Callback>
+            NT_FN enum_subkeys() {
+                NtEnumerateKey()
+
+				//KEY_BASIC_INFORMATION
+				NtEnumerateKey()
+			}
 
             template<class EventHandle>
             NT_FN notify_change(const EventHandle& event,
