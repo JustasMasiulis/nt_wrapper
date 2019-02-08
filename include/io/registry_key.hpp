@@ -16,6 +16,7 @@
 
 #pragma once
 #include "../object/handle.hpp"
+#include "../byte_span.hpp"
 
 namespace ntw::io {
 
@@ -193,8 +194,7 @@ namespace ntw::io {
         {
             std::aligned_storage_t<sizeof(KeyInfoType) + ExtraSize> storage;
             for(ulong_t i = 0;; ++i) {
-                const auto status =
-                    subkey<ExtraSize>(info_class, { &storage, sizeof(storage) }, i);
+                const auto status = subkey(info_class, { &storage, &storage + 1 }, i);
                 if(!NT_SUCCESS(status))
                     return status;
 
