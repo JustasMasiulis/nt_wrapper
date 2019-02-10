@@ -242,15 +242,36 @@ namespace ntw::io {
                                          &result_size);
         }
 
-        template<class KeyInfoType,
-                 std::size_t ExtraSize = 0,
-                 class Callback,
-                 class... Args>
+        template<class KeyInfoType, std::size_t ExtraSize, class Callback, class... Args>
         NT_FN enum_subkeys(KEY_INFORMATION_CLASS info_class, Callback cb, Args&&... args)
         {
             std::aligned_storage_t<sizeof(KeyInfoType) + ExtraSize> storage;
             for(ulong_t i = 0;; ++i) {
                 const auto status = subkey(info_class, { &storage, &storage + 1 }, i);
+                if(!NT_SUCCESS(status))
+                    if(status == STATUS_NO_MORE_ENTRIES)
+                        return STATUS_SUCCESS;
+                    else
+                        return status;
+
+                NTW_CALLBACK_BREAK_IF_FALSE(
+                    cb, *reinterpret_cast<KeyInfoType*>(&storage), args...);
+            }
+
+            return STATUS_SUCCESS;
+        }
+
+        template<class KeyInfoType, std::size_t ExtraSize, class Callback, class... Args>
+        NT_FN enum_values(KEY_VALUE_INFORMATION_CLASS info_class,
+                          Callback                    cb,
+                          Args&&... args)
+        {
+            std::aligned_storage_t<sizeof(KeyInfoType) + ExtraSize> storage;
+            ulong_t                                                 retlen;
+            for(ulong_t i = 0;; ++i) {
+                const auto status = LI_NT(NtEnumerateValueKey)(
+                    _handle.get(), i, info_class, &storage, sizeof(storage), &retlen);
+
                 if(!NT_SUCCESS(status))
                     if(status == STATUS_NO_MORE_ENTRIES)
                         return STATUS_SUCCESS;
