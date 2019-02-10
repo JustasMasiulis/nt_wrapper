@@ -20,7 +20,7 @@
 namespace ntw::io {
 
     template<class Handle, class Traits>
-    template<class Fn, class QueryData>
+    template<class Fn>
     NT_FN basic_file<Handle, Traits>::_control(Fn                  fn,
                                                ulong_t             control_code,
                                                cbyte_span<ulong_t> input,
