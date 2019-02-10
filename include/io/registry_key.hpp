@@ -203,7 +203,7 @@ namespace ntw::io {
                                                  info.get(),
                                                  size,
                                                  &size);
-            if(status != STATUS_BUFFER_OVERFLOW)
+            if(!NT_SUCCESS(status) && status != STATUS_BUFFER_TOO_SMALL)
                 return status;
 
             ret_on_err(info.allocate(size, PAGE_READWRITE));
