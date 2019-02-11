@@ -65,8 +65,8 @@ namespace ntw::obj {
             unicode_string_t<P> FullDllName;
         };
 
-        NTW_INLINE bool
-        is_process_same_arch(const PROCESS_EXTENDED_BASIC_INFORMATION& info) noexcept
+        NTW_INLINE bool is_process_same_arch(
+            const PROCESS_EXTENDED_BASIC_INFORMATION& info) noexcept
         {
             return static_cast<bool>(info.IsWow64Process) ==
                    static_cast<bool>(local_teb().WowTebOffset);
@@ -261,6 +261,20 @@ namespace ntw::obj {
 #endif
             }
 
+            return status;
+        }
+
+        template<class H>
+        template<class Cb>
+        NT_FN basic_process<H>::enum_fixed_drives(Cb cb) const noexcept
+        {
+            PROCESS_DEVICEMAP_INFORMATION devicemap_info;
+            const auto                    status =
+                ntw::obj::process_ref{}.info(ProcessDeviceMap, devicemap_info.Query);
+            if(NT_SUCCESS(status))
+                for(std::uint8_t i = 0; i < 32; ++i)
+                    if(devicemap_info.Query.DriveType[i] == DRIVE_FIXED)
+                        cb(i);
             return status;
         }
 
