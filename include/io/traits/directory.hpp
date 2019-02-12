@@ -45,7 +45,7 @@ namespace ntw::io::traits {
                                                      unsigned long       disposition)
     {
         IO_STATUS_BLOCK status_block;
-        return LI_NT(NtCreateFile)(&temp_handle,
+        return LI_NT(NtCreateFile)(&handle,
                                    detail::synchronize_access<Sync>(options),
                                    &attributes,
                                    &status_block,
@@ -53,8 +53,9 @@ namespace ntw::io::traits {
                                    detail::normalize_attributes(options),
                                    options.data().share_access,
                                    disposition,
-                                   detail::synchronize_options(options) |
-                                       FILE_DIRECTORY_FILE nullptr,
+                                   detail::synchronize_options<Sync>(options) |
+                                       FILE_DIRECTORY_FILE,
+                                   nullptr,
                                    0);
     };
 
