@@ -31,6 +31,8 @@ namespace ntw::io {
             : base_type(unwrap_handle(handle))
         {}
 
+		using base_type::handle;
+
         /// \brief Enumerates contents of directory using NtQueryDirectoryFile API.
         /// \param callback Function that will be called for entry in a directory.
         /// \param args Arguments that will be passed to the callback function.

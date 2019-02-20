@@ -68,6 +68,9 @@ namespace ntw::obj {
 
             template<class Callback>
             NT_FN enum_modules(Callback cb) const noexcept;
+
+            template<class Callback>
+            NT_FN enum_fixed_drives(Callback cb) const noexcept;
         };
 
         struct enum_modules_t;

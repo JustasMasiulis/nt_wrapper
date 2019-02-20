@@ -25,7 +25,7 @@ namespace ntw::io {
     class basic_file : public detail::base_file<Traits> {
         using base_type = detail::base_file<Traits>;
 
-        template<class Fn, class QueryData>
+        template<class Fn>
         NT_FN _control(Fn                  fn,
                        ulong_t             control_code,
                        cbyte_span<ulong_t> input,
@@ -33,6 +33,8 @@ namespace ntw::io {
                        ulong_t*            returned) const noexcept;
 
     public:
+        using basic_file::handle;
+
         NTW_INLINE basic_file() = default;
 
         template<class ObjectHandle>

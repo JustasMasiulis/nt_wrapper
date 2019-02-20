@@ -76,7 +76,7 @@ namespace ntw::io::detail {
     NTW_FILE_OPTION(readable_access_control, access, READ_CONTROL, |=)
 
     NTW_FILE_OPTION(writeable_data, access, FILE_WRITE_DATA, |=)
-    NTW_FILE_OPTION(writeable_attributes, access, FILE_WRITE_ATTRIBUTES |=)
+    NTW_FILE_OPTION(writeable_attributes, access, FILE_WRITE_ATTRIBUTES, |=)
     NTW_FILE_OPTION(writeable_extended_attributes, access, FILE_WRITE_EA, |=)
     NTW_FILE_OPTION(writeable_access_control, access, WRITE_DAC, |=)
     NTW_FILE_OPTION(writeable_ownership, access, WRITE_OWNER, |=)

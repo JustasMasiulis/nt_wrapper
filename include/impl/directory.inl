@@ -30,7 +30,7 @@ namespace ntw::io {
         const auto      size         = buffer.size();
 
         while(true) {
-            const auto status = LI_NT(NtQueryDirectoryFile)(_handle.get(),
+            const auto status = LI_NT(NtQueryDirectoryFile)(handle().get(),
                                                             nullptr,
                                                             nullptr,
                                                             nullptr,
@@ -61,7 +61,7 @@ namespace ntw::io {
 
             // goto is bad but I cannot use this macro with a nested loop
         goto_next_file:
-            NTW_CALLBACK_BREAK_IF_FALSE(callback, *file_info, args...);
+            NTW_CALLBACK_BREAK_IF_FALSE(cb, *file_info, args...);
 
             // go to next file if the offset isnt 0, else get more infos
             if(file_info->NextEntryOffset) {
