@@ -1,11 +1,24 @@
 # Prerequisites
 *.d
 
+CMakeFiles/
+CMakeCache.txt
+.cquery_cached_index/
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
+.projectile
+compile_commands.json
+*.cmake
+
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
+*.ilk
+*.pdb
 
 # Precompiled Headers
 *.gch
