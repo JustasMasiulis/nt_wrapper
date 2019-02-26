@@ -24,10 +24,12 @@ namespace ntw::io {
         Handle _handle;
 
     public:
+        using handle_type              = Handle;
+
         NTW_INLINE basic_transaction() = default;
 
-        template<class Handle>
-        NTW_INLINE basic_transaction(const Handle& handle) noexcept
+        template<class HandleType>
+        NTW_INLINE basic_transaction(const HandleType& handle) noexcept
             : _handle(unwrap_handle(handle))
         {}
 
@@ -44,6 +46,7 @@ namespace ntw::io {
                 access,
                 nullptr,
                 nullptr,
+				nullptr,
                 allow_promotion ? 0 : TRANSACTION_DO_NOT_PROMOTE,
                 0,
                 0,
@@ -86,7 +89,7 @@ namespace ntw::io {
                                     unwrap_handle(handle)))
         {}
 
-        NTW_INLINE ~transaction_guard() const noexcept
+        NTW_INLINE ~transaction_guard() noexcept
         {
             local_teb().CurrentTransactionHandle = _handle;
         }
