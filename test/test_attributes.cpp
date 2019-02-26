@@ -2,6 +2,17 @@
 #include <catch2/catch.hpp>
 #include <obj/attributes.hpp>
 
+TEST_CASE("attributes are correctly default constructed")
+{
+    auto attr = ntw::obj::attributes{}.get();
+    REQUIRE(attr.ObjectName == nullptr);
+    REQUIRE(attr.RootDirectory == nullptr);
+    REQUIRE(attr.SecurityQualityOfService == nullptr);
+    REQUIRE(attr.SecurityDescriptor == nullptr);
+    REQUIRE(attr.Attributes == 0);
+    REQUIRE(attr.Length == sizeof(OBJECT_ATTRIBUTES));
+}
+
 TEST_CASE("OBJECT_ATTRIBUTES/attributes building works")
 {
     void* mock_pointer = (void*)0xDEADBEEF;
@@ -21,7 +32,7 @@ TEST_CASE("OBJECT_ATTRIBUTES/attributes building works")
                     .dont_reparse();
     auto built = attr.get();
 
-    SECTION(" invariants maintained")
+    SECTION("invariants maintained")
     {
         REQUIRE(built.ObjectName == nullptr);
         REQUIRE(built.Length == sizeof(OBJECT_ATTRIBUTES));
