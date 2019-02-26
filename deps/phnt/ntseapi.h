@@ -1,3 +1,23 @@
+/*
+ * Process Hacker -
+ *   Authorization functions
+ *
+ * This file is part of Process Hacker.
+ *
+ * Process Hacker is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Process Hacker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Process Hacker.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _NTSEAPI_H
 #define _NTSEAPI_H
 
@@ -39,8 +59,8 @@
 #define SE_INC_WORKING_SET_PRIVILEGE (33L)
 #define SE_TIME_ZONE_PRIVILEGE (34L)
 #define SE_CREATE_SYMBOLIC_LINK_PRIVILEGE (35L)
-#define SE_MAX_WELL_KNOWN_PRIVILEGE SE_CREATE_SYMBOLIC_LINK_PRIVILEGE
-
+#define SE_DELEGATE_SESSION_USER_IMPERSONATE_PRIVILEGE (36L)
+#define SE_MAX_WELL_KNOWN_PRIVILEGE SE_DELEGATE_SESSION_USER_IMPERSONATE_PRIVILEGE
 
 // Authz
 
@@ -65,6 +85,7 @@
 #define TOKEN_SECURITY_ATTRIBUTE_DISABLED_BY_DEFAULT 0x0008
 #define TOKEN_SECURITY_ATTRIBUTE_DISABLED 0x0010
 #define TOKEN_SECURITY_ATTRIBUTE_MANDATORY 0x0020
+#define TOKEN_SECURITY_ATTRIBUTE_COMPARE_IGNORE 0x0040
 
 #define TOKEN_SECURITY_ATTRIBUTE_VALID_FLAGS ( \
     TOKEN_SECURITY_ATTRIBUTE_NON_INHERITABLE | \
@@ -126,6 +147,12 @@ typedef struct _TOKEN_SECURITY_ATTRIBUTES_INFORMATION
         PTOKEN_SECURITY_ATTRIBUTE_V1 pAttributeV1;
     } Attribute;
 } TOKEN_SECURITY_ATTRIBUTES_INFORMATION, *PTOKEN_SECURITY_ATTRIBUTES_INFORMATION;
+
+// rev
+typedef struct _TOKEN_PROCESS_TRUST_LEVEL
+{
+    PSID TrustLevelSid;
+} TOKEN_PROCESS_TRUST_LEVEL, *PTOKEN_PROCESS_TRUST_LEVEL;
 
 // Tokens
 
@@ -284,7 +311,7 @@ NtAdjustGroupsToken(
     _In_opt_ PTOKEN_GROUPS NewState,
     _In_opt_ ULONG BufferLength,
     _Out_writes_bytes_to_opt_(BufferLength, *ReturnLength) PTOKEN_GROUPS PreviousState,
-    _Out_ PULONG ReturnLength
+    _Out_opt_ PULONG ReturnLength
     );
 
 #if (PHNT_VERSION >= PHNT_WIN8)
@@ -608,28 +635,5 @@ NtPrivilegedServiceAuditAlarm(
     _In_ PPRIVILEGE_SET Privileges,
     _In_ BOOLEAN AccessGranted
     );
-
-// Misc.
-
-typedef enum _FILTER_BOOT_OPTION_OPERATION
-{
-    FilterBootOptionOperationOpenSystemStore,
-    FilterBootOptionOperationSetElement,
-    FilterBootOptionOperationDeleteElement,
-    FilterBootOptionOperationMax
-} FILTER_BOOT_OPTION_OPERATION;
-
-#if (PHNT_VERSION >= PHNT_THRESHOLD)
-NTSYSCALLAPI
-NTSTATUS
-NTAPI
-NtFilterBootOption(
-    _In_ FILTER_BOOT_OPTION_OPERATION FilterOperation,
-    _In_ ULONG ObjectType,
-    _In_ ULONG ElementType,
-    _In_reads_bytes_opt_(DataSize) PVOID Data,
-    _In_ ULONG DataSize
-    );
-#endif
 
 #endif

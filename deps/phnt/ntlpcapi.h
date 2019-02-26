@@ -410,7 +410,6 @@ typedef struct _ALPC_COMPLETION_LIST_STATE
 #define ALPC_COMPLETION_LIST_BUFFER_GRANULARITY_MASK 0x3f // dbg
 
 // symbols
-#pragma warning(disable: 4324)
 typedef struct DECLSPEC_ALIGN(128) _ALPC_COMPLETION_LIST_HEADER
 {
     ULONG64 StartMagic;
@@ -435,7 +434,6 @@ typedef struct DECLSPEC_ALIGN(128) _ALPC_COMPLETION_LIST_HEADER
 
     ULONG64 EndMagic;
 } ALPC_COMPLETION_LIST_HEADER, *PALPC_COMPLETION_LIST_HEADER;
-#pragma warning(default : 4324)
 
 // private
 typedef struct _ALPC_CONTEXT_ATTR

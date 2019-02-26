@@ -3,9 +3,28 @@
 
 // This header file provides access to Win32, plus NTSTATUS values and some access mask values.
 
+#ifndef CINTERFACE
+#define CINTERFACE
+#endif
+
+#ifndef COBJMACROS
+#define COBJMACROS
+#endif
+
+#ifndef INITGUID
+#define INITGUID
+#endif
+
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifndef WIN32_NO_STATUS
 #define WIN32_NO_STATUS
+#endif
+
 #include <windows.h>
+#include <windowsx.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
 #include <winioctl.h>

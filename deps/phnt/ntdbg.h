@@ -1,5 +1,121 @@
+/*
+ * Process Hacker -
+ *   Debugger support functions
+ *
+ * This file is part of Process Hacker.
+ *
+ * Process Hacker is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Process Hacker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Process Hacker.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _NTDBG_H
 #define _NTDBG_H
+
+// Debugging
+
+NTSYSAPI
+VOID
+NTAPI
+DbgUserBreakPoint(
+    VOID
+    );
+
+NTSYSAPI
+VOID
+NTAPI
+DbgBreakPoint(
+    VOID
+    );
+
+NTSYSAPI
+VOID
+NTAPI
+DbgBreakPointWithStatus(
+    _In_ ULONG Status
+    );
+
+#define DBG_STATUS_CONTROL_C 1
+#define DBG_STATUS_SYSRQ 2
+#define DBG_STATUS_BUGCHECK_FIRST 3
+#define DBG_STATUS_BUGCHECK_SECOND 4
+#define DBG_STATUS_FATAL 5
+#define DBG_STATUS_DEBUG_CONTROL 6
+#define DBG_STATUS_WORKER 7
+
+NTSYSAPI
+ULONG
+STDAPIVCALLTYPE
+DbgPrint(
+    _In_z_ _Printf_format_string_ PSTR Format,
+    ...
+    );
+
+NTSYSAPI
+ULONG
+STDAPIVCALLTYPE
+DbgPrintEx(
+    _In_ ULONG ComponentId,
+    _In_ ULONG Level,
+    _In_z_ _Printf_format_string_ PSTR Format,
+    ...
+    );
+
+NTSYSAPI
+ULONG
+NTAPI
+vDbgPrintEx(
+    _In_ ULONG ComponentId,
+    _In_ ULONG Level,
+    _In_z_ PCH Format,
+    _In_ va_list arglist
+    );
+
+NTSYSAPI
+ULONG
+NTAPI
+vDbgPrintExWithPrefix(
+    _In_z_ PCH Prefix,
+    _In_ ULONG ComponentId,
+    _In_ ULONG Level,
+    _In_z_ PCH Format,
+    _In_ va_list arglist
+    );
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+DbgQueryDebugFilterState(
+    _In_ ULONG ComponentId,
+    _In_ ULONG Level
+    );
+
+NTSYSAPI
+NTSTATUS
+NTAPI
+DbgSetDebugFilterState(
+    _In_ ULONG ComponentId,
+    _In_ ULONG Level,
+    _In_ BOOLEAN State
+    );
+
+NTSYSAPI
+ULONG
+NTAPI
+DbgPrompt(
+    _In_ PCH Prompt,
+    _Out_writes_bytes_(Length) PCH Response,
+    _In_ ULONG Length
+    );
 
 // Definitions
 
@@ -93,8 +209,6 @@ typedef struct _DBGUI_WAIT_STATE_CHANGE
     } StateInfo;
 } DBGUI_WAIT_STATE_CHANGE, *PDBGUI_WAIT_STATE_CHANGE;
 
-// System calls
-
 #define DEBUG_READ_EVENT 0x0001
 #define DEBUG_PROCESS_ASSIGN 0x0002
 #define DEBUG_SET_INFORMATION 0x0004
@@ -111,6 +225,8 @@ typedef enum _DEBUGOBJECTINFOCLASS
     DebugObjectKillProcessOnExitInformation,
     MaxDebugObjectInfoClass
 } DEBUGOBJECTINFOCLASS, *PDEBUGOBJECTINFOCLASS;
+
+// System calls
 
 NTSYSCALLAPI
 NTSTATUS
@@ -235,14 +351,12 @@ DbgUiIssueRemoteBreakin(
     _In_ HANDLE Process
     );
 
-struct _DEBUG_EVENT;
-
 NTSYSAPI
 NTSTATUS
 NTAPI
 DbgUiConvertStateChangeStructure(
     _In_ PDBGUI_WAIT_STATE_CHANGE StateChange,
-    _Out_ struct _DEBUG_EVENT *DebugEvent
+    _Out_ LPDEBUG_EVENT DebugEvent
     );
 
 struct _EVENT_FILTER_DESCRIPTOR;

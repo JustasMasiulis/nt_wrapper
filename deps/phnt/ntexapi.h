@@ -1,3 +1,23 @@
+/*
+ * Process Hacker -
+ *   Executive support library functions
+ *
+ * This file is part of Process Hacker.
+ *
+ * Process Hacker is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Process Hacker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Process Hacker.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _NTEXAPI_H
 #define _NTEXAPI_H
 
@@ -12,7 +32,7 @@ NTSTATUS
 NTAPI
 NtDelayExecution(
     _In_ BOOLEAN Alertable,
-    _In_ PLARGE_INTEGER DelayInterval
+    _In_opt_ PLARGE_INTEGER DelayInterval
     );
 
 // Environment values
@@ -244,6 +264,27 @@ NtSetDriverEntryOrder(
     _In_reads_(Count) PULONG Ids,
     _In_ ULONG Count
     );
+
+typedef enum _FILTER_BOOT_OPTION_OPERATION
+{
+    FilterBootOptionOperationOpenSystemStore,
+    FilterBootOptionOperationSetElement,
+    FilterBootOptionOperationDeleteElement,
+    FilterBootOptionOperationMax
+} FILTER_BOOT_OPTION_OPERATION;
+
+#if (PHNT_VERSION >= PHNT_THRESHOLD)
+NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtFilterBootOption(
+    _In_ FILTER_BOOT_OPTION_OPERATION FilterOperation,
+    _In_ ULONG ObjectType,
+    _In_ ULONG ElementType,
+    _In_reads_bytes_opt_(DataSize) PVOID Data,
+    _In_ ULONG DataSize
+    );
+#endif
 
 #endif
 
@@ -1366,7 +1407,7 @@ typedef enum _SYSTEM_INFORMATION_CLASS
     SystemHardwareSecurityTestInterfaceResultsInformation,
     SystemSingleModuleInformation, // q: SYSTEM_SINGLE_MODULE_INFORMATION
     SystemAllowedCpuSetsInformation,
-    SystemDmaProtectionInformation, // q: SYSTEM_DMA_PROTECTION_INFORMATION
+    SystemVsmProtectionInformation, // q: SYSTEM_VSM_PROTECTION_INFORMATION (previously SystemDmaProtectionInformation)
     SystemInterruptCpuSetsInformation, // q: SYSTEM_INTERRUPT_CPU_SET_INFORMATION // 170
     SystemSecureBootPolicyFullInformation, // q: SYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION
     SystemCodeIntegrityPolicyFullInformation,
@@ -1401,6 +1442,10 @@ typedef enum _SYSTEM_INFORMATION_CLASS
     SystemSpeculationControlInformation, // SYSTEM_SPECULATION_CONTROL_INFORMATION // (CVE-2017-5715) REDSTONE3 and above.
     SystemDmaGuardPolicyInformation, // SYSTEM_DMA_GUARD_POLICY_INFORMATION
     SystemEnclaveLaunchControlInformation, // SYSTEM_ENCLAVE_LAUNCH_CONTROL_INFORMATION
+    SystemWorkloadAllowedCpuSetsInformation, // SYSTEM_WORKLOAD_ALLOWED_CPU_SET_INFORMATION // since REDSTONE5
+    SystemCodeIntegrityUnlockModeInformation,
+    SystemLeapSecondInformation, // SYSTEM_LEAP_SECOND_INFORMATION
+    SystemFlags2Information,
     MaxSystemInfoClass
 } SYSTEM_INFORMATION_CLASS;
 
@@ -1934,6 +1979,16 @@ typedef struct _EVENT_TRACE_PROFILE_COUNTER_INFORMATION
     HANDLE TraceHandle;
     ULONG ProfileSource[1];
 } EVENT_TRACE_PROFILE_COUNTER_INFORMATION, *PEVENT_TRACE_PROFILE_COUNTER_INFORMATION;
+
+//typedef struct _PROFILE_SOURCE_INFO
+//{
+//    ULONG NextEntryOffset;
+//    ULONG Source;
+//    ULONG MinInterval;
+//    ULONG MaxInterval;
+//    PVOID Reserved;
+//    WCHAR Description[1];
+//} PROFILE_SOURCE_INFO, *PPROFILE_SOURCE_INFO;
 
 typedef struct _EVENT_TRACE_PROFILE_LIST_INFORMATION
 {
@@ -2783,7 +2838,7 @@ typedef struct _PROCESS_ENERGY_VALUES_EXTENSION
 {
     union
     {
-        TIMELINE_BITMAP Timelines[14]; // 9 for REDSTONE2, 14 for REDSTONE3
+        TIMELINE_BITMAP Timelines[14]; // 9 for REDSTONE2, 14 for REDSTONE3/4/5
         struct
         {
             TIMELINE_BITMAP CpuTimeline;
@@ -2934,11 +2989,12 @@ typedef struct _SYSTEM_TPM_INFORMATION
 } SYSTEM_TPM_INFORMATION, *PSYSTEM_TPM_INFORMATION;
 
 // private
-typedef struct _SYSTEM_DMA_PROTECTION_INFORMATION
+typedef struct _SYSTEM_VSM_PROTECTION_INFORMATION
 {
     BOOLEAN DmaProtectionsAvailable;
     BOOLEAN DmaProtectionsInUse;
-} SYSTEM_DMA_PROTECTION_INFORMATION, *PSYSTEM_DMA_PROTECTION_INFORMATION;
+    BOOLEAN HardwareMbecAvailable; // REDSTONE4 (CVE-2018-3639)
+} SYSTEM_VSM_PROTECTION_INFORMATION, *PSYSTEM_VSM_PROTECTION_INFORMATION;
 
 // private
 typedef struct _SYSTEM_CODEINTEGRITYPOLICY_INFORMATION
@@ -2957,6 +3013,7 @@ typedef struct _SYSTEM_ISOLATED_USER_MODE_INFORMATION
     BOOLEAN HvciStrictMode : 1;
     BOOLEAN DebugEnabled : 1;
     BOOLEAN FirmwarePageProtection : 1;
+    BOOLEAN EncryptionKeyAvailable : 1;
     BOOLEAN SpareFlags : 1;
     BOOLEAN TrustletRunning : 1;
     BOOLEAN SpareFlags2 : 1;
@@ -3149,7 +3206,10 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
             ULONG KvaShadowInvpcid : 1;
             ULONG KvaShadowRequired : 1; // REDSTONE4
             ULONG KvaShadowRequiredAvailable : 1;
-            ULONG Reserved : 26;
+            ULONG InvalidPteBit : 6;
+            ULONG L1DataCacheFlushSupported : 1;
+            ULONG L1TerminalFaultMitigationPresent : 1;
+            ULONG Reserved : 18;
         };
     };
 } SYSTEM_KERNEL_VA_SHADOW_INFORMATION, *PSYSTEM_KERNEL_VA_SHADOW_INFORMATION;
@@ -3184,7 +3244,15 @@ typedef struct _SYSTEM_SPECULATION_CONTROL_INFORMATION
             ULONG IbrsPresent : 1;
             ULONG StibpPresent : 1;
             ULONG SmepPresent : 1;
-            ULONG Reserved : 24;
+            ULONG SpeculativeStoreBypassDisableAvailable : 1; // REDSTONE4 (CVE-2018-3639)
+            ULONG SpeculativeStoreBypassDisableSupported : 1;
+            ULONG SpeculativeStoreBypassDisabledSystemWide : 1;
+            ULONG SpeculativeStoreBypassDisabledKernel : 1;
+            ULONG SpeculativeStoreBypassDisableRequired : 1;
+            ULONG BpbDisabledKernelToUser : 1;
+            ULONG SpecCtrlRetpolineEnabled : 1;
+            ULONG SpecCtrlImportOptimizationEnabled : 1;
+            ULONG Reserved : 16;
         };
     };
 } SYSTEM_SPECULATION_CONTROL_INFORMATION, *PSYSTEM_SPECULATION_CONTROL_INFORMATION;
@@ -3200,6 +3268,13 @@ typedef struct _SYSTEM_ENCLAVE_LAUNCH_CONTROL_INFORMATION
 {
     UCHAR EnclaveLaunchSigner[32];
 } SYSTEM_ENCLAVE_LAUNCH_CONTROL_INFORMATION, *PSYSTEM_ENCLAVE_LAUNCH_CONTROL_INFORMATION;
+
+// private
+typedef struct _SYSTEM_WORKLOAD_ALLOWED_CPU_SET_INFORMATION
+{
+    ULONGLONG WorkloadClass;
+    ULONGLONG CpuSets[1];
+} SYSTEM_WORKLOAD_ALLOWED_CPU_SET_INFORMATION, *PSYSTEM_WORKLOAD_ALLOWED_CPU_SET_INFORMATION;
 
 #if (PHNT_MODE != PHNT_MODE_KERNEL)
 
@@ -3303,14 +3378,14 @@ typedef struct _SYSDBG_CONTROL_SPACE
     ULONG Processor;
 } SYSDBG_CONTROL_SPACE, *PSYSDBG_CONTROL_SPACE;
 
-enum class _INTERFACE_TYPE;
+enum _INTERFACE_TYPE;
 
 typedef struct _SYSDBG_IO_SPACE
 {
     ULONG64 Address;
     PVOID Buffer;
     ULONG Request;
-    _INTERFACE_TYPE InterfaceType;
+    enum _INTERFACE_TYPE InterfaceType;
     ULONG BusNumber;
     ULONG AddressSpace;
 } SYSDBG_IO_SPACE, *PSYSDBG_IO_SPACE;
@@ -3321,14 +3396,14 @@ typedef struct _SYSDBG_MSR
     ULONG64 Data;
 } SYSDBG_MSR, *PSYSDBG_MSR;
 
-enum class _BUS_DATA_TYPE;
+enum _BUS_DATA_TYPE;
 
 typedef struct _SYSDBG_BUS_DATA
 {
     ULONG Address;
     PVOID Buffer;
     ULONG Request;
-    _BUS_DATA_TYPE BusDataType;
+    enum _BUS_DATA_TYPE BusDataType;
     ULONG BusNumber;
     ULONG SlotNumber;
 } SYSDBG_BUS_DATA, *PSYSDBG_BUS_DATA;
@@ -3623,38 +3698,20 @@ typedef struct _KUSER_SHARED_DATA
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TickCountMultiplier) == 0x4);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, InterruptTime) == 0x8);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, SystemTime) == 0x14);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TimeZoneBias) == 0x20);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, ImageNumberLow) == 0x2c);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, ImageNumberHigh) == 0x2e);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, NtSystemRoot) == 0x30);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, MaxStackTraceDepth) == 0x238);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, CryptoExponent) == 0x23c);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TimeZoneId) == 0x240);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, LargePageMinimum) == 0x244);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, NtProductType) == 0x264);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, ProductTypeIsValid) == 0x268);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, NtMajorVersion) == 0x26c);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, NtMinorVersion) == 0x270);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, ProcessorFeatures) == 0x274);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, Reserved1) == 0x2b4);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, Reserved3) == 0x2b8);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TimeSlip) == 0x2bc);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, AlternativeArchitecture) == 0x2c0);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, SystemExpirationDate) == 0x2c8);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, SuiteMask) == 0x2d0);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, KdDebuggerEnabled) == 0x2d4);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, ActiveConsoleId) == 0x2d8);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, DismountCount) == 0x2dc);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, ComPlusPackage) == 0x2e0);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, LastSystemRITEventTickCount) == 0x2e4);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, NumberOfPhysicalPages) == 0x2e8);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, SafeBootMode) == 0x2ec);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TestRetInstruction) == 0x2f8);
-C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, SystemCallPad) == 0x310);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TickCount) == 0x320);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, TickCountQuad) == 0x320);
 C_ASSERT(FIELD_OFFSET(KUSER_SHARED_DATA, XState) == 0x3d8);
-C_ASSERT(sizeof(KUSER_SHARED_DATA) == 0x708);
+//C_ASSERT(sizeof(KUSER_SHARED_DATA) == 0x70C); // VS2017 has some weird issue with this.
 
 #define USER_SHARED_DATA ((KUSER_SHARED_DATA * const)0x7ffe0000)
 
@@ -3871,6 +3928,9 @@ NtAddAtom(
     );
 
 #if (PHNT_VERSION >= PHNT_WIN8)
+
+#define ATOM_FLAG_GLOBAL 0x2
+
 // rev
 NTSYSCALLAPI
 NTSTATUS
@@ -3881,6 +3941,7 @@ NtAddAtomEx(
     _Out_opt_ PRTL_ATOM Atom,
     _In_ ULONG Flags
     );
+
 #endif
 
 NTSYSCALLAPI

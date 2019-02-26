@@ -151,7 +151,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessHandleInformation, // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
     ProcessMitigationPolicy, // s: PROCESS_MITIGATION_POLICY_INFORMATION
     ProcessDynamicFunctionTableInformation,
-    ProcessHandleCheckingMode,
+    ProcessHandleCheckingMode, // qs: ULONG; s: 0 disables, otherwise enables
     ProcessKeepAliveCount, // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
     ProcessRevokeFileHandles, // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
     ProcessWorkingSetControl, // s: PROCESS_WORKING_SET_CONTROL
@@ -177,7 +177,7 @@ typedef enum _PROCESSINFOCLASS
     ProcessActivityThrottleState, // PROCESS_ACTIVITY_THROTTLE_STATE
     ProcessActivityThrottlePolicy, // PROCESS_ACTIVITY_THROTTLE_POLICY
     ProcessWin32kSyscallFilterInformation,
-    ProcessDisableSystemAllowedCpuSets,
+    ProcessDisableSystemAllowedCpuSets, // 80
     ProcessWakeInformation, // PROCESS_WAKE_INFORMATION
     ProcessEnergyTrackingState, // PROCESS_ENERGY_TRACKING_STATE
     ProcessManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
@@ -187,9 +187,14 @@ typedef enum _PROCESSINFOCLASS
     ProcessEnableReadWriteVmLogging, // PROCESS_READWRITEVM_LOGGING_INFORMATION
     ProcessUptimeInformation, // PROCESS_UPTIME_INFORMATION
     ProcessImageSection,
-    ProcessDebugAuthInformation, // since REDSTONE4
+    ProcessDebugAuthInformation, // since REDSTONE4 // 90
     ProcessSystemResourceManagement, // PROCESS_SYSTEM_RESOURCE_MANAGEMENT
     ProcessSequenceNumber, // q: ULONGLONG
+    ProcessLoaderDetour, // since REDSTONE5
+    ProcessSecurityDomainInformation, // PROCESS_SECURITY_DOMAIN_INFORMATION
+    ProcessCombineSecurityDomainsInformation, // PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
+    ProcessEnableLogging, // PROCESS_LOGGING_INFORMATION
+    ProcessLeapSecondInformation, // PROCESS_LEAP_SECOND_INFORMATION
     MaxProcessInfoClass
 } PROCESSINFOCLASS;
 #endif
@@ -240,13 +245,14 @@ typedef enum _THREADINFOCLASS
     ThreadSystemThreadInformation, // q: SYSTEM_THREAD_INFORMATION // 40
     ThreadActualGroupAffinity, // since THRESHOLD2
     ThreadDynamicCodePolicyInfo,
-    ThreadExplicitCaseSensitivity,
+    ThreadExplicitCaseSensitivity, // qs: ULONG; s: 0 disables, otherwise enables
     ThreadWorkOnBehalfTicket,
     ThreadSubsystemInformation, // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
     ThreadDbgkWerReportActive,
     ThreadAttachContainer,
     ThreadManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
     ThreadPowerThrottlingState, // THREAD_POWER_THROTTLING_STATE
+    ThreadWorkloadClass, // THREAD_WORKLOAD_CLASS // since REDSTONE5 // 50
     MaxThreadInfoClass
 } THREADINFOCLASS;
 #endif
@@ -640,6 +646,7 @@ typedef struct _PROCESS_MITIGATION_POLICY_INFORMATION
         PROCESS_MITIGATION_SYSTEM_CALL_FILTER_POLICY SystemCallFilterPolicy;
         PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY PayloadRestrictionPolicy;
         PROCESS_MITIGATION_CHILD_PROCESS_POLICY ChildProcessPolicy;
+        PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY SideChannelIsolationPolicy;
     };
 } PROCESS_MITIGATION_POLICY_INFORMATION, *PPROCESS_MITIGATION_POLICY_INFORMATION;
 
@@ -850,6 +857,39 @@ typedef union _PROCESS_SYSTEM_RESOURCE_MANAGEMENT
     };
 } PROCESS_SYSTEM_RESOURCE_MANAGEMENT, *PPROCESS_SYSTEM_RESOURCE_MANAGEMENT;
 
+// private
+typedef struct _PROCESS_SECURITY_DOMAIN_INFORMATION
+{
+    ULONGLONG SecurityDomain;
+} PROCESS_SECURITY_DOMAIN_INFORMATION, *PPROCESS_SECURITY_DOMAIN_INFORMATION;
+
+// private
+typedef struct _PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
+{
+    HANDLE ProcessHandle;
+} PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION, *PPROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION;
+
+// private
+typedef struct _PROCESS_LOGGING_INFORMATION
+{
+    ULONG Flags;
+    struct
+    {
+        ULONG EnableReadVmLogging : 1;
+        ULONG EnableWriteVmLogging : 1;
+        ULONG EnableProcessSuspendResumeLogging : 1;
+        ULONG EnableThreadSuspendResumeLogging : 1;
+        ULONG Reserved : 28;
+    };
+} PROCESS_LOGGING_INFORMATION, *PPROCESS_LOGGING_INFORMATION;
+
+// private
+typedef struct _PROCESS_LEAP_SECOND_INFORMATION
+{
+    ULONG Flags;
+    ULONG Reserved;
+} PROCESS_LEAP_SECOND_INFORMATION, *PPROCESS_LEAP_SECOND_INFORMATION;
+
 // end_private
 
 #endif
@@ -987,6 +1027,7 @@ typedef struct _THREAD_NAME_INFORMATION
     UNICODE_STRING ThreadName;
 } THREAD_NAME_INFORMATION, *PTHREAD_NAME_INFORMATION;
 
+#if (PHNT_MODE != PHNT_MODE_KERNEL)
 // private
 typedef enum _SUBSYSTEM_INFORMATION_TYPE 
 {
@@ -994,6 +1035,15 @@ typedef enum _SUBSYSTEM_INFORMATION_TYPE
     SubsystemInformationTypeWSL,
     MaxSubsystemInformationType
 } SUBSYSTEM_INFORMATION_TYPE;
+#endif
+
+// private
+typedef enum _THREAD_WORKLOAD_CLASS
+{
+    ThreadWorkloadClassDefault,
+    ThreadWorkloadClassGraphics,
+    MaxThreadWorkloadClass
+} THREAD_WORKLOAD_CLASS;
 
 // Processes
 
@@ -1546,7 +1596,10 @@ typedef enum _PS_MITIGATION_OPTION
     PS_MITIGATION_OPTION_RESTRICT_CHILD_PROCESS_CREATION,
     PS_MITIGATION_OPTION_IMPORT_ADDRESS_FILTER,
     PS_MITIGATION_OPTION_MODULE_TAMPERING_PROTECTION,
-    PS_MITIGATION_OPTION_RESTRICT_INDIRECT_BRANCH_PREDICTION
+    PS_MITIGATION_OPTION_RESTRICT_INDIRECT_BRANCH_PREDICTION,
+    PS_MITIGATION_OPTION_SPECULATIVE_STORE_BYPASS_DISABLE, // since REDSTONE5
+    PS_MITIGATION_OPTION_ALLOW_DOWNGRADE_DYNAMIC_CODE_POLICY,
+    PS_MITIGATION_OPTION_CET_SHADOW_STACKS
 } PS_MITIGATION_OPTION;
 
 // windows-internals-book:"Chapter 5"

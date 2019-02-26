@@ -1,3 +1,23 @@
+/*
+ * Process Hacker -
+ *   File management support
+ *
+ * This file is part of Process Hacker.
+ *
+ * Process Hacker is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Process Hacker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Process Hacker.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _NTIOAPI_H
 #define _NTIOAPI_H
 
@@ -245,6 +265,10 @@ typedef enum _FILE_INFORMATION_CLASS
     FileMemoryPartitionInformation, // FILE_MEMORY_PARTITION_INFORMATION // since REDSTONE3
     FileStatLxInformation, // FILE_STAT_LX_INFORMATION // since REDSTONE4
     FileCaseSensitiveInformation, // FILE_CASE_SENSITIVE_INFORMATION
+    FileLinkInformationEx, // since REDSTONE5
+    FileLinkInformationExBypassAccessCheck,
+    FileStorageReserveIdInformation,
+    FileCaseSensitiveInformationForceAccessCheck,
     FileMaximumInformation
 } FILE_INFORMATION_CLASS, *PFILE_INFORMATION_CLASS;
 
@@ -927,6 +951,7 @@ typedef enum _FSINFOCLASS
     FileFsSectorSizeInformation, // FILE_FS_SECTOR_SIZE_INFORMATION // since WIN8
     FileFsDataCopyInformation, // FILE_FS_DATA_COPY_INFORMATION
     FileFsMetadataSizeInformation, // FILE_FS_METADATA_SIZE_INFORMATION // since THRESHOLD
+    FileFsFullSizeInformationEx, // FILE_FS_FULL_SIZE_INFORMATION_EX // since REDSTONE5
     FileFsMaximumInformation
 } FSINFOCLASS, *PFSINFOCLASS;
 
@@ -1030,12 +1055,31 @@ typedef struct _FILE_FS_DATA_COPY_INFORMATION
     ULONG NumberOfCopies;
 } FILE_FS_DATA_COPY_INFORMATION, *PFILE_FS_DATA_COPY_INFORMATION;
 
+// private
 typedef struct _FILE_FS_METADATA_SIZE_INFORMATION
 {
     LARGE_INTEGER TotalMetadataAllocationUnits;
     ULONG SectorsPerAllocationUnit;
     ULONG BytesPerSector;
 } FILE_FS_METADATA_SIZE_INFORMATION, *PFILE_FS_METADATA_SIZE_INFORMATION;
+
+// private
+typedef struct _FILE_FS_FULL_SIZE_INFORMATION_EX
+{
+    ULONGLONG ActualTotalAllocationUnits;
+    ULONGLONG ActualAvailableAllocationUnits;
+    ULONGLONG ActualPoolUnavailableAllocationUnits;
+    ULONGLONG CallerTotalAllocationUnits;
+    ULONGLONG CallerAvailableAllocationUnits;
+    ULONGLONG CallerPoolUnavailableAllocationUnits;
+    ULONGLONG UsedAllocationUnits;
+    ULONGLONG TotalReservedAllocationUnits;
+    ULONGLONG VolumeStorageReserveAllocationUnits;
+    ULONGLONG AvailableCommittedAllocationUnits;
+    ULONGLONG PoolAvailableAllocationUnits;
+    ULONG SectorsPerAllocationUnit;
+    ULONG BytesPerSector;
+} FILE_FS_FULL_SIZE_INFORMATION_EX, *PFILE_FS_FULL_SIZE_INFORMATION_EX;
 
 // System calls
 
@@ -1119,6 +1163,7 @@ NtFlushBuffersFile(
 
 #define FLUSH_FLAGS_FILE_DATA_ONLY 0x00000001
 #define FLUSH_FLAGS_NO_SYNC 0x00000002
+#define FLUSH_FLAGS_FILE_DATA_SYNC_ONLY 0x00000004 // REDSTONE1
 
 #if (PHNT_VERSION >= PHNT_WIN8)
 NTSYSCALLAPI
@@ -1143,6 +1188,19 @@ NtQueryInformationFile(
     _In_ ULONG Length,
     _In_ FILE_INFORMATION_CLASS FileInformationClass
     );
+
+#if (PHNT_VERSION >= PHNT_REDSTONE2)
+NTSYSCALLAPI
+NTSTATUS
+NTAPI
+NtQueryInformationByName(
+    _In_ POBJECT_ATTRIBUTES ObjectAttributes,
+    _Out_ PIO_STATUS_BLOCK IoStatusBlock,
+    _Out_writes_bytes_(Length) PVOID FileInformation,
+    _In_ ULONG Length,
+    _In_ FILE_INFORMATION_CLASS FileInformationClass
+    );
+#endif
 
 NTSYSCALLAPI
 NTSTATUS
@@ -1479,7 +1537,7 @@ NTAPI
 NtQueryIoCompletion(
     _In_ HANDLE IoCompletionHandle,
     _In_ IO_COMPLETION_INFORMATION_CLASS IoCompletionInformationClass,
-    _Out_writes_bytes_(IoCompletionInformation) PVOID IoCompletionInformation,
+    _Out_writes_bytes_(IoCompletionInformationLength) PVOID IoCompletionInformation,
     _In_ ULONG IoCompletionInformationLength,
     _Out_opt_ PULONG ReturnLength
     );
@@ -1616,7 +1674,7 @@ NtNotifyChangeSession(
 
 // Other types
 
-enum class INTERFACE_TYPE
+typedef enum _INTERFACE_TYPE
 {
     InterfaceTypeUndefined = -1,
     Internal,
@@ -1637,7 +1695,7 @@ enum class INTERFACE_TYPE
     PNPBus,
     Vmcs,
     MaximumInterfaceType
-};
+} INTERFACE_TYPE, *PINTERFACE_TYPE;
 
 typedef enum _DMA_WIDTH
 {
@@ -1657,7 +1715,7 @@ typedef enum _DMA_SPEED
     MaximumDmaSpeed
 } DMA_SPEED, *PDMA_SPEED;
 
-enum class BUS_DATA_TYPE
+typedef enum _BUS_DATA_TYPE
 {
     ConfigurationSpaceUndefined = -1,
     Cmos,
@@ -1673,7 +1731,7 @@ enum class BUS_DATA_TYPE
     PNPISAConfiguration,
     SgiInternalConfiguration,
     MaximumBusDataType
-};
+} BUS_DATA_TYPE, *PBUS_DATA_TYPE;
 
 // Control structures
 
