@@ -4,6 +4,7 @@
 
 namespace ntw {
 
+    /// \brief Predefined NTSTATUS facilities
     enum class facility : std::int32_t {
         debugger            = 0x1,
         rpc_runtime         = 0x2,
@@ -60,6 +61,7 @@ namespace ntw {
         maximum_value       = 0xed,
     };
 
+    /// \brief Predefined NTSTATUS severity codes
     enum class severity : std::int32_t {
         success     = 0,
         information = 1,
@@ -67,59 +69,60 @@ namespace ntw {
         error       = 3
     };
 
+    /// \brief Wraps NTSTATUS type and its helper functions
     class status {
         // | severity : 2 | customer : 1 | reserved : 1 | facility : 12 | code : 16 |
-        std::int32_t _value;
+        std::int32_t _value = 0;
 
     public:
         /// \brief Constructs status with STATUS_SUCCESS
-        status();
+        NTW_INLINE constexpr status() = default;
 
         /// \brief Constructs status with given status code
-        status(std::int32_t status);
+        NTW_INLINE constexpr status(std::int32_t status);
 
-        status& operator=(std::int32_t status);
+        NTW_INLINE constexpr status& operator=(std::int32_t status);
 
-		/// \brief Compares status codes
-        bool operator==(std::int32_t status) const;
+        /// \brief Compares status codes
+        NTW_INLINE constexpr bool operator==(std::int32_t status) const;
 
         /// \brief Wrapper around success() call
-        explicit operator bool() const;
+        NTW_INLINE constexpr explicit operator bool() const;
 
         /// \brief Implicit conversion to the system status type
-        explicit operator std::int32_t() const;
+        NTW_INLINE constexpr explicit operator std::int32_t() const;
 
         /// \brief Checks if status severity is not warning or error
-        bool success() const;
+        NTW_INLINE constexpr bool success() const;
 
         /// \brief Checks if status severity is information
-        bool information() const;
+        NTW_INLINE constexpr bool information() const;
 
         /// \brief Checks if status severity is warning
-        bool warning() const;
+        NTW_INLINE constexpr bool warning() const;
 
         /// \brief Checks if status severity is error
-        bool error() const;
+        NTW_INLINE constexpr bool error() const;
 
         /// \brief Extracts the severity from status
-        severity severity() const;
+        NTW_INLINE constexpr severity severity() const;
 
         /// \brief Extracts the facility from status
-        facility facility() const;
+        NTW_INLINE constexpr facility facility() const;
 
         /// \brief Extracts the code from status
-        std::int32_t code() const;
+        NTW_INLINE constexpr std::int32_t code() const;
 
         /// \brief Returns the internal status value
-        std::int32_t get() const;
+        NTW_INLINE constexpr std::int32_t get() const;
 
         /// \brief Calls given function on success
         template<class Fn>
-        status& and_then(Fn f);
+        NTW_INLINE constexpr status& and_then(Fn f);
 
         /// \brief Calls given function on !success
         template<class Fn>
-        status& or_else(Fn f);
+        NTW_INLINE constexpr status& or_else(Fn f);
     };
 
 } // namespace ntw
