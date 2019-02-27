@@ -104,13 +104,13 @@ namespace ntw::obj {
     {}
 
     template<class H>
-    NTW_INLINE handle_type& basic_process<H>::handle()
+    NTW_INLINE H& basic_process<H>::handle()
     {
         return _handle;
     }
 
     template<class H>
-    NTW_INLINE const handle_type& basic_process<H>::handle() const
+    NTW_INLINE const H& basic_process<H>::handle() const
     {
         return _handle;
     }
