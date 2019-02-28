@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(nt_wrapper VERSION 3.1.2 LANGUAGES CXX)
+project(nt_wrapper VERSION 3.2 LANGUAGES CXX)
 
 include(CTest)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

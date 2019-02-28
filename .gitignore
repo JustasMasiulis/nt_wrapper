@@ -4,6 +4,7 @@
 CMakeFiles/
 CMakeCache.txt
 .cquery_cached_index/
+.vscode/
 .ninja_deps
 .ninja_log
 build.ninja
