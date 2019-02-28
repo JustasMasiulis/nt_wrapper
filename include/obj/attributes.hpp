@@ -1,6 +1,6 @@
 #pragma once
 #include "../detail/common.hpp"
-#include "../detail/unwrap_handle.hpp"
+#include "../detail/unwrap.hpp"
 #include <cstdint>
 
 namespace ntw::obj {
