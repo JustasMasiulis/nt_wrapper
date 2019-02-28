@@ -24,7 +24,7 @@ namespace ntw {
         template<class T>
         NTW_INLINE status allocate(T*& ptr, std::size_t s);
 
-        NTW_INLINE constexpr static void deallocate(T* p);
+        NTW_INLINE constexpr static void deallocate(void* p);
 
         NTW_INLINE constexpr static std::size_t max_size();
     };
@@ -41,7 +41,7 @@ namespace ntw {
         template<class T>
         NTW_INLINE static status allocate(T*& ptr, std::size_t s);
 
-        NTW_INLINE static void deallocate(T* p);
+        NTW_INLINE static void deallocate(void* p);
 
         NTW_INLINE constexpr static std::size_t max_size();
     };
@@ -53,7 +53,7 @@ namespace ntw {
         template<class T>
         NTW_INLINE static status allocate(T*& ptr, std::size_t s);
 
-        NTW_INLINE static void deallocate(T* p);
+        NTW_INLINE static void deallocate(void* p);
 
         NTW_INLINE constexpr static std::size_t max_size();
     };

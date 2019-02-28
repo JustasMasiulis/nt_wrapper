@@ -15,24 +15,24 @@ namespace ntw {
     }
 
     template<std::size_t ByteSize>
-    NTW_INLINE constexpr static void stack_alloc<ByteSize>::deallocate(T*)
+    NTW_INLINE constexpr void stack_alloc<ByteSize>::deallocate(void*)
     {}
 
     template<std::size_t ByteSize>
-    NTW_INLINE constexpr static std::size_t stack_alloc<ByteSize>::max_size()
+    NTW_INLINE constexpr std::size_t stack_alloc<ByteSize>::max_size()
     {
         return ByteSize;
     }
 
 
-    NTW_INLINE static void* heap_alloc::_process_heap()
+    NTW_INLINE void* heap_alloc::_process_heap()
     {
         const auto offset = offsetof(NT_TIB, Self) * 2;
         return reinterpret_cast<const PEB*>(__readgsqword(offset))->ProcessHeap;
     }
 
     template<class T>
-    NTW_INLINE static status heap_alloc::allocate(T*& ptr, std::size_t s)
+    NTW_INLINE status heap_alloc::allocate(T*& ptr, std::size_t s)
     {
         const auto allocated = NTW_IMPORT_CALL(RtlAllocateHeap)(_process_heap(), 0, s);
         if(allocated) {
@@ -42,38 +42,38 @@ namespace ntw {
         return STATUS_NO_MEMORY;
     }
 
-    NTW_INLINE static void heap_alloc::deallocate(T* p)
+    NTW_INLINE void heap_alloc::deallocate(void* p)
     {
         NTW_IMPORT_CALL(RtlFreeHeap)(_process_heap(), 0, p);
     }
 
-    NTW_INLINE constexpr static std::size_t heap_alloc::max_size()
+    NTW_INLINE constexpr std::size_t heap_alloc::max_size()
     {
-        return std::numeric_limits<std::size_t>::(max)();
+        return (std::numeric_limits<std::size_t>::max)();
     }
 
 
     template<class T>
     NTW_INLINE static status page_alloc::allocate(T*& ptr, std::size_t s)
     {
+        ptr = nullptr;
         return NTW_SYSCALL(NtAllocateVirtualMemory)(NtCurrentProcess(),
-                                                    reinterpret_cast<void**>(&ptr),
+                                                    &reinterpret_cast<void*&>(ptr),
                                                     0,
-                                                    s,
+                                                    &s,
                                                     MEM_COMMIT | MEM_RESERVE,
                                                     PAGE_READWRITE);
     }
 
-    NTW_INLINE static void page_alloc::deallocate(T* p)
+    NTW_INLINE void page_alloc::deallocate(void* p)
     {
         SIZE_T size = 0;
-        NTW_SYSCALL(NtFreeVirtualMemory)
-        (NtCurrentProcess(), reinterpret_cast<void**>(&ptr), &size, MEM_RELEASE);
+        NTW_SYSCALL(NtFreeVirtualMemory)(NtCurrentProcess(), &p, &size, MEM_RELEASE);
     }
 
-    NTW_INLINE constexpr static std::size_t page_alloc::max_size()
+    NTW_INLINE constexpr std::size_t page_alloc::max_size()
     {
-        return std::numeric_limits<std::size_t>::(max)();
+        return (std::numeric_limits<std::size_t>::max)();
     }
 
 } // namespace ntw
