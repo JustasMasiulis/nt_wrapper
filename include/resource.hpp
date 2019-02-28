@@ -4,29 +4,27 @@
 namespace ntw {
 
     /*
+        struct buffer {
+            void*       data();
+            std::size_t size();
+        };
+
         struct allocator {
             template<class T>
             status allocate(T*& ptr, std::size_t size);
-
-            void deallocate(T* ptr);
-
-            std::size_t max_size();
+            void   deallocate(void* ptr);
         };
     */
 
-    /// \brief Allocator that uses fixed size stack buffer
+    /// \brief Fixed size stack buffer
     /// \tparam ByteSize The size of internal buffer in bytes
     template<std::size_t ByteSize>
-    class stack_alloc {
+    class stack_buffer {
         std::aligned_storage_t<ByteSize> _storage;
 
     public:
-        template<class T>
-        NTW_INLINE status allocate(T*& ptr, std::size_t s);
-
-        NTW_INLINE constexpr static void deallocate(void* p);
-
-        NTW_INLINE constexpr static std::size_t max_size();
+        NTW_INLINE constexpr void*              data() const;
+        NTW_INLINE constexpr static std::size_t size();
     };
 
 
@@ -42,8 +40,6 @@ namespace ntw {
         NTW_INLINE static status allocate(T*& ptr, std::size_t s);
 
         NTW_INLINE static void deallocate(void* p);
-
-        NTW_INLINE constexpr static std::size_t max_size();
     };
 
 
@@ -54,10 +50,8 @@ namespace ntw {
         NTW_INLINE static status allocate(T*& ptr, std::size_t s);
 
         NTW_INLINE static void deallocate(void* p);
-
-        NTW_INLINE constexpr static std::size_t max_size();
     };
 
 } // namespace ntw
 
-#include "../impl/allocator.inl"
+#include "../impl/resource.inl"

@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/allocator.hpp"
+#include "../include/resource.hpp"
 #include <memory> // aligned_storage
 #include <limits> // numeric_limits
 #include <new> // launder
@@ -7,19 +7,13 @@
 namespace ntw {
 
     template<std::size_t ByteSize>
-    template<class T>
-    NTW_INLINE status stack_alloc<ByteSize>::allocate(T*& ptr, std::size_t)
+    NTW_INLINE constexpr void* stack_buffer<ByteSize>::data() const
     {
-        ptr = std::launder(reinterpret_cast<T*>(&_storage));
-        return STATUS_SUCCESS;
+        return &_storage;
     }
 
     template<std::size_t ByteSize>
-    NTW_INLINE constexpr void stack_alloc<ByteSize>::deallocate(void*)
-    {}
-
-    template<std::size_t ByteSize>
-    NTW_INLINE constexpr std::size_t stack_alloc<ByteSize>::max_size()
+    NTW_INLINE constexpr std::size_t stack_buffer<ByteSize>::size()
     {
         return ByteSize;
     }
@@ -47,11 +41,6 @@ namespace ntw {
         NTW_IMPORT_CALL(RtlFreeHeap)(_process_heap(), 0, p);
     }
 
-    NTW_INLINE constexpr std::size_t heap_alloc::max_size()
-    {
-        return (std::numeric_limits<std::size_t>::max)();
-    }
-
 
     template<class T>
     NTW_INLINE static status page_alloc::allocate(T*& ptr, std::size_t s)
@@ -69,11 +58,6 @@ namespace ntw {
     {
         SIZE_T size = 0;
         NTW_SYSCALL(NtFreeVirtualMemory)(NtCurrentProcess(), &p, &size, MEM_RELEASE);
-    }
-
-    NTW_INLINE constexpr std::size_t page_alloc::max_size()
-    {
-        return (std::numeric_limits<std::size_t>::max)();
     }
 
 } // namespace ntw
