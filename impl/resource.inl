@@ -1,13 +1,10 @@
 #pragma once
 #include "../include/resource.hpp"
-#include <memory> // aligned_storage
-#include <limits> // numeric_limits
-#include <new> // launder
 
 namespace ntw {
 
     template<std::size_t ByteSize>
-    NTW_INLINE constexpr void* stack_buffer<ByteSize>::data() const
+    NTW_INLINE constexpr void* stack_buffer<ByteSize>::data()
     {
         return &_storage;
     }

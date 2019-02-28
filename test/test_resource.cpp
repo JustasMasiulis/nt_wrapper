@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include <allocator.hpp>
+#include <resource.hpp>
 
 #pragma comment(lib, "ntdll.lib")
 
@@ -12,26 +12,18 @@ bool probe_for_read(void* ptr, std::size_t size)
     return true;
 }
 
-TEST_CASE("stack allocator")
+TEST_CASE("stack buffer")
 {
-    ntw::stack_alloc<256> alloc;
-    REQUIRE(alloc.max_size() == 256);
-
-    int* ptr;
-    auto status = alloc.allocate(ptr, 256);
-    REQUIRE(status.success());
-    REQUIRE(probe_for_read(ptr, 256));
-
-    alloc.deallocate(ptr);
+    ntw::stack_buffer<256> buff;
+    REQUIRE(probe_for_read(buff.data(), 256));
+    REQUIRE(buff.size() == 256);
 }
 
 TEST_CASE("heap allocator")
 {
     ntw::heap_alloc alloc;
-    REQUIRE(alloc.max_size() == std::numeric_limits<std::size_t>::max());
-
     unsigned* ptr;
-    auto  status = alloc.allocate(ptr, 256);
+    auto      status = alloc.allocate(ptr, 256);
     REQUIRE(status.success());
     REQUIRE(probe_for_read(ptr, 256));
     alloc.deallocate(ptr);
@@ -40,8 +32,6 @@ TEST_CASE("heap allocator")
 TEST_CASE("page allocator")
 {
     ntw::page_alloc alloc;
-    REQUIRE(alloc.max_size() == std::numeric_limits<std::size_t>::max());
-
     char* ptr;
     auto  status = alloc.allocate(ptr, 256);
     REQUIRE(status.success());

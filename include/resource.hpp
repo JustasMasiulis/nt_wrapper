@@ -1,5 +1,6 @@
 #pragma once
 #include "status.hpp"
+#include <memory> // aligned_storage
 
 namespace ntw {
 
@@ -23,7 +24,7 @@ namespace ntw {
         std::aligned_storage_t<ByteSize> _storage;
 
     public:
-        NTW_INLINE constexpr void*              data() const;
+        NTW_INLINE constexpr void*              data();
         NTW_INLINE constexpr static std::size_t size();
     };
 
