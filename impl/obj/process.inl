@@ -115,4 +115,23 @@ namespace ntw::obj {
         return _handle;
     }
 
+    template<class H>
+    template<class ProcessIdType>
+    NTW_INLINE status basic_process<H>::open(ProcessIdType     pid,
+                                             process_access    access,
+                                             const attributes& attr)
+    {
+        CLIENT_ID cid{ reinterpret_cast<void*>(pid), nullptr };
+        void*     result_handle;
+        status    s = NTW_SYSCALL(NtOpenProcess)(&result_handle,
+                                              access.get(),
+                                              const_cast<OBJECT_ATTRIBUTES*>(&attr.get()),
+                                              &cid);
+
+        if(s.success())
+            _handle.reset(result_handle);
+
+        return s;
+    }
+
 } // namespace ntw::obj

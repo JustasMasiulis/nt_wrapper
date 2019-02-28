@@ -1,5 +1,6 @@
 #pragma once
-#include "../detail/unwrap_handle.hpp"
+#include "../detail/unwrap.hpp"
+#include "attributes.hpp"
 #include "../status.hpp"
 #include "../access.hpp"
 
@@ -75,8 +76,14 @@ namespace ntw::obj {
         /// \brief Returns the internal handle
         NTW_INLINE const handle_type& handle() const;
 
+        /// \brief Opens process using given process id, access and attributes
+        /// \param pid Process ID of any type convertible to void*
+        /// \param access The access to request for when opening process.
+        /// \param attr Optional extra attributes.
         template<class ProcessIdType>
-        NTW_INLINE status open(ProcessIdType pid);
+        NTW_INLINE status open(ProcessIdType     pid,
+                               process_access    access,
+                               const attributes& attr = {});
     };
 
 } // namespace ntw::obj
