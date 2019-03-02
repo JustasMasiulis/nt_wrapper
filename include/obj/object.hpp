@@ -2,7 +2,6 @@
 #include "../detail/unwrap.hpp"
 #include "../status.hpp"
 #include "attributes.hpp"
-#include "../deps/GSL/include/gsl/span"
 
 namespace ntw::obj {
 
