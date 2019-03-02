@@ -2,6 +2,7 @@
 #include "../detail/unwrap.hpp"
 #include "../status.hpp"
 #include "attributes.hpp"
+#include "../deps/GSL/include/gsl/span"
 
 namespace ntw::obj {
 
@@ -143,6 +144,11 @@ namespace ntw::obj {
         /// \brief Performs a wait on the object in an alertable state
         /// \param timeout The timeout of wait
         NTW_INLINE status wait_for(nanosecond_hundreds timeout, alertable_t) const;
+
+        template<class T, std::ptrdiff_t Extent>
+        NTW_INLINE status info(OBJECT_INFORMATION_CLASS info_type,
+                               gsl::span<T, Extent>     data,
+                               ulong_t*                 return_size = nullptr) const;
     };
 
 } // namespace ntw::obj

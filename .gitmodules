@@ -6,4 +6,4 @@
 	url = https://github.com/catchorg/Catch2
 [submodule "deps/GSL"]
 	path = deps/GSL
-	url = https://github.com/Microsoft/GSL
+	url = https://github.com/JustasMasiulis/GSL

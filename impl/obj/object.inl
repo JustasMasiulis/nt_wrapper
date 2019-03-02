@@ -195,4 +195,14 @@ namespace ntw::obj {
         return NTW_SYSCALL(NtWaitForSingleObject)(_value, true, &li);
     }
 
+    template<class D>
+    template<class T, std::ptrdiff_t Extent>
+    NTW_INLINE status basic_object<D>::info(OBJECT_INFORMATION_CLASS info_type,
+                                            gsl::span<T, Extent>     data,
+                                            ulong_t*                 return_size) const
+    {
+        return NTW_SYSCALL(NtQueryObject)(
+            _value, info_type, data.data(), data.size_bytes(), return_size)
+    }
+
 } // namespace ntw::obj
