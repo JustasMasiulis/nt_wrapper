@@ -23,17 +23,41 @@ namespace ntw::object {
         OBJECT_BASIC_INFORMATION _info;
 
     public:
+        /// \brief Returns OBJECT_BASIC_INFORMATION::Attributes
+        /// \detail The attributes of the object
         NTW_INLINE ulong_t attributes() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::GrantedAccess
+        /// \detail Mask that represents the granted access to the object
         NTW_INLINE ulong_t access() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::HandleCount
+        /// \detail Specifies the number of handles to the object
         NTW_INLINE ulong_t handle_count() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::PointerCount
+        /// \detail Specifies the number of pointers to the object
         NTW_INLINE ulong_t pointer_count() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::PagedPoolCharge
         NTW_INLINE ulong_t paged_pool_charge() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::NonPagedPoolCharge
         NTW_INLINE ulong_t non_page_pool_charge() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::NameInfoSize
         NTW_INLINE ulong_t name_info_size() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::TypeInfoSize
         NTW_INLINE ulong_t type_info_size() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::SecurityDescriptorSize
         NTW_INLINE ulong_t security_desc_size() const;
+
+        /// \brief Returns OBJECT_BASIC_INFORMATION::CreationTime
         NTW_INLINE std::int64_t creation_time() const;
 
+        /// \brief Acquires OBJECT_BASIC_INFORMATION from given object
         template<class Object>
         NTW_INLINE status acquire(const Object& object);
     };
