@@ -58,7 +58,7 @@ namespace ntw::obj {
 
         NTW_INLINE constexpr unsigned long& options();
 
-        friend class basic_attribute_options<attribute_options>;
+        friend struct basic_attribute_options<attribute_options>;
 
     public:
         /// \brief Construct options with null value
@@ -75,7 +75,7 @@ namespace ntw::obj {
 
         NTW_INLINE constexpr unsigned long& options();
 
-        friend class basic_attribute_options<attributes>;
+        friend struct basic_attribute_options<attributes>;
 
     public:
         /// \brief Initializes attributes with its length and other fields set to 0
