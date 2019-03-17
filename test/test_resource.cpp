@@ -16,14 +16,14 @@ TEST_CASE("stack buffer")
 {
     ntw::stack_buffer<256> buff;
     REQUIRE(probe_for_read(buff.data(), 256));
-    REQUIRE(buff.size() == 256);
+    REQUIRE(buff.size_bytes() == 256);
 }
 
 TEST_CASE("heap allocator")
 {
     ntw::heap_alloc alloc;
-    unsigned* ptr;
-    auto      status = alloc.allocate(ptr, 256);
+    void* ptr;
+    auto      status = alloc.allocate(&ptr, 256);
     REQUIRE(status.success());
     REQUIRE(probe_for_read(ptr, 256));
     alloc.deallocate(ptr);
@@ -32,8 +32,8 @@ TEST_CASE("heap allocator")
 TEST_CASE("page allocator")
 {
     ntw::page_alloc alloc;
-    char* ptr;
-    auto  status = alloc.allocate(ptr, 256);
+    void* ptr;
+    auto  status = alloc.allocate(&ptr, 256);
     REQUIRE(status.success());
     REQUIRE(probe_for_read(ptr, 256));
     alloc.deallocate(ptr);

@@ -2,6 +2,8 @@
 #include <catch2/catch.hpp>
 #include <obj/attributes.hpp>
 
+// TODO test standalone attributes class
+
 TEST_CASE("attributes are correctly default constructed")
 {
     auto attr = ntw::obj::attributes{}.get();

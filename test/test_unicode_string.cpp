@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
 #include <unicode_string.hpp>
+#include <catch2/catch.hpp>
 
 const wchar_t* str = L"abc";
 
