@@ -150,6 +150,19 @@ namespace ntw::obj {
                                ulong_t*                 return_size = nullptr) const;
     };
 
+    namespace detail {
+
+        struct unique_object_deleter {
+            NTW_INLINE void operator()(void* handle) const
+            {
+                NTW_SYSCALL(NtClose)(handle);
+            }
+        };
+
+    } // namespace detail
+
+    using unique_object = basic_object<detail::unique_object_deleter>;
+
 } // namespace ntw::obj
 
 #include "../../impl/obj/object.inl"
