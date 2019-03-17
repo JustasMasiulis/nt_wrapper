@@ -249,7 +249,7 @@ namespace ntw::obj {
                 ps_attributes.Attributes[0].ValuePtr     = &client_id;
                 ps_attributes.Attributes[0].ReturnLength = 0;
             }
-
+			
             const auto& data        = options.data();
             void*       temp_handle = nullptr;
             const auto  status =
@@ -257,7 +257,7 @@ namespace ntw::obj {
                                         access.value(),
                                         data.attributes,
                                         data.process,
-                                        function_address,
+                                        function,
                                         function_arg,
                                         data.flags,
                                         data.zero_bytes, // ZeroBits
