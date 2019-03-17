@@ -162,7 +162,7 @@ namespace ntw::obj {
         {
             _data.attributes = &attr;
             if(attr.SecurityDescriptor)
-                _flags |= THREAD_CREATE_FLAGS_HAS_SECURITY_DESCRIPTOR;
+                _data.flags |= THREAD_CREATE_FLAGS_HAS_SECURITY_DESCRIPTOR;
             return *this;
         }
 
@@ -351,7 +351,7 @@ namespace ntw::obj {
     };
 
 
-    using unique_thread = detail::basic_thread<unique_handle>;
-    using thread_ref    = detail::basic_thread<handle_ref>;
+    using unique_thread = basic_thread<unique_handle>;
+    using thread_ref    = basic_thread<handle_ref>;
 
 } // namespace ntw::obj
