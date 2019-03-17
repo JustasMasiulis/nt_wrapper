@@ -40,7 +40,7 @@ namespace ntw::obj {
     template<class D>
     NTW_INLINE void basic_object<D>::reset(void* new_handle) noexcept
     {
-        Deleter{}(_value);
+        D{}(_value);
         _value = new_handle;
     }
 
@@ -202,7 +202,7 @@ namespace ntw::obj {
                                             ulong_t*                 return_size) const
     {
         return NTW_SYSCALL(NtQueryObject)(
-            _value, info_type, data.data(), data.size_bytes(), return_size)
+            _value, info_type, data.data(), data.size_bytes(), return_size);
     }
 
 } // namespace ntw::obj
