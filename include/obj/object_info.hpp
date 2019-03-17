@@ -6,7 +6,10 @@ namespace ntw::object {
 
     /// \brief Wraps OBJECT_HANDLE_FLAG_INFORMATION and operations with it
     struct handle_flags_info {
+        /// \brief Whether the children will inherit this handle
         bool inherit;
+
+        /// \brief Whether this handle is protected from closing
         bool protect_from_close;
 
         /// \brief Acquires OBJECT_HANDLE_FLAG_INFORMATION from given object
@@ -73,10 +76,16 @@ namespace ntw::object {
         NTW_INLINE status acquire(const Object& object);
     };
 
-    template<class Resource =
-                 ntw::stack_buffer<sizeof(OBJECT_TYPE_INFORMATION) + MAX_PATH>>
-    struct type_info {
+    template<class Resource = ntw::stack_buffer<sizeof(OBJECT_TYPE_INFORMATION) + 64>>
+    class type_info {
         detail::resource_wrapper<Resource> _res;
+
+    public:
+        type_info() = default;
+
+        template<class... ResourceArgs>
+        type_info(ResourceArgs&&... args);
+
 
         unicode_string type_name() const;
         std::uint8_t   type_idx() const;
@@ -93,7 +102,6 @@ namespace ntw::object {
         ulong_t non_paged_pool_usage() const;
         ulong_t name_pool_usage() const;
         ulong_t handle_table_usage() const;
-
 
         GENERIC_MAPPING generic_mapping() const;
         ulong_t         valid_access_mask() const;

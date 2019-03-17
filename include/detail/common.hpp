@@ -7,4 +7,5 @@
 namespace ntw {
 
     using ulong_t = unsigned long;
-}
+
+} // namespace ntw
