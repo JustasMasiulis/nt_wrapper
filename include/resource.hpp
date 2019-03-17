@@ -25,7 +25,7 @@ namespace ntw {
 
     public:
         NTW_INLINE constexpr void*              data();
-        NTW_INLINE constexpr static std::size_t size();
+        NTW_INLINE constexpr static std::size_t size_bytes();
     };
 
 
@@ -37,8 +37,7 @@ namespace ntw {
         NTW_INLINE static void* _process_heap();
 
     public:
-        template<class T>
-        NTW_INLINE static status allocate(T*& ptr, std::size_t s);
+        NTW_INLINE static status allocate(void** ptr, std::size_t s);
 
         NTW_INLINE static void deallocate(void* p);
     };
@@ -47,8 +46,7 @@ namespace ntw {
     /// \brief Allocator best fit for large allocations of unknown size
     /// \detail Uses NtAllocateVirtualMemory function under the hood
     struct page_alloc {
-        template<class T>
-        NTW_INLINE static status allocate(T*& ptr, std::size_t s);
+        NTW_INLINE static status allocate(void** ptr, std::size_t s);
 
         NTW_INLINE static void deallocate(void* p);
     };

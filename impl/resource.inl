@@ -10,7 +10,7 @@ namespace ntw {
     }
 
     template<std::size_t ByteSize>
-    NTW_INLINE constexpr std::size_t stack_buffer<ByteSize>::size()
+    NTW_INLINE constexpr std::size_t stack_buffer<ByteSize>::size_bytes()
     {
         return ByteSize;
     }
@@ -22,12 +22,11 @@ namespace ntw {
         return reinterpret_cast<const PEB*>(__readgsqword(offset))->ProcessHeap;
     }
 
-    template<class T>
-    NTW_INLINE status heap_alloc::allocate(T*& ptr, std::size_t s)
+    NTW_INLINE status heap_alloc::allocate(void** ptr, std::size_t s)
     {
         const auto allocated = NTW_IMPORT_CALL(RtlAllocateHeap)(_process_heap(), 0, s);
         if(allocated) {
-            ptr = std::launder(static_cast<T*>(allocated));
+            *ptr = allocated;
             return STATUS_SUCCESS;
         }
         return STATUS_NO_MEMORY;
@@ -39,16 +38,14 @@ namespace ntw {
     }
 
 
-    template<class T>
-    NTW_INLINE static status page_alloc::allocate(T*& ptr, std::size_t s)
+    NTW_INLINE status page_alloc::allocate(void** ptr, std::size_t sz)
     {
-        ptr = nullptr;
-        return NTW_SYSCALL(NtAllocateVirtualMemory)(NtCurrentProcess(),
-                                                    &reinterpret_cast<void*&>(ptr),
-                                                    0,
-                                                    &s,
-                                                    MEM_COMMIT | MEM_RESERVE,
-                                                    PAGE_READWRITE);
+        void*  temp = nullptr;
+        status s    = NTW_SYSCALL(NtAllocateVirtualMemory)(
+            NtCurrentProcess(), &temp, 0, &sz, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        if(s.success())
+            *ptr = temp;
+        return s;
     }
 
     NTW_INLINE void page_alloc::deallocate(void* p)
