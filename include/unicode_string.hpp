@@ -20,7 +20,7 @@ namespace ntw {
         NTW_INLINE constexpr unicode_string(const wchar_t* str, std::uint16_t len);
 
         /// \brief Constructs unicode_string out of a view
-        NTW_INLINE unicode_string(std::wstring_view view);
+        NTW_INLINE constexpr unicode_string(std::wstring_view view);
 
         /// \brief Returns the internal UNICODE_STRING
         NTW_INLINE UNICODE_STRING& get();

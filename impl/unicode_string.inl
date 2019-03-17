@@ -14,13 +14,13 @@ namespace ntw {
     /// \param len The length of given string in characters
     NTW_INLINE constexpr unicode_string::unicode_string(const wchar_t* str,
                                                         std::uint16_t  len)
-    {
-        _value.Buffer = const_cast<wchar_t*>(str);
-        _value.Length = _value.MaximumLength = len << 1;
-    }
+        : _value{ static_cast<std::uint16_t>(len << 1),
+                  static_cast<std::uint16_t>(len << 1),
+                  const_cast<wchar_t*>(str) }
+    {}
 
     /// \brief Constructs unicode_string out of a view
-    NTW_INLINE unicode_string::unicode_string(std::wstring_view view)
+    NTW_INLINE constexpr unicode_string::unicode_string(std::wstring_view view)
         : unicode_string(view.data(), static_cast<std::uint16_t>(view.size()))
     {}
 
