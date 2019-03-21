@@ -6,7 +6,7 @@
 
 TEST_CASE("attributes are correctly default constructed")
 {
-    auto attr = ntw::obj::attributes{}.get();
+    auto attr = ntw::ob::attributes{}.get();
     REQUIRE(attr.ObjectName == nullptr);
     REQUIRE(attr.RootDirectory == nullptr);
     REQUIRE(attr.SecurityQualityOfService == nullptr);
@@ -18,7 +18,7 @@ TEST_CASE("attributes are correctly default constructed")
 TEST_CASE("OBJECT_ATTRIBUTES/attributes building works")
 {
     void* mock_pointer = (void*)0xDEADBEEF;
-    auto  attr         = ntw::obj::attributes{}
+    auto  attr         = ntw::ob::attributes{}
                     .parent(mock_pointer)
                     .security_desc(mock_pointer)
                     .security_quality(mock_pointer)

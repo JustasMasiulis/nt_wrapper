@@ -86,7 +86,6 @@ namespace ntw::object {
         template<class... ResourceArgs>
         type_info(ResourceArgs&&... args);
 
-
         unicode_string type_name() const;
         std::uint8_t   type_idx() const;
 

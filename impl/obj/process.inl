@@ -1,7 +1,7 @@
 #pragma once
 #include "../../include/obj/process.hpp"
 
-namespace ntw::obj {
+namespace ntw::ob {
 
     NTW_INLINE constexpr process_access& process_access::terminate()
     {
@@ -134,4 +134,4 @@ namespace ntw::obj {
         return s;
     }
 
-} // namespace ntw::obj
+} // namespace ntw::ob

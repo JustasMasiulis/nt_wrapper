@@ -3,7 +3,7 @@
 #include "../detail/unwrap.hpp"
 #include <cstdint>
 
-namespace ntw::obj {
+namespace ntw::ob {
 
     /// \brief A type to build attribute options
     /// \tparam Derived the derived class whose "options()" member function
@@ -101,6 +101,6 @@ namespace ntw::obj {
         NTW_INLINE constexpr attributes& options(attribute_options options);
     };
 
-} // namespace ntw::obj
+} // namespace ntw::ob
 
 #include "../impl/obj/attributes.inl"

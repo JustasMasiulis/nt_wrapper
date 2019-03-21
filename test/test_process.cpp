@@ -4,7 +4,7 @@
 
 TEST_CASE("process access building")
 {
-    auto access = ntw::obj::process_access{}
+    auto access = ntw::ob::process_access{}
                       .terminate()
                       .create_thread()
                       .set_session_id()

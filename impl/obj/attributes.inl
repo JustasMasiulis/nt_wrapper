@@ -1,7 +1,7 @@
 #pragma once
 #include "../../include/obj/attributes.hpp"
 
-namespace ntw::obj {
+namespace ntw::ob {
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::inherit()
@@ -121,4 +121,4 @@ namespace ntw::obj {
         return *this;
     }
 
-} // namespace ntw::obj
+} // namespace ntw::ob

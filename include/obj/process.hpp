@@ -4,7 +4,7 @@
 #include "../status.hpp"
 #include "../access.hpp"
 
-namespace ntw::obj {
+namespace ntw::ob {
 
     /// \brief Extends access_builder to contain all process specific access
     struct process_access : access_builder<process_access> {
@@ -86,6 +86,6 @@ namespace ntw::obj {
                                const attributes& attr = {});
     };
 
-} // namespace ntw::obj
+} // namespace ntw::ob
 
 #include "../../impl/obj/process.inl"
