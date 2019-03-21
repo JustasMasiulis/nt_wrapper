@@ -3,28 +3,26 @@
 #include "../status.hpp"
 #include "attributes.hpp"
 
-namespace ntw::obj {
+namespace ntw::ob {
 
     struct same_access_t {
-        explicit same_access_t() = default;
+        explicit constexpr same_access_t() = default;
     };
 
     struct same_attributes_t {
-        explicit same_attributes_t() = default;
+        explicit constexpr same_attributes_t() = default;
     };
 
     struct alertable_t {
-        explicit alertable_t() = default;
+        explicit constexpr alertable_t() = default;
     };
 
     constexpr inline same_access_t     same_access;
     constexpr inline same_attributes_t same_attributes;
     constexpr inline alertable_t       alertable;
 
-    template<class Deleter>
-    class basic_object {
-        void* _value = nullptr;
-
+    template<class Storage>
+    class basic_object : public Storage {
         template<class DOther>
         NTW_INLINE status _duplicate(void*                 process,
                                      basic_object<DOther>& out,
@@ -33,39 +31,41 @@ namespace ntw::obj {
                                      unsigned long         options) const;
 
     public:
+        /// \brief The type this object uses
+        using storage_type = Storage;
+
+        /// \brief The time format used by windows
         using nanosecond_hundreds =
             std::chrono::duration<std::int64_t, std::ratio<1, 10000000>>;
 
-        /// \brief Calls deleter on the stored value
-        NTW_INLINE ~basic_object();
+        /// \brief Constructors are inherited from storage
+        using storage_type::storage_type;
 
-        /// \brief Construct object with null value
-        NTW_INLINE constexpr basic_object() = default;
+        /// \brief Returns the stored object
+        using storage_type::get;
 
-        /// \brief Constructs object with given value
-        NTW_INLINE constexpr basic_object(void* handle);
+        /// \brief Releases ownership of stored object
+        using storage_type::release;
 
-        /// \brief Constructs object with given value. Other object gets set to null
-        NTW_INLINE basic_object(basic_object&& other);
+        /// Copy assigns storage in this from other
+        template<class SO>
+        NTW_INLINE constexpr basic_object& operator=(const basic_object<SO>& other);
 
-        /// \brief Assigns another object to current object. Other objects gets set to
-        ///		   null
-        NTW_INLINE basic_object& operator=(basic_object&& other);
+        /// Move assigns storage in this from other
+        template<class SO>
+        NTW_INLINE constexpr basic_object& operator=(basic_object<SO>&& other);
 
-        /// \brief Returns stored value
-        NTW_INLINE constexpr void* get() const;
+        /// \brief Returns const reference tho the internal storage
+        NTW_INLINE constexpr const storage_type& storage() const;
 
-        /// \brief Returns address of stored value
-        NTW_INLINE constexpr void** addressof();
+        /// \brief Returns reference tho the internal storage
+        NTW_INLINE constexpr storage_type& storage();
 
         /// \brief Calls deleter on current object and sets it to new value
-        NTW_INLINE void reset(void* new_handle) noexcept;
+        NTW_INLINE constexpr void reset(void* new_handle) noexcept;
 
         /// \brief Same as reset(nullptr)
-        NTW_INLINE void reset() noexcept;
-
-        /// \brief Releases ownership
-        NTW_INLINE constexpr void* release() noexcept;
+        NTW_INLINE constexpr void reset() noexcept;
 
         /// \brief Checks if stored value is not null
         NTW_INLINE constexpr explicit operator bool() const;
@@ -143,26 +143,75 @@ namespace ntw::obj {
         /// \brief Performs a wait on the object in an alertable state
         /// \param timeout The timeout of wait
         NTW_INLINE status wait_for(nanosecond_hundreds timeout, alertable_t) const;
-
-        template<class T, std::ptrdiff_t Extent>
-        NTW_INLINE status info(OBJECT_INFORMATION_CLASS info_type,
-                               gsl::span<T, Extent>     data,
-                               ulong_t*                 return_size = nullptr) const;
     };
 
     namespace detail {
 
-        struct unique_object_deleter {
-            NTW_INLINE void operator()(void* handle) const
-            {
-                NTW_SYSCALL(NtClose)(handle);
-            }
+        class object_ref_storage {
+            void* _value = nullptr;
+
+        public:
+            /// \brief Constructs empty storage
+            NTW_INLINE constexpr object_ref_storage() noexcept = default;
+
+            /// \brief Constructs empty storage
+            NTW_INLINE constexpr object_ref_storage(std::nullptr_t) noexcept;
+
+            /// \brief Copies storage from an object, handle or pointer
+            template<class Handle>
+            NTW_INLINE explicit constexpr object_ref_storage(
+                const Handle& other) noexcept;
+
+            /// \brief Copies storage from an object, handle or pointer
+            template<class Handle>
+            NTW_INLINE constexpr object_ref_storage&
+            operator=(const Handle& other) noexcept;
+
+            /// \brief Returns the stored value
+            NTW_INLINE constexpr void* get() const;
+        };
+
+        class unique_object_storage {
+            void* _value = nullptr;
+
+        public:
+            /// \brief Constructs storage which does not own a handle
+            NTW_INLINE constexpr unique_object_storage() noexcept = default;
+
+            /// \brief Constructs storage which does not own a handle
+            NTW_INLINE constexpr unique_object_storage(std::nullptr_t) noexcept;
+
+            /// \brief Constructs storage which owns h
+            NTW_INLINE constexpr explicit unique_object_storage(void* h) noexcept;
+
+            /// \brief Constructs storage which owns ref
+            NTW_INLINE constexpr explicit unique_object_storage(
+                const object_ref_storage& ref) noexcept;
+
+            /// \brief Constructs storage by transferring ownership from other to *this
+            NTW_INLINE constexpr unique_object_storage(
+                unique_object_storage&& other) noexcept;
+
+            /// \brief Transfers ownership from other to *this
+            NTW_INLINE constexpr unique_object_storage& operator=(
+                unique_object_storage&& other) noexcept;
+
+            /// \brief Releases ownership
+            NTW_INLINE constexpr unique_object_storage& operator=(
+                std::nullptr_t) noexcept;
+
+            /// \brief Returns the stored value
+            NTW_INLINE constexpr void* get() const;
+
+            /// \brief Releases ownership of the stored value
+            NTW_INLINE constexpr void* release();
         };
 
     } // namespace detail
 
-    using unique_object = basic_object<detail::unique_object_deleter>;
+    using unique_object = basic_object<detail::unique_object_storage>;
+    using object_ref    = basic_object<detail::object_ref_storage>;
 
-} // namespace ntw::obj
+} // namespace ntw::ob
 
 #include "../../impl/obj/object.inl"
