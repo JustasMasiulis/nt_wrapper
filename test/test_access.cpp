@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include <obj/attributes.hpp>
+#include <ob/attributes.hpp>
 #include <access.hpp>
 
 struct mock_access : ntw::access_builder<mock_access> {};

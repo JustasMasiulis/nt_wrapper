@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include <obj/process.hpp>
+#include <ob/process.hpp>
 
 TEST_CASE("process access building")
 {
