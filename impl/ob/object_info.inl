@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/obj/object_info.hpp"
+#include "../../include/ob/object_info.hpp"
 #include "../../include/detail/generic_info_query.hpp"
 
 namespace ntw::object {

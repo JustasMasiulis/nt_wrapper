@@ -214,4 +214,4 @@ namespace ntw::ob {
 
 } // namespace ntw::ob
 
-#include "../../impl/obj/object.inl"
+#include "../../impl/ob/object.inl"

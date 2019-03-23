@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/obj/attributes.hpp"
+#include "../../include/ob/attributes.hpp"
 
 namespace ntw::ob {
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/obj/object.hpp"
+#include "../include/ob/object.hpp"
 
 namespace ntw::ob {
 
