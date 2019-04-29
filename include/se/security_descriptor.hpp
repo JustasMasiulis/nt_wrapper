@@ -9,39 +9,47 @@ namespace ntw::se {
     /// \brief CRTP class to extend different types of security descriptors.
     template<class D>
     struct security_desc_base {
+        /// \brief Returns the Control member of security descriptor
         NTW_INLINE std::uint16_t control() const
         {
             return static_cast<const D*>(this)->get()->Control;
         }
 
+        /// \brief Returns the Sbz1/resource manager control member.
+        /// \warning Requires rm_control_present
         NTW_INLINE std::uint8_t rm_control() const
         {
             return static_cast<const D*>(this)->get()->Sbz1;
         }
 
+        /// \brief Returns whether rm_control member is present checking for
+        /// SE_RM_CONTROL_VALID flag.
         NTW_INLINE bool rm_control_present() const
         {
             return control() & SE_RM_CONTROL_VALID;
         }
 
-        /// \brief Checks whether a dacl is present checking for SE_DACL_PRESENT flag.
+        /// \brief Returns whether a dacl is present checking for SE_DACL_PRESENT flag.
         NTW_INLINE bool dacl_present() const { return control() & SE_DACL_PRESENT; }
 
-        /// \brief Checks whether a _present_ dacl is defaulted.
-        /// \warning dacl _must_ be present.
+        /// \brief Returns whether a present dacl is defaulted.
+        /// \warning Requires dacl_present
         NTW_INLINE bool dacl_defaulted() const { return control() & SE_DACL_DEFAULTED; }
 
 
-        /// \brief Checks whether a sacl is present checking for SE_SACL_PRESENT flag.
+        /// \brief Returns whether a sacl is present checking for SE_SACL_PRESENT flag.
         NTW_INLINE bool sacl_present() const { return control() & SE_SACL_PRESENT; }
 
-        /// \brief Checks whether a _present_ sacl is defaulted.
-        /// \warning sacl _must_ be present.
+        /// \brief Returns whether a present sacl is defaulted.
+        /// \warning Requires sacl_present.
         NTW_INLINE bool sacl_defaulted() const { return control() & SE_SACL_DEFAULTED; }
 
-
+        /// \brief Returns whether the group is defaulted checking for SE_GROUP_DEFAULTED
+        /// flag.
         NTW_INLINE bool group_defaulted() const { return control() & SE_GROUP_DEFAULTED; }
 
+        /// \brief Returns whether the owner is defaulted checking for SE_OWNER_DEFAULTED
+        /// flag.
         NTW_INLINE bool owner_defaulted() const { return control() & SE_OWNER_DEFAULTED; }
     };
 
