@@ -2,13 +2,12 @@
 #include "../detail/common.hpp"
 #include "../detail/unwrap.hpp"
 #include <cstdint>
-#include <memory>
 
 namespace ntw::se {
 
     /// \brief CRTP class to extend different types of security descriptors.
     template<class D>
-    struct security_desc_base {
+    struct base_security_desc {
         /// \brief Returns the Control member of security descriptor
         NTW_INLINE std::uint16_t control() const
         {
@@ -53,37 +52,43 @@ namespace ntw::se {
         NTW_INLINE bool owner_defaulted() const { return control() & SE_OWNER_DEFAULTED; }
     };
 
+    /// \brief A builder class for creating a security descriptor
     class security_builder {
         SECURITY_DESCRIPTOR _sd;
 
     public:
-        security_builder& owner(SID* o)
+        /// \brief Sets the owner member and clears defaulted flag.
+        NTW_INLINE security_builder& owner(SID* o)
         {
             _sd.Control &= ~SE_OWNER_DEFAULTED;
             _sd.Owner = o;
             return *this;
         }
 
-        security_builder& default_owner()
+        /// \brief Sets the defaulted owner flag.
+        NTW_INLINE security_builder& default_owner()
         {
             _sd.Control |= SE_OWNER_DEFAULTED;
             return *this;
         }
 
-        security_builder& group(SID* g)
+        /// \brief Sets the group member and clears defaulted flag.
+        NTW_INLINE security_builder& group(SID* g)
         {
             _sd.Control &= ~SE_GROUP_DEFAULTED;
             _sd.Group = g;
             return *this;
         }
 
-        security_builder& default_group()
+        /// \brief Sets the defaulted group flag.
+        NTW_INLINE security_builder& default_group()
         {
             _sd.Control |= SE_GROUP_DEFAULTED;
             return *this;
         }
 
-        security_builder& sacl(ACL* g)
+        /// \brief Sets the sacl member, clears defaulted and sets present flags.
+        NTW_INLINE security_builder& sacl(ACL* g)
         {
             _sd.Control &= ~SE_SACL_DEFAULTED;
             _sd.Control |= SE_SACL_PRESENT;
@@ -91,19 +96,32 @@ namespace ntw::se {
             return *this;
         }
 
-        security_builder& default_sacl()
+        /// \brief Sets the present and defaulted flags for sacl.
+        NTW_INLINE security_builder& default_sacl()
         {
-            _sd.Control |= SE_SACL_DEFAULTED;
+            _sd.Control |= (SE_SACL_PRESENT | SE_SACL_DEFAULTED);
             return *this;
         }
 
-        security_builder& no_sacl()
+        /// \brief Clears present flag for sacl.
+        NTW_INLINE security_builder& no_sacl()
         {
             _sd.Control &= ~SE_SACL_PRESENT;
             return *this;
         }
 
-        security_builder& dacl(ACL* d)
+        /// \brief Enables or disables SE_SACL_PROTECTED flag
+        NTW_INLINE security_builder& protect_sacl(bool enable = true)
+        {
+            if(enable)
+                _sd.Control |= SE_SACL_PROTECTED;
+            else
+                _sd.Control &= ~SE_SACL_PROTECTED;
+            return *this;
+        }
+
+        /// \brief Sets the dacl member, clears defaulted and sets present flags.
+        NTW_INLINE security_builder& dacl(ACL* d)
         {
             _sd.Control &= ~SE_DACL_DEFAULTED;
             _sd.Control |= SE_DACL_PRESENT;
@@ -111,26 +129,40 @@ namespace ntw::se {
             return *this;
         }
 
-        security_builder& default_dacl()
+        /// \brief Sets the present and defaulted flags for dacl.
+        NTW_INLINE security_builder& default_dacl()
         {
-            _sd.Control |= SE_DACL_DEFAULTED;
+            _sd.Control |= (SE_DACL_PRESENT | SE_DACL_DEFAULTED);
             return *this;
         }
 
-        security_builder& no_dacl()
+        /// \brief Clears present flag for dacl.
+        NTW_INLINE security_builder& no_dacl()
         {
             _sd.Control &= ~SE_DACL_PRESENT;
             return *this;
         }
 
-        security_builder& rm_control(std::uint8_t c)
+        /// \brief Enables or disables SE_DACL_PROTECTED flag
+        NTW_INLINE security_builder& protect_dacl(bool enable = true)
+        {
+            if(enable)
+                _sd.Control |= SE_DACL_PROTECTED;
+            else
+                _sd.Control &= ~SE_DACL_PROTECTED;
+            return *this;
+        }
+
+        /// \brief Sets the sbz1 member and sets the present flag.
+        NTW_INLINE security_builder& rm_control(std::uint8_t c)
         {
             _sd.Control |= SE_RM_CONTROL_VALID;
             _sd.Sbz1 = c;
             return *this;
         }
 
-        security_builder& no_rm_control()
+        /// \brief Clears present flag and sbz1 member.
+        NTW_INLINE security_builder& no_rm_control()
         {
             _sd.Control &= ~SE_RM_CONTROL_VALID;
             _sd.Sbz1 = 0;
@@ -138,7 +170,7 @@ namespace ntw::se {
         }
     };
 
-    class security_desc : security_desc_base<security_desc> {
+    class security_desc : base_security_desc<security_desc> {
         SECURITY_DESCRIPTOR _sd;
 
     public:
@@ -147,18 +179,22 @@ namespace ntw::se {
             _sd.Revision = SECURITY_DESCRIPTOR_REVISION;
         }
 
-        NTW_INLINE ACL* dacl() const { return _sd.Dacl; }
+        /// \brief Returns the dacl.
+        NTW_INLINE ACL* dacl() { return _sd.Dacl; }
 
-        NTW_INLINE ACL* sacl() const { return _sd.Sacl; }
+        /// \brief Returns the sacl.
+        NTW_INLINE ACL* sacl() { return _sd.Sacl; }
 
-        NTW_INLINE SID* group() const { return _sd.Group; }
+        /// \brief Returns the group.
+        NTW_INLINE SID* group() { return _sd.Group; }
 
-        NTW_INLINE SID* owner() const { return _sd.Owner; }
+        /// \brief Returns the owner.
+        NTW_INLINE SID* owner() { return _sd.Owner; }
 
-        SECURITY_DESCRIPTOR* get() { return &_sd; }
+        NTW_INLINE SECURITY_DESCRIPTOR* get() { return &_sd; }
     };
 
-    class rel_security_desc : security_desc_base<rel_security_desc> {
+    class rel_security_desc : base_security_desc<rel_security_desc> {
         SECURITY_DESCRIPTOR_RELATIVE* _sd = nullptr;
 
         template<class T>
@@ -168,17 +204,20 @@ namespace ntw::se {
         }
 
     public:
-        constexpr rel_security_desc() = default;
+        NTW_INLINE constexpr rel_security_desc() = default;
+        NTW_INLINE constexpr rel_security_desc(SECURITY_DESCRIPTOR_RELATIVE* sd) : _sd(sd)
+        {}
 
-        NTW_INLINE ACL* dacl() const { return _at_offset<ACL*>(_sd->Dacl); }
 
-        NTW_INLINE ACL* sacl() const { return _at_offset<ACL*>(_sd->Sacl); }
+        NTW_INLINE ACL* dacl() { return _at_offset<ACL*>(_sd->Dacl); }
 
-        NTW_INLINE SID* group() const { return _at_offset<SID*>(_sd->Group); }
+        NTW_INLINE ACL* sacl() { return _at_offset<ACL*>(_sd->Sacl); }
 
-        NTW_INLINE SID* owner() const { return _at_offset<SID*>(_sd->Owner); }
+        NTW_INLINE SID* group() { return _at_offset<SID*>(_sd->Group); }
 
-        SECURITY_DESCRIPTOR_RELATIVE* get() { return _sd; }
+        NTW_INLINE SID* owner() { return _at_offset<SID*>(_sd->Owner); }
+
+        NTW_INLINE SECURITY_DESCRIPTOR_RELATIVE* get() { return _sd; }
     };
 
 } // namespace ntw::se
