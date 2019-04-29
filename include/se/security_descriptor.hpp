@@ -2,20 +2,21 @@
 #include "../detail/common.hpp"
 #include "../detail/unwrap.hpp"
 #include <cstdint>
+#include <memory>
 
 namespace ntw::se {
 
     /// \brief CRTP class to extend different types of security descriptors.
     template<class D>
-    struct security_descriptor_base {
+    struct security_desc_base {
         NTW_INLINE std::uint16_t control() const
         {
-            return static_cast<const D*>(this).get().Control;
+            return static_cast<const D*>(this)->get()->Control;
         }
 
         NTW_INLINE std::uint8_t rm_control() const
         {
-            return static_cast<const D*>(this).get().Sbz1;
+            return static_cast<const D*>(this)->get()->Sbz1;
         }
 
         NTW_INLINE bool rm_control_present() const
@@ -129,11 +130,11 @@ namespace ntw::se {
         }
     };
 
-    class security_descriptor {
+    class security_desc : security_desc_base<security_desc> {
         SECURITY_DESCRIPTOR _sd;
 
     public:
-        NTW_INLINE constexpr security_descriptor() : _sd{ 0 }
+        NTW_INLINE constexpr security_desc() : _sd{ 0 }
         {
             _sd.Revision = SECURITY_DESCRIPTOR_REVISION;
         }
@@ -146,7 +147,30 @@ namespace ntw::se {
 
         NTW_INLINE SID* owner() const { return _sd.Owner; }
 
-        SECURITY_DESCRIPTOR* get() { return _sd; }
+        SECURITY_DESCRIPTOR* get() { return &_sd; }
+    };
+
+    class rel_security_desc : security_desc_base<rel_security_desc> {
+        SECURITY_DESCRIPTOR_RELATIVE* _sd = nullptr;
+
+        template<class T>
+        T* _at_offset(std::uint32_t offset) const
+        {
+            return offset ? reinterpret_cast<T*>(&_sd->Revision + offset) : nullptr;
+        }
+
+    public:
+        constexpr rel_security_desc() = default;
+
+        NTW_INLINE ACL* dacl() const { return _at_offset<ACL*>(_sd->Dacl); }
+
+        NTW_INLINE ACL* sacl() const { return _at_offset<ACL*>(_sd->Sacl); }
+
+        NTW_INLINE SID* group() const { return _at_offset<SID*>(_sd->Group); }
+
+        NTW_INLINE SID* owner() const { return _at_offset<SID*>(_sd->Owner); }
+
+        SECURITY_DESCRIPTOR_RELATIVE* get() { return _sd; }
     };
 
 } // namespace ntw::se
