@@ -105,6 +105,7 @@ namespace ntw::io {
             ACCESS_MASK access       = 0;
             ulong_t     share_access = 0;
             ulong_t     options      = 0;
+            void*       root         = nullptr;
         };
 
         template<class Base>
@@ -122,6 +123,9 @@ namespace ntw::io {
             NTW_INLINE constexpr file_options_builder copy() const;
 
             // clang-format off
+			template<class Handle>
+			NTW_INLINE constexpr file_options_builder& root(const Handle& root_directory);
+
 			// ShareAccess; multiple allowed
 			NTW_INLINE constexpr file_options_builder& reset_share_access();
 

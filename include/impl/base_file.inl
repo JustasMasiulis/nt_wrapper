@@ -36,6 +36,15 @@
 
 namespace ntw::io::detail {
 
+    template<class Base>
+    template<class Handle>
+    NTW_INLINE constexpr file_options_builder<Base>&
+    file_options_builder<Base>::root(const Handle& root_directory)
+    {
+        _data.root = unwrap_handle(root_directory);
+        return *this;
+    }
+
     NTW_FILE_OPTION(reset_share_access, share_access, 0, =)
     NTW_FILE_OPTION(share_read, share_access, FILE_SHARE_READ, |=)
     NTW_FILE_OPTION(share_write, share_access, FILE_SHARE_WRITE, |=)
@@ -168,7 +177,8 @@ namespace ntw::io::detail {
                                    const file_options& options,
                                    ulong_t             disposition) noexcept
     {
-        auto  attributes  = make_attributes(&path, OBJ_CASE_INSENSITIVE);
+        auto attributes =
+            make_attributes(&path, OBJ_CASE_INSENSITIVE, options.data().root);
         void* temp_handle = nullptr;
 
         const auto status = Traits::open(temp_handle, attributes, options, disposition);
@@ -251,7 +261,7 @@ namespace ntw::io::detail {
         IO_STATUS_BLOCK iosb;
         return LI_NT(NtFlushBuffersFile)(handle().get(), &iosb);
     }
-    
+
     template<class Traits>
     template<class StringRef /* wstring_view or UNICODE_STRING */>
     NT_FN base_file<Traits>::destroy(const StringRef& path, bool case_sensitive) noexcept
