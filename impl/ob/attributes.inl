@@ -6,70 +6,80 @@ namespace ntw::ob {
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::inherit()
     {
-        static_cast<D*>(this)->options() |= OBJ_INHERIT;
+        // #define OBJ_INHERIT 0x00000002
+        static_cast<D*>(this)->options() |= 0x00000002;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::permanent()
     {
-        static_cast<D*>(this)->options() |= OBJ_PERMANENT;
+        // #define OBJ_PERMANENT 0x00000010
+        static_cast<D*>(this)->options() |= 0x00000010;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::exclusive()
     {
-        static_cast<D*>(this)->options() |= OBJ_EXCLUSIVE;
+        // #define OBJ_EXCLUSIVE 0x00000020
+        static_cast<D*>(this)->options() |= 0x00000020;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::case_insensitive()
     {
-        static_cast<D*>(this)->options() |= OBJ_CASE_INSENSITIVE;
+        // #define OBJ_CASE_INSENSITIVE 0x00000040
+        static_cast<D*>(this)->options() |= 0x00000040;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::open()
     {
-        static_cast<D*>(this)->options() |= OBJ_OPENIF;
+        // #define OBJ_OPENIF 0x00000080
+        static_cast<D*>(this)->options() |= 0x00000080;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::open_symlink()
     {
-        static_cast<D*>(this)->options() |= OBJ_OPENLINK;
+        // #define OBJ_OPENLINK 0x00000100
+        static_cast<D*>(this)->options() |= 0x00000100;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::kernel_handle()
     {
-        static_cast<D*>(this)->options() |= OBJ_KERNEL_HANDLE;
+        // #define OBJ_KERNEL_HANDLE 0x00000200
+        static_cast<D*>(this)->options() |= 0x00000200;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::enforce_access_check()
     {
-        static_cast<D*>(this)->options() |= OBJ_FORCE_ACCESS_CHECK;
+        // #define OBJ_FORCE_ACCESS_CHECK 0x00000400
+        static_cast<D*>(this)->options() |= 0x00000400;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::ignore_impersonated_devicemap()
     {
-        static_cast<D*>(this)->options() |= OBJ_IGNORE_IMPERSONATED_DEVICEMAP;
+        // #define OBJ_IGNORE_IMPERSONATED_DEVICEMAP 0x00000800
+        static_cast<D*>(this)->options() |= 0x00000800;
         return static_cast<D&>(*this);
     }
 
     template<class D>
     NTW_INLINE constexpr D& basic_attribute_options<D>::dont_reparse()
     {
-        static_cast<D*>(this)->options() |= OBJ_DONT_REPARSE;
+        // #define OBJ_DONT_REPARSE 0x00001000
+        static_cast<D*>(this)->options() |= 0x00001000;
         return static_cast<D&>(*this);
     }
 
