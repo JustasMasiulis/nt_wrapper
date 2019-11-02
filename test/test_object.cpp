@@ -77,3 +77,21 @@ TEST_CASE("operator bool")
         REQUIRE(!obj);
     }
 }
+
+TEST_CASE("conversion betweeen types of objects")
+{
+    SECTION("assignment")
+    {
+        ntw::ob::unique_object unique;
+        ntw::ob::object_ref    ref;
+
+        ref = unique;
+    }
+
+    SECTION("constructor")
+    {
+        ntw::ob::object_ref    ref;
+        ntw::ob::unique_object unique(ref);
+        ntw::ob::object_ref    ref2(unique);
+    }
+}
