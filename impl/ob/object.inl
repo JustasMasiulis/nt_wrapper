@@ -5,17 +5,15 @@ namespace ntw::ob {
 
     template<class S>
     template<class SO>
-    NTW_INLINE constexpr basic_object<S>& basic_object<S>::
-                                          operator=(const basic_object<SO>& other)
+    NTW_INLINE basic_object<S>& basic_object<S>::operator=(const basic_object<SO>& other)
     {
-        *static_cast<S*>(this) = *static_cast<SO*>(other);
+        *static_cast<S*>(this) = static_cast<const SO&>(other);
         return *this;
     }
 
     template<class S>
     template<class SO>
-    NTW_INLINE constexpr basic_object<S>& basic_object<S>::
-                                          operator=(basic_object<SO>&& other)
+    NTW_INLINE basic_object<S>& basic_object<S>::operator=(basic_object<SO>&& other)
     {
         *static_cast<S*>(this) = std::move(*static_cast<SO*>(other));
         return *this;
@@ -199,7 +197,7 @@ namespace ntw::ob {
         template<class Handle>
         NTW_INLINE constexpr object_ref_storage::object_ref_storage(
             const Handle& other) noexcept
-            : _value(::ntw::detail::unwrap_handle(handle))
+            : _value(::ntw::detail::unwrap_handle(other))
         {}
 
         template<class Handle>
@@ -212,6 +210,14 @@ namespace ntw::ob {
 
         NTW_INLINE constexpr void* object_ref_storage::get() const { return _value; }
 
+        NTW_INLINE unique_object_storage::~unique_object_storage() noexcept
+        {
+            // -1 to -3 are predefined handles ( to -6 since win8 )
+            if(reinterpret_cast<std::intptr_t>(_value) > 0 ||
+               reinterpret_cast<std::intptr_t>(_value) < -3)
+                // ignore return value
+                static_cast<void>(NTW_SYSCALL(NtClose)(_value));
+        }
 
         NTW_INLINE constexpr unique_object_storage::unique_object_storage(
             std::nullptr_t) noexcept
@@ -238,13 +244,9 @@ namespace ntw::ob {
         NTW_INLINE constexpr unique_object_storage& unique_object_storage::operator=(
             unique_object_storage&& other) noexcept
         {
-            // -1 to -3 are predefined handles ( to -6 since win8 )
-            if(reinterpret_cast<std::intptr_t>(_value) > 0 ||
-               reinterpret_cast<std::intptr_t>(_value) < -3)
-                NTW_SYSCALL(NtClose)(_value);
-
-            _value       = other._value;
-            other._value = nullptr;
+            const auto tmp = other._value;
+            other._value   = _value;
+            _value         = tmp;
             return *this;
         }
 

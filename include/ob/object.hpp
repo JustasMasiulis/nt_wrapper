@@ -49,11 +49,11 @@ namespace ntw::ob {
 
         /// Copy assigns storage in this from other
         template<class SO>
-        NTW_INLINE constexpr basic_object& operator=(const basic_object<SO>& other);
+        NTW_INLINE basic_object& operator=(const basic_object<SO>& other);
 
         /// Move assigns storage in this from other
         template<class SO>
-        NTW_INLINE constexpr basic_object& operator=(basic_object<SO>&& other);
+        NTW_INLINE basic_object& operator=(basic_object<SO>&& other);
 
         /// \brief Returns const reference tho the internal storage
         NTW_INLINE constexpr const storage_type& storage() const;
@@ -169,12 +169,17 @@ namespace ntw::ob {
 
             /// \brief Returns the stored value
             NTW_INLINE constexpr void* get() const;
+
+            /// \brief Returns the stored value and nulls it
+            NTW_INLINE constexpr void* release() noexcept;
         };
 
         class unique_object_storage {
             void* _value = nullptr;
 
         public:
+            NTW_INLINE ~unique_object_storage() noexcept;
+
             /// \brief Constructs storage which does not own a handle
             NTW_INLINE constexpr unique_object_storage() noexcept = default;
 
@@ -209,8 +214,11 @@ namespace ntw::ob {
 
     } // namespace detail
 
+    /// \brief Provides unique_ptr semantics for an object.
     using unique_object = basic_object<detail::unique_object_storage>;
-    using object_ref    = basic_object<detail::object_ref_storage>;
+
+    /// \brief A reference type that does not own the object.
+    using object_ref = basic_object<detail::object_ref_storage>;
 
 } // namespace ntw::ob
 
