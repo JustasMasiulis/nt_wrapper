@@ -263,7 +263,7 @@ namespace ntw::ob {
         {
             auto tmp = _value;
             _value   = nullptr;
-            return _value;
+            return tmp;
         }
 
     } // namespace detail
