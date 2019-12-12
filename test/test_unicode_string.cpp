@@ -1,5 +1,6 @@
-#define CATCH_CONFIG_MAIN
 #include <unicode_string.hpp>
+#define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
 
 const wchar_t* str = L"abc";
@@ -33,6 +34,7 @@ TEST_CASE("UNICODE_STRING constructed")
     SECTION("non const")
     {
         ntw::unicode_string ustr(_ustr);
+        REQUIRE_FALSE(ustr.empty());
         REQUIRE(ustr.size() == 3);
         REQUIRE(ustr.begin() == str);
         REQUIRE(ustr.end() == ustr.begin() + ustr.size());
@@ -42,6 +44,7 @@ TEST_CASE("UNICODE_STRING constructed")
     SECTION("const")
     {
         const ntw::unicode_string ustr(_ustr);
+        REQUIRE_FALSE(ustr.empty());
         REQUIRE(ustr.size() == 3);
         REQUIRE(ustr.begin() == str);
         REQUIRE(ustr.end() == ustr.begin() + ustr.size());
@@ -56,6 +59,7 @@ TEST_CASE("view constructed")
     SECTION("non const")
     {
         ntw::unicode_string ustr(view);
+        REQUIRE_FALSE(ustr.empty());
         REQUIRE(ustr.size() == 3);
         REQUIRE(ustr.begin() == str);
         REQUIRE(ustr.end() == ustr.begin() + ustr.size());
@@ -65,6 +69,7 @@ TEST_CASE("view constructed")
     SECTION("const")
     {
         const ntw::unicode_string ustr(view);
+        REQUIRE_FALSE(ustr.empty());
         REQUIRE(ustr.size() == 3);
         REQUIRE(ustr.begin() == str);
         REQUIRE(ustr.end() == ustr.begin() + ustr.size());
@@ -77,6 +82,7 @@ TEST_CASE("ptr constructed")
     SECTION("non const")
     {
         ntw::unicode_string ustr(str, 3);
+        REQUIRE_FALSE(ustr.empty());
         REQUIRE(ustr.size() == 3);
         REQUIRE(ustr.begin() == str);
         REQUIRE(ustr.end() == ustr.begin() + ustr.size());
@@ -85,6 +91,7 @@ TEST_CASE("ptr constructed")
     SECTION("const")
     {
         const ntw::unicode_string ustr(str, 3);
+        REQUIRE_FALSE(ustr.empty());
         REQUIRE(ustr.size() == 3);
         REQUIRE(ustr.begin() == str);
         REQUIRE(ustr.end() == ustr.begin() + ustr.size());

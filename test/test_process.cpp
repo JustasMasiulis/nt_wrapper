@@ -1,6 +1,7 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
 #include <ob/process.hpp>
+#define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
+#include <catch2/catch.hpp>
 
 TEST_CASE("process access building")
 {
