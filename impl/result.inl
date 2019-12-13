@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/result.hpp"
+#include "../include/ntw/result.hpp"
 
 namespace ntw {
 

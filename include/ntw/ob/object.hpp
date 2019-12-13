@@ -1,7 +1,9 @@
 #pragma once
+#include <chrono>
+#include "../unicode_string.hpp"
 #include "../detail/unwrap.hpp"
-#include "../status.hpp"
 #include "attributes.hpp"
+#include "../result.hpp"
 
 namespace ntw::ob {
 
@@ -143,6 +145,8 @@ namespace ntw::ob {
         /// \brief Performs a wait on the object in an alertable state
         /// \param timeout The timeout of wait
         NTW_INLINE status wait_for(nanosecond_hundreds timeout, alertable_t) const;
+
+        NTW_INLINE result_ref<unicode_string> name() const;
     };
 
     namespace detail {
@@ -222,4 +226,4 @@ namespace ntw::ob {
 
 } // namespace ntw::ob
 
-#include "../../impl/ob/object.inl"
+#include "../../../impl/ob/object.inl"

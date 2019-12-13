@@ -1,5 +1,6 @@
 #pragma once
 #include "../unicode_string.hpp"
+#include "../result.hpp"
 
 namespace ntw::object {
 
@@ -64,13 +65,6 @@ namespace ntw::object {
         NTW_INLINE status acquire(const Object& object);
     };
 
-    struct name_info {
-        unicode_string name;
-
-        template<class Object>
-        NTW_INLINE status acquire(const Object& object);
-    };
-
     class type_info {
         unicode_string type_name() const;
         std::uint8_t   type_idx() const;
@@ -96,4 +90,4 @@ namespace ntw::object {
 
 } // namespace ntw::object
 
-#include "../../include/ob/object_info.hpp"
+#include "../include/ntw/ob/object_info.hpp"
