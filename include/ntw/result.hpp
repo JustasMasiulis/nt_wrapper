@@ -14,9 +14,8 @@ namespace ntw {
     public:
         constexpr result() = default;
 
-        template<class U>
-        constexpr result(status s, U&& v) : base_type(s), _value(std::forward<U>(v))
-        {}
+        constexpr result(status s, T&& v) : base_type(s), _value(std::move(v)) {}
+        constexpr result(status s, const T& v) : base_type(s), _value(v) {}
 
         constexpr status&            status() noexcept;
         constexpr const ntw::status& status() const noexcept;
