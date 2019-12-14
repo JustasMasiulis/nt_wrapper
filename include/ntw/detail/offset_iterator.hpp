@@ -5,15 +5,15 @@
 
 namespace ntw::detail {
 
-    template<class Traits>
+    template<class T, bool CheckAfterAddition = false>
     class offset_iterator {
-        typename Traits::value_type* _info = nullptr;
+        T* _info = nullptr;
 
     public:
         using difference_type   = std::ptrdiff_t;
-        using value_type        = typename Traits::value_type;
-        using pointer           = typename Traits::value_type*;
-        using reference         = typename Traits::value_type&;
+        using value_type        = typename T;
+        using pointer           = typename T*;
+        using reference         = typename T&;
         using iterator_category = std::input_iterator_tag;
 
         NTW_INLINE constexpr offset_iterator() noexcept = default;
@@ -32,13 +32,11 @@ namespace ntw::detail {
 
         NTW_INLINE offset_iterator& operator++() noexcept
         {
-            const auto offset = Traits::next_entry_offset(_info);
-            if(_info && offset != 0)
-                _info =
-                    reinterpret_cast<pointer>(reinterpret_cast<char*>(_info) + offset);
-            else
+            const auto offset = _info->offset_to_next;
+            _info = reinterpret_cast<pointer>(reinterpret_cast<char*>(_info) + offset);
+            if((CheckAfterAddition && !_info->offset_to_next) ||
+               (!CheckAfterAddition && !offset))
                 _info = nullptr;
-
             return *this;
         }
 
@@ -55,16 +53,31 @@ namespace ntw::detail {
         }
     };
 
-    template<class T>
-    NTW_INLINE bool operator==(offset_iterator<T> lhs, offset_iterator<T> rhs) noexcept
+    template<class T, bool C>
+    NTW_INLINE bool operator==(offset_iterator<T, C> lhs,
+                               offset_iterator<T, C> rhs) noexcept
     {
         return lhs._is_equal(rhs);
     }
 
-    template<class T>
-    NTW_INLINE bool operator!=(offset_iterator<T> lhs, offset_iterator<T> rhs) noexcept
+    template<class T, bool C>
+    NTW_INLINE bool operator!=(offset_iterator<T, C> lhs,
+                               offset_iterator<T, C> rhs) noexcept
     {
         return !lhs._is_equal(rhs);
     }
+
+    template<class T, bool CheckAfterAddition = false>
+    struct offset_iterator_range {
+        using iterator_type = offset_iterator<T, CheckAfterAddition>;
+        using value_type    = typename iterator_type::value_type;
+
+        iterator_type value;
+
+        offset_iterator_range(value_type* ptr) : value(ptr) {}
+
+        iterator_type begin() const { return value; }
+        iterator_type end() const { return {}; }
+    };
 
 } // namespace ntw::detail
