@@ -1,9 +1,11 @@
 #pragma once
-#include "../detail/common.hpp"
+#include "../detail/offset_iterator.hpp"
+#include "../result.hpp"
+#include "../iterator_range.hpp"
 
 namespace ntw::sys {
 
-    class loaded_module {
+    struct loaded_module {
         std::uint16_t offset_to_next;
         void*         section;
         void*         mapped_base;
@@ -20,23 +22,20 @@ namespace ntw::sys {
         void*         default_base;
 
         /// \brief Returns a null terminated file name string.
-        NTW_INLINE const char* name() const noexcept { return path + file_name_offset; }
+        NTW_INLINE const char* name() const noexcept;
 
         /// \brief Returns string_view which contains the file name
-        NTW_INLINE std::string_view name_view() const noexcept
-        {
-            const auto first = name();
-            auto       last  = first;
-            while(*last)
-                ++last;
+        NTW_INLINE std::string_view name_view() const noexcept;
 
-            return std::string_view(
-                first, static_cast<std::string_view::size_type>(last - first));
-        }
+        /// \brief Returns a string_view of the full file path
+        NTW_INLINE std::string_view path_view() const noexcept;
 
-        NTW_INLINE std::string_view path_view() const noexcept {
-        
-        }
+        using range_type = detail::offset_iterator_range<loaded_module, true>;
     };
 
+    template<class Range>
+    ntw::result<typename loaded_module::range_type> acquire_loaded_modules(Range buffer);
+
 } // namespace ntw::sys
+
+#include "../impl/sys/modules.inl"
