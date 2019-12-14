@@ -16,13 +16,25 @@ namespace ntw {
     }
 
     template<class T>
-    constexpr std::add_lvalue_reference_t<T> result<T>::operator*() const
+    constexpr T& result<T>::operator*() noexcept
     {
         return _value;
     }
 
     template<class T>
-    inline constexpr T* ntw::result<T>::operator->() const noexcept
+    constexpr const T& result<T>::operator*() const noexcept
+    {
+        return _value;
+    }
+
+    template<class T>
+    inline constexpr const T* ntw::result<T>::operator->() const noexcept
+    {
+        return &_value;
+    }
+
+    template<class T>
+    inline constexpr T* ntw::result<T>::operator->() noexcept
     {
         return &_value;
     }
