@@ -21,8 +21,8 @@ Object manipulation:
 ### Design goals
 * No exceptions - if a function can fail it will return a status code.
 * No overhead - every single abstraction is costless and is as fast as it can be.
-* Strict control over imports - every call is made trough a macro which allows turning the lazy importer off or easy switched to direct syscalls.
-* Ease of developer use - it is a much more consistent and pleasant to work with compared to win32.
+* Strict control over imports - every call is made through a macro which allows turning the lazy importer off or easy switched to direct syscalls.
+* Ease of developer use - it is much more consistent and pleasant to work with compared to win32.
 
 ### Why?
 The main reason to choose this library over existing windows constructs are:
