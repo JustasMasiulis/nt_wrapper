@@ -22,8 +22,8 @@ namespace ntw::io {
 
     /// \brief A blocking file API.
     template<class Handle, class Traits = traits::file_traits<Handle>>
-    class basic_file : public detail::base_file<Traits> {
-        using base_type = detail::base_file<Traits>;
+    class basic_file : public detail::base_file<basic_file<Handle, Traits>, Traits> {
+        using base_type = detail::base_file<basic_file<Handle, Traits>, Traits>;
 
         template<class Fn>
         NTW_INLINE status _control(Fn         fn,
@@ -85,10 +85,10 @@ namespace ntw::io {
         /// \param input The input buffer.
         /// \param output The output buffer.
         /// \param returned The number of bytes returned.
-        NTW_INLINE status fs_control(ulong_t control_code,
+        NTW_INLINE status fs_control(ulong_t    control_code,
                                      cbyte_span input,
-                                     byte_span output,
-                                     ulong_t*  returned = nullptr) const noexcept;
+                                     byte_span  output,
+                                     ulong_t*   returned = nullptr) const noexcept;
 
         /// \brief Sends a control code to a file system or file system filter driver
         /// using NtFsControlFile API.

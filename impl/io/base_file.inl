@@ -15,7 +15,7 @@
  */
 
 #pragma once
-#include "../io/base_file.hpp"
+#include "../include/ntw/io/base_file.hpp"
 
 #define NTW_BUILDER_OPTION(builder, function_name, member, value, op) \
     NTW_INLINE constexpr builder& builder::function_name()            \
@@ -35,15 +35,6 @@
     NTW_BUILDER_OPTION(pipe_options_builder, name, member, value, op)
 
 namespace ntw::io::detail {
-
-    template<class Base>
-    template<class Handle>
-    NTW_INLINE constexpr file_options_builder<Base>&
-    file_options_builder<Base>::root(const Handle& root_directory)
-    {
-        _data.root = unwrap_handle(root_directory);
-        return *this;
-    }
 
     NTW_FILE_OPTION(reset_share_access, share_access, 0, =)
     NTW_FILE_OPTION(share_read, share_access, FILE_SHARE_READ, |=)
@@ -172,100 +163,110 @@ namespace ntw::io::detail {
         return _data;
     }
 
-    template<class Traits>
-    NTW_INLINE status base_file<Traits>::_open(UNICODE_STRING      path,
-                                               const file_options& options,
-                                               ulong_t             disposition) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::_open(const ntw::unicode_string& path,
+                                      const ob::attributes&      attributes,
+                                      const file_options&        options,
+                                      ulong_t                    disposition) noexcept
     {
-        auto attributes =
-            make_attributes(&path, OBJ_CASE_INSENSITIVE, options.data().root);
-        void* temp_handle = nullptr;
+        result<Derived> ret;
+        void*           temp_handle = nullptr;
+        auto&           attr        = const_cast<ob::attributes&>(attributes).get();
+        attr.ObjectName             = const_cast<UNICODE_STRING*>(&path.get());
 
-        const auto status = Traits::open(temp_handle, attributes, options, disposition);
+        ret.status() = Traits::open(temp_handle, attr, options, disposition);
 
-        if(NT_SUCCESS(status))
-            _handle.reset(temp_handle);
+        if(ret)
+            ret->handle().reset(temp_handle);
 
-        return status;
+        return ret;
     }
 
 
-    template<class Traits>
-    template<class StringRef>
-    NTW_INLINE status base_file<Traits>::open(const StringRef&    path,
-                                              const file_options& options) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::open(const unicode_string& path,
+                                     const ob::attributes& attributes,
+                                     const file_options&   options) noexcept
     {
-        return _open(make_ustr(path), options, FILE_OPEN);
+        return _open(path, attributes, options, FILE_OPEN);
     }
 
-    template<class Traits>
-    template<class StringRef>
-    NTW_INLINE status base_file<Traits>::create(const StringRef&    path,
-                                                const file_options& options) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::create(const unicode_string& path,
+                                       const ob::attributes& attributes,
+                                       const file_options&   opt) noexcept
     {
-        return _open(make_ustr(path), options, FILE_CREATE);
+        return _open(path, attributes, options, FILE_CREATE);
     }
 
-    template<class Traits>
-    template<class StringRef>
-    NTW_INLINE status base_file<Traits>::supersede(const StringRef&    path,
-                                                   const file_options& options) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::supersede(const unicode_string& path,
+                                          const ob::attributes& attributes,
+                                          const file_options&   opt) noexcept
     {
-        return _open(make_ustr(path), options, FILE_SUPERSEDE);
+        return _open(path, attributes, options, FILE_SUPERSEDE);
     }
 
-    template<class Traits>
-    template<class StringRef>
-    NTW_INLINE status base_file<Traits>::overwrite(const StringRef&    path,
-                                                   const file_options& options) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::overwrite(const unicode_string& path,
+                                          const ob::attributes& attributes,
+                                          const file_options&   opt) noexcept
     {
-        return _open(make_ustr(path), options, FILE_OVERWRITE);
+        return _open(path, attributes, options, FILE_OVERWRITE);
     }
 
-    template<class Traits>
-    template<class StringRef>
-    NTW_INLINE status base_file<Traits>::open_or_create(
-        const StringRef& path, const file_options& options) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::open_or_create(const unicode_string& path,
+                                               const ob::attributes& attributes,
+                                               const file_options&   opt) noexcept
     {
-        return _open(make_ustr(path), options, FILE_OPEN_IF);
+        return _open(path, attributes, options, FILE_OPEN_IF);
     }
 
-    template<class Traits>
-    template<class StringRef>
-    NTW_INLINE status base_file<Traits>::overwrite_or_create(
-        const StringRef& path, const file_options& options) noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<Derived>
+               base_file<Derived, Traits>::overwrite_or_create(const unicode_string& path,
+                                                    const ob::attributes& attributes,
+                                                    const file_options&   opt) noexcept
     {
-        return _open(make_ustr(path), options, FILE_OVERWRITE_IF);
+        return _open(path, attributes, options, FILE_OVERWRITE_IF);
     }
 
 
-    template<class Traits>
-    NTW_INLINE result<std::uint64_t> base_file<Traits>::size() const noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::result<std::uint64_t> base_file<Derived, Traits>::size() const
+        noexcept
     {
         IO_STATUS_BLOCK           status_block;
         FILE_STANDARD_INFORMATION info;
         const auto status = NTW_SYSCALL(NtQueryInformationFile)(_handle.get(),
-                                                          &status_block,
-                                                          &info,
-                                                          unsigned{ sizeof(info) },
-                                                          FileStandardInformation);
+                                                                &status_block,
+                                                                &info,
+                                                                unsigned{ sizeof(info) },
+                                                                FileStandardInformation);
         if(NT_SUCCESS(status))
             size_out = static_cast<std::uint64_t>(info.EndOfFile.QuadPart);
 
         return status;
     }
 
-    template<class Traits>
-    NTW_INLINE status base_file<Traits>::flush() const noexcept
+    template<class Derived, class Traits>
+    NTW_INLINE ntw::status base_file<Derived, Traits>::flush() const noexcept
     {
         IO_STATUS_BLOCK iosb;
         return NTW_SYSCALL(NtFlushBuffersFile)(handle().get(), &iosb);
     }
 
-    template<class Traits>
+    template<class Derived, class Traits>
     template<class StringRef /* wstring_view or UNICODE_STRING */>
-    NTW_INLINE status base_file<Traits>::destroy(const StringRef& path,
-                                                 bool             case_sensitive) noexcept
+    NTW_INLINE ntw::status base_file<Derived, Traits>::destroy(
+        const StringRef& path, bool case_sensitive) noexcept
     {
         auto upath = make_ustr(path);
         auto attributes =
@@ -273,8 +274,8 @@ namespace ntw::io::detail {
         return NTW_SYSCALL(NtDeleteFile)(&attributes);
     }
 
-    NTW_INLINE constexpr ulong_t normalize_attributes(
-        const file_options& options) noexcept
+    NTW_INLINE constexpr ntw::ulong_t normalize_attributes(
+        const ntw::io::file_options& options) noexcept
     {
         auto attr = options.attributes();
         if(!attr)
@@ -283,7 +284,7 @@ namespace ntw::io::detail {
         return attr;
     }
     template<bool Sync, class Options>
-    NTW_INLINE constexpr ulong_t synchronize_options(const Options& options) noexcept
+    NTW_INLINE constexpr ntw::ulong_t synchronize_options(const Options& options) noexcept
     {
         auto opt = options.data().options;
         if constexpr(Sync)
@@ -292,7 +293,7 @@ namespace ntw::io::detail {
     }
 
     template<bool Sync, class Options>
-    NTW_INLINE constexpr ulong_t synchronize_access(const Options& options) noexcept
+    NTW_INLINE constexpr ntw::ulong_t synchronize_access(const Options& options) noexcept
     {
         auto access = options.data().access;
         if constexpr(Sync)

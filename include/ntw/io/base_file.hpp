@@ -105,7 +105,6 @@ namespace ntw::io {
             ACCESS_MASK access       = 0;
             ulong_t     share_access = 0;
             ulong_t     options      = 0;
-            void*       root         = nullptr;
         };
 
         template<class Base>
@@ -123,9 +122,6 @@ namespace ntw::io {
             NTW_INLINE constexpr file_options_builder copy() const;
 
             // clang-format off
-			template<class Handle>
-			NTW_INLINE constexpr file_options_builder& root(const Handle& root_directory);
-
 			// ShareAccess; multiple allowed
 			NTW_INLINE constexpr file_options_builder& reset_share_access();
 
@@ -187,14 +183,15 @@ namespace ntw::io {
     namespace detail {
 
         /// \brief Contains APIs that are common between basic_file and async_file
-        template<class Traits>
+        template<class Derived, class Traits>
         class base_file {
             using handle_type = typename Traits::handle_type;
             handle_type _handle;
 
-            NTW_INLINE status _open(UNICODE_STRING      path,
-                                    const file_options& options,
-                                    ulong_t             disposition) noexcept;
+            NTW_INLINE static result<Derived> _open(const unicode_string& path,
+                                                    const ob::attributes& attributes,
+                                                    const file_options&   opt,
+                                                    ulong_t disposition) noexcept;
 
         protected:
             NTW_INLINE ~base_file() = default;
@@ -205,6 +202,12 @@ namespace ntw::io {
             NTW_INLINE base_file() = default;
             NTW_INLINE base_file(void* handle) noexcept : _handle(handle) {}
 
+            NTW_INLINE base_file(base_file&&)      = default;
+            NTW_INLINE base_file(const base_file&) = default;
+
+            NTW_INLINE base_file& operator=(base_file&&) = default;
+            NTW_INLINE base_file& operator=(const base_file&) = default;
+
             NTW_INLINE handle_type& handle() noexcept { return _handle; }
             NTW_INLINE const handle_type& handle() const noexcept { return _handle; }
 
@@ -212,53 +215,59 @@ namespace ntw::io {
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
-            template<class StringRef>
-            NTW_INLINE status open(const StringRef&    path,
-                                   const file_options& opt = options) noexcept;
+            NTW_INLINE static result<Derived> open(
+                const unicode_string& path,
+                const ob::attributes& attributes = {},
+                const file_options&   opt        = options) noexcept;
 
             /// \brief Opens file using NtCreateFile API. FILE_CREATE disposition is used.
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
-            template<class StringRef>
-            NTW_INLINE status create(const StringRef&    path,
-                                     const file_options& opt = options) noexcept;
+            NTW_INLINE static result<Derived> create(
+                const unicode_string& path,
+                const ob::attributes& attributes = {},
+                const file_options&   opt        = options) noexcept;
 
             /// \brief Opens file using NtCreateFile API. FILE_SUPERSEDE disposition is
             ///        used.
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
-            template<class StringRef>
-            NTW_INLINE status supersede(const StringRef&    path,
-                                        const file_options& opt = options) noexcept;
+            NTW_INLINE static result<Derived> supersede(
+                const unicode_string& path,
+                const ob::attributes& attributes = {},
+                const file_options&   opt        = options) noexcept;
 
             /// \brief Opens file using NtCreateFile API. FILE_OVERWRITE disposition is
             ///        used.
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
-            template<class StringRef>
-            NTW_INLINE status overwrite(const StringRef&    path,
-                                        const file_options& opt = options) noexcept;
+            NTW_INLINE static result<Derived> overwrite(
+                const unicode_string& path,
+                const ob::attributes& attributes = {},
+                const file_options&   opt        = options) noexcept;
 
             /// \brief Opens file using NtCreateFile API. FILE_OPEN_IF disposition is
             ///        used.
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
-            template<class StringRef>
-            NTW_INLINE status open_or_create(const StringRef&    path,
-                                             const file_options& opt = options) noexcept;
+            NTW_INLINE static result<Derived> open_or_create(
+                const unicode_string& path,
+                const ob::attributes& attributes = {},
+                const file_options&   opt        = options) noexcept;
 
             /// \brief Opens file using NtCreateFile API. FILE_OVERWRITE_IF disposition is
             ///        used.
             /// \param path The path to file.
             ///             May be either an UNICODE_STRING or std::wstring_view.
             /// \param options The options used while opening the file.
-            template<class StringRef>
-            NTW_INLINE status overwrite_or_create(
-                const StringRef& path, const file_options& opt = options) noexcept;
+            NTW_INLINE static result<Derived> overwrite_or_create(
+                const unicode_string& path,
+                const ob::attributes& attributes = {},
+                const file_options&   opt        = options) noexcept;
 
             /// \brief Queries opened file size using NtQueryInformationFile API.
             NTW_INLINE result<std::uint64_t> size() const noexcept;
