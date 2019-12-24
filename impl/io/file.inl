@@ -77,16 +77,16 @@ namespace ntw::io {
                                                        ulong_t*     read) const noexcept
     {
         IO_STATUS_BLOCK status_block;
-        LARGE_INTEGER   li_offset = make_large_int(offset);
+        LARGE_INTEGER   li_offset = *reinterpret_cast<LARGE_INTEGER*>(&offset);
         const auto      status    = NTW_SYSCALL(NtReadFile)(handle().get(),
-                                              nullptr,
-                                              nullptr,
-                                              nullptr,
-                                              &status_block,
-                                              buffer.begin(),
-                                              buffer.size(),
-                                              &li_offset,
-                                              nullptr);
+                                                    nullptr,
+                                                    nullptr,
+                                                    nullptr,
+                                                    &status_block,
+                                                    buffer.data(),
+                                                    buffer.size(),
+                                                    &li_offset,
+                                                    nullptr);
         if(read && NT_SUCCESS(status))
             *read = static_cast<ulong_t>(status_block.Information);
         return status;
