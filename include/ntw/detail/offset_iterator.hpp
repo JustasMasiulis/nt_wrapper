@@ -11,9 +11,9 @@ namespace ntw::detail {
 
     public:
         using difference_type   = std::ptrdiff_t;
-        using value_type        = typename T;
-        using pointer           = typename T*;
-        using reference         = typename T&;
+        using value_type        = T;
+        using pointer           = T*;
+        using reference         = T&;
         using iterator_category = std::input_iterator_tag;
 
         NTW_INLINE constexpr offset_iterator() noexcept = default;
