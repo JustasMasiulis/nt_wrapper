@@ -3,10 +3,11 @@
 #include "attributes.hpp"
 #include "../status.hpp"
 #include "../access.hpp"
+#include "object.hpp"
 
 namespace ntw::ob {
 
-    /// \brief Extends access_builder to contain all process specific access
+    /// \brief Extends access_builder to contain all process specific access flags.
     struct process_access : access_builder<process_access> {
         /// \brief Enables PROCESS_TERMINATE flag
         NTW_INLINE constexpr process_access& terminate();
@@ -57,24 +58,14 @@ namespace ntw::ob {
     /// \brief Wrapper class around process object and its information
     template<class Handle>
     struct basic_process : Handle {
-        Handle _handle;
-
-    public:
         /// \brief The type of handle that is used internally
         using handle_type = Handle;
 
+        /// \brief Inherits constructors from handle type.
+        using handle_type::handle_type;
+
         /// \brief Constructs process with the current processes handle.
         NTW_INLINE basic_process();
-
-        /// \brief Constructs process with given handle
-        template<class H>
-        NTW_INLINE basic_process(const H& handle);
-
-        /// \brief Returns the internal handle
-        NTW_INLINE handle_type& handle();
-
-        /// \brief Returns the internal handle
-        NTW_INLINE const handle_type& handle() const;
 
         /// \brief Opens process using given process id, access and attributes
         /// \param pid Process ID of any type convertible to void*
@@ -85,6 +76,9 @@ namespace ntw::ob {
                                process_access    access,
                                const attributes& attr = {});
     };
+
+    using unique_process = basic_process<unique_object>;
+    using process_ref    = basic_process<object_ref>;
 
 } // namespace ntw::ob
 

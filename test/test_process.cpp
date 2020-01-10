@@ -29,3 +29,8 @@ TEST_CASE("process access building")
                        PROCESS_SUSPEND_RESUME | PROCESS_QUERY_LIMITED_INFORMATION |
                        PROCESS_SET_LIMITED_INFORMATION));
 }
+
+TEST_CASE("process default constructors")
+{
+    REQUIRE(NtCurrentProcess() == ntw::ob::process_ref{}.get());
+}
