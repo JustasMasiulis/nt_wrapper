@@ -3,6 +3,182 @@
 
 namespace ntw::ob {
 
+    NTW_INLINE constexpr privilege privilege::create_token() noexcept
+    {
+        return { SE_CREATE_TOKEN_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::assign_primary_token() noexcept
+    {
+        return { SE_ASSIGNPRIMARYTOKEN_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::lock_memory() noexcept
+    {
+        return { SE_LOCK_MEMORY_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::increase_qouta() noexcept
+    {
+        return { SE_INCREASE_QUOTA_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::machine_account() noexcept
+    {
+        return { SE_MACHINE_ACCOUNT_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::tcb() noexcept
+    {
+        return { SE_TCB_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::security() noexcept
+    {
+        return { SE_SECURITY_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::take_ownership() noexcept
+    {
+        return { SE_TAKE_OWNERSHIP_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::load_driver() noexcept
+    {
+        return { SE_LOAD_DRIVER_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::system_profile() noexcept
+    {
+        return { SE_SYSTEM_PROFILE_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::systemtime() noexcept
+    {
+        return { SE_SYSTEMTIME_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::prof_single_process() noexcept
+    {
+        return { SE_PROF_SINGLE_PROCESS_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::inc_base_priority() noexcept
+    {
+        return { SE_INC_BASE_PRIORITY_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::create_pagefile() noexcept
+    {
+        return { SE_CREATE_PAGEFILE_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::create_permanent() noexcept
+    {
+        return { SE_CREATE_PERMANENT_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::backup() noexcept
+    {
+        return { SE_BACKUP_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::restore() noexcept
+    {
+        return { SE_RESTORE_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::shutdown() noexcept
+    {
+        return { SE_SHUTDOWN_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::debug() noexcept
+    {
+        return { SE_DEBUG_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::audit() noexcept
+    {
+        return { SE_AUDIT_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::system_environment() noexcept
+    {
+        return { SE_SYSTEM_ENVIRONMENT_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::change_notify() noexcept
+    {
+        return { SE_CHANGE_NOTIFY_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::remote_shutdown() noexcept
+    {
+        return { SE_REMOTE_SHUTDOWN_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::undock() noexcept
+    {
+        return { SE_UNDOCK_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::sync_agent() noexcept
+    {
+        return { SE_SYNC_AGENT_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::enable_delegation() noexcept
+    {
+        return { SE_ENABLE_DELEGATION_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::manage_volume() noexcept
+    {
+        return { SE_MANAGE_VOLUME_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::impersonate() noexcept
+    {
+        return { SE_IMPERSONATE_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::create_global() noexcept
+    {
+        return { SE_CREATE_GLOBAL_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::trusted_credman_access() noexcept
+    {
+        return { SE_TRUSTED_CREDMAN_ACCESS_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::relabel() noexcept
+    {
+        return { SE_RELABEL_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::inc_working_set() noexcept
+    {
+        return { SE_INC_WORKING_SET_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::time_zone() noexcept
+    {
+        return { SE_TIME_ZONE_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::create_symbolic_link() noexcept
+    {
+        return { SE_CREATE_SYMBOLIC_LINK_PRIVILEGE };
+    }
+
+    NTW_INLINE constexpr privilege privilege::delegate_session_user_impersonate() noexcept
+    {
+        return { SE_DELEGATE_SESSION_USER_IMPERSONATE_PRIVILEGE };
+    }
+
+
     NTW_INLINE constexpr token_access& token_access::adjust_default() noexcept
     {
         _access |= TOKEN_ADJUST_DEFAULT;
@@ -78,6 +254,13 @@ namespace ntw::ob {
         const auto status =
             NTW_SYSCALL(NtOpenProcessToken)(process.get(), desired_access.get(), &handle);
         return { status, basic_token<H>{ handle } };
+    }
+
+    template<class H>
+    NTW_INLINE status basic_token<H>::reset_privileges() noexcept
+    {
+        return NTW_SYSCALL(NtAdjustPrivilegesToken)(
+            get(), true, nullptr, 0, nullptr, 0, nullptr);
     }
 
 } // namespace ntw::ob

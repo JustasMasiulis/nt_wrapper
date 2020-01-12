@@ -52,10 +52,127 @@ namespace ntw::ob {
         NTW_INLINE constexpr token_access& all() noexcept;
     };
 
-    struct token_privilege_t {
-        unsigned long privilege;
-        bool          enable;
+    template<std::uint8_t Privilege>
+    struct privilege_builder {
+        NTW_INLINE static privilege enable() noexcept
+        {
+            return { Privilege, SE_PRIVILEGE_ENABLED };
+        }
+
+        NTW_INLINE privilege enable_by_default()
+        {
+            return { Privilege, SE_PRIVILEGE_ENABLED_BY_DEFAULT };
+        }
+
+        NTW_INLINE privilege remove() { return { Privilege, SE_PRIVILEGE_REMOVED }; }
     };
+
+    struct privilege : LUID {
+        /// \brief Constructs LUID with your given privilege value.
+        NTW_INLINE constexpr privilege(std::uint32_t value) noexcept : LUID{ value, 0 } {}
+
+        NTW_INLINE constexpr static privilege create_token() noexcept;
+
+        NTW_INLINE constexpr static privilege assign_primary_token() noexcept;
+
+        NTW_INLINE constexpr static privilege lock_memory() noexcept;
+
+        NTW_INLINE constexpr static privilege increase_qouta() noexcept;
+
+        NTW_INLINE constexpr static privilege machine_account() noexcept;
+
+        NTW_INLINE constexpr static privilege tcb() noexcept;
+
+        NTW_INLINE constexpr static privilege security() noexcept;
+
+        NTW_INLINE constexpr static privilege take_ownership() noexcept;
+
+        NTW_INLINE constexpr static privilege load_driver() noexcept;
+
+        NTW_INLINE constexpr static privilege system_profile() noexcept;
+
+        NTW_INLINE constexpr static privilege systemtime() noexcept;
+
+        NTW_INLINE constexpr static privilege prof_single_process() noexcept;
+
+        NTW_INLINE constexpr static privilege inc_base_priority() noexcept;
+
+        NTW_INLINE constexpr static privilege create_pagefile() noexcept;
+
+        NTW_INLINE constexpr static privilege create_permanent() noexcept;
+
+        NTW_INLINE constexpr static privilege backup() noexcept;
+
+        NTW_INLINE constexpr static privilege restore() noexcept;
+
+        NTW_INLINE constexpr static privilege shutdown() noexcept;
+
+        NTW_INLINE constexpr static privilege debug() noexcept;
+
+        NTW_INLINE constexpr static privilege audit() noexcept;
+
+        NTW_INLINE constexpr static privilege system_environment() noexcept;
+
+        NTW_INLINE constexpr static privilege change_notify() noexcept;
+
+        NTW_INLINE constexpr static privilege remote_shutdown() noexcept;
+
+        NTW_INLINE constexpr static privilege undock() noexcept;
+
+        NTW_INLINE constexpr static privilege sync_agent() noexcept;
+
+        NTW_INLINE constexpr static privilege enable_delegation() noexcept;
+
+        NTW_INLINE constexpr static privilege manage_volume() noexcept;
+
+        NTW_INLINE constexpr static privilege impersonate() noexcept;
+
+        NTW_INLINE constexpr static privilege create_global() noexcept;
+
+        NTW_INLINE constexpr static privilege trusted_credman_access() noexcept;
+
+        NTW_INLINE constexpr static privilege relabel() noexcept;
+
+        NTW_INLINE constexpr static privilege inc_working_set() noexcept;
+
+        NTW_INLINE constexpr static privilege time_zone() noexcept;
+
+        NTW_INLINE constexpr static privilege create_symbolic_link() noexcept;
+
+        NTW_INLINE constexpr static privilege
+        delegate_session_user_impersonate() noexcept;
+    };
+
+    struct privilege_with_attributes {
+        privilege     privilege;
+        std::uint32_t attributes = 0;
+
+        NTW_INLINE constexpr privilege_with_attributes& enable() noexcept
+        {
+            attributes = SE_PRIVILEGE_ENABLED;
+        }
+
+        NTW_INLINE constexpr privilege_with_attributes& remove() noexcept
+        {
+            attributes = SE_PRIVILEGE_REMOVED;
+        }
+
+        NTW_INLINE constexpr bool enabled() const noexcept
+        {
+            return attributes & SE_PRIVILEGE_ENABLED;
+        }
+
+        NTW_INLINE bool removed() const noexcept
+        {
+            return attributes & SE_PRIVILEGE_REMOVED;
+        }
+
+        NTW_INLINE bool enabled_by_default() const noexcept
+        {
+            return attributes & SE_PRIVILEGE_ENABLED_BY_DEFAULT;
+        }
+    };
+
 
     /// \brief Wrapper class around token object
     template<class Handle>
@@ -67,59 +184,51 @@ namespace ntw::ob {
         using handle_type::handle_type;
 
         /// \brief Opens given process token with the specified access.
+        // TODO add thread token open
         template<class H>
         NTW_INLINE static ntw::result<basic_token>
         open(const basic_process<H>& process, token_access desired_access) noexcept;
 
-        // TODO
-        // clang-format off
-        // template<class H>
-        // NTW_INLINE ntw::result<basic_token> open(const ntw::ob::basic_thread<H>& thread,
-        //                                          token_access                    desired_access,
-        //                                          bool                            open_as_self) noexcept
-        // clang-format on
-        // template<class T>
-        // NT_FN info(TOKEN_INFORMATION_CLASS info_class,
-        //           T&                      info,
-        //           unsigned long           info_size     = sizeof(T),
-        //           unsigned long*          returned_size = nullptr)
-        //{
-        //    unsigned long ret_size = 0;
-        //    const auto    status   = LI_NT(NtQueryInformationToken)(
-        //        _handle.get(), info_class, &info, info_size, &ret_size);
-        //    if(returned_size)
-        //        *returned_size = ret_size;
-        //    return status;
-        //}
+        /// \brief Resets / disables all privileges.
+        /// \note Acts as AdjustTokenPrivileges(handle, TRUE, ...)
+        // TODO add overload which returns old privilege state.
+        NTW_INLINE status reset_privileges() noexcept;
 
-        // template<std::size_t N>
-        // NT_FN adjust_privileges(const token_privilege_t (&privileges)[N])
-        //{
-        //    struct {
-        //        DWORD               PrivilegeCount = N;
-        //        LUID_AND_ATTRIBUTES Privileges[N];
-        //    } new_state;
+        template<std::size_t N>
+        NTW_INLINE adjust_privileges(const token_privilege_t (&privileges)[N])
+        {
+            // NTSYSCALLAPI NTSTATUS NTAPI
+            // NtAdjustPrivilegesToken(_In_ HANDLE                TokenHandle,
+            //                        _In_ BOOLEAN               DisableAllPrivileges,
+            //                        _In_opt_ PTOKEN_PRIVILEGES NewState,
+            //                        _In_ ULONG                 BufferLength,
+            //                        _Out_writes_bytes_to_opt_(BufferLength,
+            //                        *ReturnLength)
+            //                            PTOKEN_PRIVILEGES PreviousState,
+            //                        _Out_opt_ PULONG      ReturnLength);
 
-        //    for(std::size_t i = 0; i < N; ++i) {
-        //        auto& priv         = new_state.Privileges[i];
-        //        priv.Luid.LowPart  = privileges[i].privilege;
-        //        priv.Luid.HighPart = 0;
-        //        priv.Attributes    = (privileges[i].enable ? SE_PRIVILEGE_ENABLED : 0);
-        //    }
+            struct {
+                DWORD               PrivilegeCount = N;
+                LUID_AND_ATTRIBUTES Privileges[N];
+            } new_state;
 
-        //    const auto status = LI_NT(NtAdjustPrivilegesToken)(
-        //        _handle.get(),
-        //        FALSE,
-        //        reinterpret_cast<TOKEN_PRIVILEGES*>(&new_state),
-        //        unsigned{ sizeof(TOKEN_PRIVILEGES) },
-        //        nullptr,
-        //        nullptr);
+            for(std::size_t i = 0; i < N; ++i) {
+                auto& priv         = new_state.Privileges[i];
+                priv.Luid.LowPart  = privileges[i].privilege;
+                priv.Luid.HighPart = 0;
+                priv.Attributes    = (privileges[i].enable ? SE_PRIVILEGE_ENABLED : 0);
+            }
 
-        //    if(status == STATUS_NOT_ALL_ASSIGNED)
-        //        return STATUS_PRIVILEGE_NOT_HELD;
+            const auto status = LI_NT(NtAdjustPrivilegesToken)(
+                _handle.get(),
+                FALSE,
+                reinterpret_cast<TOKEN_PRIVILEGES*>(&new_state),
+                unsigned{ sizeof(TOKEN_PRIVILEGES) },
+                nullptr,
+                nullptr);
 
-        //    return status;
-        //}
+            return status;
+        }
 
         // NT_FN adjust_privilege(unsigned long priv, bool enable)
         //{
