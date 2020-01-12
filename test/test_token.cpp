@@ -37,3 +37,12 @@ TEST_CASE("token open works")
     REQUIRE(tok);
     REQUIRE(tok->get() != nullptr);
 }
+
+TEST_CASE("token.reset_privileges")
+{
+    const auto tok = ntw::ob::unique_token::open(
+        ntw::ob::process_ref{}, ntw::ob::token_access{}.adjust_privileges());
+
+    REQUIRE(tok);
+    REQUIRE(tok->reset_privileges().success());
+}
