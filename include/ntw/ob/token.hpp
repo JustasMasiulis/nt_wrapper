@@ -52,24 +52,19 @@ namespace ntw::ob {
         NTW_INLINE constexpr token_access& all() noexcept;
     };
 
-    template<std::uint8_t Privilege>
-    struct privilege_builder {
-        NTW_INLINE static privilege enable() noexcept
-        {
-            return { Privilege, SE_PRIVILEGE_ENABLED };
-        }
+    // forward declaration
+    struct privilege_with_attributes;
 
-        NTW_INLINE privilege enable_by_default()
-        {
-            return { Privilege, SE_PRIVILEGE_ENABLED_BY_DEFAULT };
-        }
-
-        NTW_INLINE privilege remove() { return { Privilege, SE_PRIVILEGE_REMOVED }; }
-    };
-
+    /// \brief Wraps LUID structure.
     struct privilege : LUID {
         /// \brief Constructs LUID with your given privilege value.
         NTW_INLINE constexpr privilege(std::uint32_t value) noexcept : LUID{ value, 0 } {}
+
+        /// \brief Creates privilege_with_attributes and enables it.
+        NTW_INLINE constexpr privilege_with_attributes enable() const noexcept;
+
+        /// \brief Creates privilege_with_attributes and removes it.
+        NTW_INLINE constexpr privilege_with_attributes remove() const noexcept;
 
         NTW_INLINE constexpr static privilege create_token() noexcept;
 
@@ -143,45 +138,32 @@ namespace ntw::ob {
         delegate_session_user_impersonate() noexcept;
     };
 
+    /// \brief LUID_AND_ATTRIBUTES reimplementation
     struct privilege_with_attributes {
         privilege     privilege;
         std::uint32_t attributes = 0;
 
-        NTW_INLINE constexpr privilege_with_attributes& enable() noexcept
-        {
-            attributes = SE_PRIVILEGE_ENABLED;
-        }
+        NTW_INLINE constexpr privilege_with_attributes& enable() noexcept;
 
-        NTW_INLINE constexpr privilege_with_attributes& remove() noexcept
-        {
-            attributes = SE_PRIVILEGE_REMOVED;
-        }
+        NTW_INLINE constexpr privilege_with_attributes& remove() noexcept;
 
-        NTW_INLINE constexpr bool enabled() const noexcept
-        {
-            return attributes & SE_PRIVILEGE_ENABLED;
-        }
+        NTW_INLINE constexpr bool enabled() const noexcept;
 
-        NTW_INLINE bool removed() const noexcept
-        {
-            return attributes & SE_PRIVILEGE_REMOVED;
-        }
+        NTW_INLINE bool removed() const noexcept;
 
-        NTW_INLINE bool enabled_by_default() const noexcept
-        {
-            return attributes & SE_PRIVILEGE_ENABLED_BY_DEFAULT;
-        }
+        NTW_INLINE bool enabled_by_default() const noexcept;
     };
 
-
     /// \brief Wrapper class around token object
+    // TODO open overload for threads
+    // TODO reset_privileges overload with old state return
+    // TODO NtAdjustPrivilegesToken with array of privileges instead of singular instances
     template<class Handle>
     struct basic_token : Handle {
         using handle_type = Handle;
+        using handle_type::handle_type;
 
         basic_token() = default;
-
-        using handle_type::handle_type;
 
         /// \brief Opens given process token with the specified access.
         // TODO add thread token open
@@ -191,50 +173,18 @@ namespace ntw::ob {
 
         /// \brief Resets / disables all privileges.
         /// \note Acts as AdjustTokenPrivileges(handle, TRUE, ...)
-        // TODO add overload which returns old privilege state.
-        NTW_INLINE status reset_privileges() noexcept;
+        NTW_INLINE status reset_privileges() const noexcept;
 
-        template<std::size_t N>
-        NTW_INLINE adjust_privileges(const token_privilege_t (&privileges)[N])
-        {
-            // NTSYSCALLAPI NTSTATUS NTAPI
-            // NtAdjustPrivilegesToken(_In_ HANDLE                TokenHandle,
-            //                        _In_ BOOLEAN               DisableAllPrivileges,
-            //                        _In_opt_ PTOKEN_PRIVILEGES NewState,
-            //                        _In_ ULONG                 BufferLength,
-            //                        _Out_writes_bytes_to_opt_(BufferLength,
-            //                        *ReturnLength)
-            //                            PTOKEN_PRIVILEGES PreviousState,
-            //                        _Out_opt_ PULONG      ReturnLength);
+        /// \brief Ajusts a single privilege using NtAdjustPrivilegesToken API.
+        /// \returns The old state of the privilege.
+        /// \note If you don't care about old state use replace_privilege.
+        NTW_INLINE result<privilege_with_attributes> adjust_privilege(
+            privilege_with_attributes privilege) const noexcept;
 
-            struct {
-                DWORD               PrivilegeCount = N;
-                LUID_AND_ATTRIBUTES Privileges[N];
-            } new_state;
-
-            for(std::size_t i = 0; i < N; ++i) {
-                auto& priv         = new_state.Privileges[i];
-                priv.Luid.LowPart  = privileges[i].privilege;
-                priv.Luid.HighPart = 0;
-                priv.Attributes    = (privileges[i].enable ? SE_PRIVILEGE_ENABLED : 0);
-            }
-
-            const auto status = LI_NT(NtAdjustPrivilegesToken)(
-                _handle.get(),
-                FALSE,
-                reinterpret_cast<TOKEN_PRIVILEGES*>(&new_state),
-                unsigned{ sizeof(TOKEN_PRIVILEGES) },
-                nullptr,
-                nullptr);
-
-            return status;
-        }
-
-        // NT_FN adjust_privilege(unsigned long priv, bool enable)
-        //{
-        //    token_privilege_t p[1]{ { priv, enable } };
-        //    return adjust_privileges(p);
-        //}
+        /// \brief Ajusts a single privilege using NtAdjustPrivilegesToken API.
+        /// \note If you care about old state use adjust_privilege.
+        NTW_INLINE status replace_privilege(privilege_with_attributes privilege) const
+            noexcept;
     };
 
     using unique_token = basic_token<unique_object>;

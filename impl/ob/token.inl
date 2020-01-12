@@ -3,6 +3,16 @@
 
 namespace ntw::ob {
 
+    NTW_INLINE constexpr privilege_with_attributes privilege::enable() const noexcept
+    {
+        return privilege_with_attributes{ *this, SE_PRIVILEGE_ENABLED };
+    }
+
+    NTW_INLINE constexpr privilege_with_attributes privilege::remove() const noexcept
+    {
+        return privilege_with_attributes{ *this, SE_PRIVILEGE_REMOVED };
+    }
+
     NTW_INLINE constexpr privilege privilege::create_token() noexcept
     {
         return { SE_CREATE_TOKEN_PRIVILEGE };
@@ -178,6 +188,38 @@ namespace ntw::ob {
         return { SE_DELEGATE_SESSION_USER_IMPERSONATE_PRIVILEGE };
     }
 
+    // privilege_with_attributes ----------------------------------------------
+
+    NTW_INLINE constexpr privilege_with_attributes&
+    privilege_with_attributes::enable() noexcept
+    {
+        attributes = SE_PRIVILEGE_ENABLED;
+        return *this;
+    }
+
+    NTW_INLINE constexpr privilege_with_attributes&
+    privilege_with_attributes::remove() noexcept
+    {
+        attributes = SE_PRIVILEGE_REMOVED;
+        return *this;
+    }
+
+    NTW_INLINE constexpr bool privilege_with_attributes::enabled() const noexcept
+    {
+        return attributes & SE_PRIVILEGE_ENABLED;
+    }
+
+    NTW_INLINE bool privilege_with_attributes::removed() const noexcept
+    {
+        return attributes & SE_PRIVILEGE_REMOVED;
+    }
+
+    NTW_INLINE bool privilege_with_attributes::enabled_by_default() const noexcept
+    {
+        return attributes & SE_PRIVILEGE_ENABLED_BY_DEFAULT;
+    }
+
+    // token_access -----------------------------------------------------------
 
     NTW_INLINE constexpr token_access& token_access::adjust_default() noexcept
     {
@@ -257,10 +299,49 @@ namespace ntw::ob {
     }
 
     template<class H>
-    NTW_INLINE status basic_token<H>::reset_privileges() noexcept
+    NTW_INLINE status basic_token<H>::reset_privileges() const noexcept
     {
+        return NTW_SYSCALL(NtAdjustPrivilegesToken)(get(), true, nullptr, 0, nullptr, 0);
+    }
+
+    template<class H>
+    NTW_INLINE result<privilege_with_attributes>
+               basic_token<H>::adjust_privilege(privilege_with_attributes privilege) const noexcept
+    {
+        struct {
+            std::uint32_t             count = 1;
+            privilege_with_attributes priv{ privilege };
+        } state;
+
+        const auto status = NTW_SYSCALL(NtAdjustPrivilegesToken)(
+            get(),
+            FALSE,
+            reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
+            unsigned{ sizeof(state) },
+            reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
+            unsigned{ sizeof(state) });
+
+        return { status, state.priv };
+    }
+
+    template<class H>
+    NTW_INLINE status
+    basic_token<H>::replace_privilege(privilege_with_attributes privilege) const noexcept
+    {
+        struct {
+            std::uint32_t             count = 1;
+            privilege_with_attributes priv{ privilege };
+        } state;
+
         return NTW_SYSCALL(NtAdjustPrivilegesToken)(
-            get(), true, nullptr, 0, nullptr, 0, nullptr);
+            get(),
+            FALSE,
+            reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
+            unsigned{ sizeof(state) },
+            nullptr,
+            nullptr);
+
+        return status;
     }
 
 } // namespace ntw::ob
