@@ -63,6 +63,9 @@ namespace ntw::ob {
         /// \brief Creates privilege_with_attributes and enables it.
         NTW_INLINE constexpr privilege_with_attributes enable() const noexcept;
 
+        /// \brief Creates privilege_with_attributes with zeroed attributes.
+        NTW_INLINE constexpr privilege_with_attributes disable() const noexcept;
+
         /// \brief Creates privilege_with_attributes and removes it.
         NTW_INLINE constexpr privilege_with_attributes remove() const noexcept;
 
@@ -177,11 +180,13 @@ namespace ntw::ob {
 
         /// \brief Ajusts a single privilege using NtAdjustPrivilegesToken API.
         /// \returns The old state of the privilege.
+        /// \warn MAY RETURN STATUS_NOT_ALL_ASSIGNED WHICH IS NOT TREATED AS AN ERROR.
         /// \note If you don't care about old state use replace_privilege.
         NTW_INLINE result<privilege_with_attributes> adjust_privilege(
             privilege_with_attributes privilege) const noexcept;
 
         /// \brief Ajusts a single privilege using NtAdjustPrivilegesToken API.
+        /// \warn MAY RETURN STATUS_NOT_ALL_ASSIGNED WHICH IS NOT TREATED AS AN ERROR.
         /// \note If you care about old state use adjust_privilege.
         NTW_INLINE status replace_privilege(privilege_with_attributes privilege) const
             noexcept;

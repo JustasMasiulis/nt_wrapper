@@ -46,3 +46,22 @@ TEST_CASE("token.reset_privileges")
     REQUIRE(tok);
     REQUIRE(tok->reset_privileges().success());
 }
+
+TEST_CASE("token.replace_privilege")
+{
+    const auto tok = ntw::ob::unique_token::open(
+        ntw::ob::process_ref{}, ntw::ob::token_access{}.adjust_privileges().query());
+
+    REQUIRE(tok);
+    const auto res = tok->replace_privilege(ntw::ob::privilege::debug().enable());
+    REQUIRE(res.success());
+}
+
+TEST_CASE("token.adjust_privilege")
+{
+    const auto tok = ntw::ob::unique_token::open(
+        ntw::ob::process_ref{}, ntw::ob::token_access{}.adjust_privileges().query());
+    REQUIRE(tok);
+    const auto res = tok->adjust_privilege(ntw::ob::privilege::debug().enable());
+    REQUIRE(res);
+}

@@ -8,6 +8,11 @@ namespace ntw::ob {
         return privilege_with_attributes{ *this, SE_PRIVILEGE_ENABLED };
     }
 
+    NTW_INLINE constexpr privilege_with_attributes privilege::disable() const noexcept
+    {
+        return privilege_with_attributes{ *this, 0 };
+    }
+
     NTW_INLINE constexpr privilege_with_attributes privilege::remove() const noexcept
     {
         return privilege_with_attributes{ *this, SE_PRIVILEGE_REMOVED };
@@ -301,7 +306,8 @@ namespace ntw::ob {
     template<class H>
     NTW_INLINE status basic_token<H>::reset_privileges() const noexcept
     {
-        return NTW_SYSCALL(NtAdjustPrivilegesToken)(get(), true, nullptr, 0, nullptr, 0);
+        return NTW_SYSCALL(NtAdjustPrivilegesToken)(
+            get(), true, nullptr, 0, nullptr, nullptr);
     }
 
     template<class H>
@@ -309,17 +315,18 @@ namespace ntw::ob {
                basic_token<H>::adjust_privilege(privilege_with_attributes privilege) const noexcept
     {
         struct {
-            std::uint32_t             count = 1;
-            privilege_with_attributes priv{ privilege };
-        } state;
+            std::uint32_t             count;
+            privilege_with_attributes priv;
+        } state{ 1, privilege };
 
-        const auto status = NTW_SYSCALL(NtAdjustPrivilegesToken)(
+        ntw::ulong_t ret_size = sizeof(state);
+        const auto   status   = NTW_SYSCALL(NtAdjustPrivilegesToken)(
             get(),
             FALSE,
             reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
             unsigned{ sizeof(state) },
             reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
-            unsigned{ sizeof(state) });
+            &ret_size);
 
         return { status, state.priv };
     }
@@ -329,11 +336,11 @@ namespace ntw::ob {
     basic_token<H>::replace_privilege(privilege_with_attributes privilege) const noexcept
     {
         struct {
-            std::uint32_t             count = 1;
-            privilege_with_attributes priv{ privilege };
-        } state;
+            std::uint32_t             count;
+            privilege_with_attributes priv;
+        } state{ 1, privilege };
 
-        return NTW_SYSCALL(NtAdjustPrivilegesToken)(
+        auto status = NTW_SYSCALL(NtAdjustPrivilegesToken)(
             get(),
             FALSE,
             reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
