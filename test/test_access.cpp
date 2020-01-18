@@ -1,7 +1,8 @@
+#include <ntw/ob/attributes.hpp>
+#include <ntw/access.hpp>
 #define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
-#include <ob/attributes.hpp>
-#include <access.hpp>
 
 struct mock_access : ntw::access_builder<mock_access> {};
 

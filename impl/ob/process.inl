@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ob/process.hpp"
+#include "../../include/ntw/ob/process.hpp"
 
 namespace ntw::ob {
 
@@ -94,26 +94,8 @@ namespace ntw::ob {
     }
 
     template<class H>
-    NTW_INLINE basic_process<H>::basic_process() : _handle(NtCurrentProcess())
+    NTW_INLINE basic_process<H>::basic_process() : handle_type(NtCurrentProcess())
     {}
-
-    template<class H>
-    template<class H2>
-    NTW_INLINE basic_process<H>::basic_process(const H2& handle)
-        : _handle(detail::unwrap_handle(handle))
-    {}
-
-    template<class H>
-    NTW_INLINE H& basic_process<H>::handle()
-    {
-        return _handle;
-    }
-
-    template<class H>
-    NTW_INLINE const H& basic_process<H>::handle() const
-    {
-        return _handle;
-    }
 
     template<class H>
     template<class ProcessIdType>

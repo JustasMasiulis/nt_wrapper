@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/status.hpp"
+#include "../include/ntw/status.hpp"
 #include <type_traits>
 
 namespace ntw {
@@ -17,7 +17,7 @@ namespace ntw {
         return _value == status;
     }
 
-    NTW_INLINE constexpr status::operator bool() const { return _value >= 0; }
+    NTW_INLINE constexpr status::operator bool() const { return _value < 0; }
 
     NTW_INLINE constexpr status::operator std::int32_t() const { return _value; }
 

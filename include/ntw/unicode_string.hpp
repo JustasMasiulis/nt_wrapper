@@ -12,6 +12,10 @@ namespace ntw {
         /// \brief Constructrs an empty string
         NTW_INLINE constexpr unicode_string();
 
+        /// \brief Constructs unicode_string when given a C string expression
+        template<std::size_t N>
+        NTW_INLINE constexpr unicode_string(const wchar_t (&str)[N]);
+
         /// \brief Constructrs unicode_string using the given string
         NTW_INLINE constexpr unicode_string(UNICODE_STRING str);
 
@@ -30,14 +34,14 @@ namespace ntw {
 
         /// \brief Returns the beginning of buffer
         NTW_INLINE wchar_t* begin();
-        
-		/// \brief Returns the beginning of buffer
+
+        /// \brief Returns the beginning of buffer
         NTW_INLINE const wchar_t* begin() const;
 
         /// \brief Returns one past the end of buffer
         NTW_INLINE wchar_t* end();
-        
-		/// \brief Returns one past the end of buffer
+
+        /// \brief Returns one past the end of buffer
         NTW_INLINE const wchar_t* end() const;
 
         NTW_INLINE bool empty() const;

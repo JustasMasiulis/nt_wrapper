@@ -1,7 +1,9 @@
 #pragma once
+#include <chrono>
+#include "../unicode_string.hpp"
 #include "../detail/unwrap.hpp"
-#include "../status.hpp"
 #include "attributes.hpp"
+#include "../result.hpp"
 
 namespace ntw::ob {
 
@@ -49,11 +51,11 @@ namespace ntw::ob {
 
         /// Copy assigns storage in this from other
         template<class SO>
-        NTW_INLINE constexpr basic_object& operator=(const basic_object<SO>& other);
+        NTW_INLINE basic_object& operator=(const basic_object<SO>& other);
 
         /// Move assigns storage in this from other
         template<class SO>
-        NTW_INLINE constexpr basic_object& operator=(basic_object<SO>&& other);
+        NTW_INLINE basic_object& operator=(basic_object<SO>&& other);
 
         /// \brief Returns const reference tho the internal storage
         NTW_INLINE constexpr const storage_type& storage() const;
@@ -143,6 +145,8 @@ namespace ntw::ob {
         /// \brief Performs a wait on the object in an alertable state
         /// \param timeout The timeout of wait
         NTW_INLINE status wait_for(nanosecond_hundreds timeout, alertable_t) const;
+
+        NTW_INLINE result_ref<unicode_string> name() const;
     };
 
     namespace detail {
@@ -169,12 +173,17 @@ namespace ntw::ob {
 
             /// \brief Returns the stored value
             NTW_INLINE constexpr void* get() const;
+
+            /// \brief Returns the stored value and nulls it
+            NTW_INLINE constexpr void* release() noexcept;
         };
 
         class unique_object_storage {
             void* _value = nullptr;
 
         public:
+            NTW_INLINE ~unique_object_storage() noexcept;
+
             /// \brief Constructs storage which does not own a handle
             NTW_INLINE constexpr unique_object_storage() noexcept = default;
 
@@ -209,9 +218,12 @@ namespace ntw::ob {
 
     } // namespace detail
 
+    /// \brief Provides unique_ptr semantics for an object.
     using unique_object = basic_object<detail::unique_object_storage>;
-    using object_ref    = basic_object<detail::object_ref_storage>;
+
+    /// \brief A reference type that does not own the object.
+    using object_ref = basic_object<detail::object_ref_storage>;
 
 } // namespace ntw::ob
 
-#include "../../impl/ob/object.inl"
+#include "../../../impl/ob/object.inl"

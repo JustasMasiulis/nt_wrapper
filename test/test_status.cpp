@@ -1,6 +1,7 @@
+#include <ntw/status.hpp>
 #define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
-#include <status.hpp>
 
 TEST_CASE("default constructed status") { REQUIRE(ntw::status{}.get() == 0); }
 

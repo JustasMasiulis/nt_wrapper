@@ -1,6 +1,6 @@
 #pragma once
-#include "../detail/resource_wrapper.hpp"
 #include "../unicode_string.hpp"
+#include "../result.hpp"
 
 namespace ntw::object {
 
@@ -65,27 +65,7 @@ namespace ntw::object {
         NTW_INLINE status acquire(const Object& object);
     };
 
-    template<class Resource = ntw::stack_buffer<sizeof(UNICODE_STRING) + MAX_PATH>>
-    class name_info {
-        detail::resource_wrapper<Resource> _res;
-
-    public:
-        unicode_string name();
-
-        template<class Object>
-        NTW_INLINE status acquire(const Object& object);
-    };
-
-    template<class Resource = ntw::stack_buffer<sizeof(OBJECT_TYPE_INFORMATION) + 64>>
     class type_info {
-        detail::resource_wrapper<Resource> _res;
-
-    public:
-        type_info() = default;
-
-        template<class... ResourceArgs>
-        type_info(ResourceArgs&&... args);
-
         unicode_string type_name() const;
         std::uint8_t   type_idx() const;
 
@@ -110,4 +90,4 @@ namespace ntw::object {
 
 } // namespace ntw::object
 
-#include "../../include/ob/object_info.hpp"
+#include "../include/ntw/ob/object_info.hpp"

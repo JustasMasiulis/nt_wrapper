@@ -29,8 +29,10 @@ namespace ntw::detail {
     template<class T>
     NTW_INLINE constexpr auto unwrap(const T& x) noexcept
     {
-        else if constexpr(has_get<T>::value) return x.get();
-        else return x;
+        if constexpr(has_get<T>::value)
+            return x.get();
+        else
+            return x;
     }
 
     template<class T>

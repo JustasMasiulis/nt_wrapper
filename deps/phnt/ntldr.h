@@ -180,7 +180,8 @@ typedef struct _LDR_DATA_TABLE_ENTRY
             ULONG CorImage : 1;
             ULONG DontRelocate : 1;
             ULONG CorILOnly : 1;
-            ULONG ReservedFlags5 : 3;
+            ULONG ChpeImage : 1;
+            ULONG ReservedFlags5 : 2;
             ULONG Redirected : 1;
             ULONG ReservedFlags6 : 2;
             ULONG CompatDatabaseProcessed : 1;
@@ -555,6 +556,14 @@ LdrUnregisterDllNotification(
 #endif
 
 // end_msdn
+
+// rev
+NTSYSAPI
+PUNICODE_STRING
+NTAPI
+LdrStandardizeSystemPath(
+    _In_ PUNICODE_STRING SystemPath
+    );
 
 // private
 typedef struct _PS_MITIGATION_OPTIONS_MAP
@@ -935,6 +944,16 @@ NTAPI
 LdrControlFlowGuardEnforced(
     VOID
     );
+
+#if (PHNT_VERSION >= PHNT_19H1)
+// rev
+NTSYSAPI
+BOOLEAN
+NTAPI
+LdrIsModuleSxsRedirected(
+    _In_ PVOID DllHandle
+    );
+#endif
 
 #endif // (PHNT_MODE != PHNT_MODE_KERNEL)
 

@@ -38,6 +38,8 @@
 #define PHNT_REDSTONE3 104
 #define PHNT_REDSTONE4 105
 #define PHNT_REDSTONE5 106
+#define PHNT_19H1 107
+#define PHNT_19H2 108
 
 #ifndef PHNT_MODE
 #define PHNT_MODE PHNT_MODE_USER
@@ -69,7 +71,7 @@ extern "C" {
 #include "ntpsapi.h"
 
 #if (PHNT_MODE != PHNT_MODE_KERNEL)
-#include "cfg.h"
+#include <cfg.h>
 #include "ntdbg.h"
 #include "ntioapi.h"
 #include "ntlpcapi.h"
@@ -89,7 +91,7 @@ extern "C" {
 
 #include "ntwow64.h"
 
-#include "ntlsa.h"
+#include <ntlsa.h>
 #include "ntsam.h"
 
 #include "ntmisc.h"

@@ -1,6 +1,7 @@
+#include <ntw/ob/process.hpp>
 #define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
-#include <ob/process.hpp>
 
 TEST_CASE("process access building")
 {
@@ -27,4 +28,9 @@ TEST_CASE("process access building")
                        PROCESS_SET_INFORMATION | PROCESS_QUERY_INFORMATION |
                        PROCESS_SUSPEND_RESUME | PROCESS_QUERY_LIMITED_INFORMATION |
                        PROCESS_SET_LIMITED_INFORMATION));
+}
+
+TEST_CASE("process default constructors")
+{
+    REQUIRE(NtCurrentProcess() == ntw::ob::process_ref{}.get());
 }

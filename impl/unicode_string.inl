@@ -1,10 +1,17 @@
 #pragma once
-#include "../include/unicode_string.hpp"
+#include "../include/ntw/unicode_string.hpp"
 
 namespace ntw {
 
     /// \brief Constructrs an empty string
     NTW_INLINE constexpr unicode_string::unicode_string() : unicode_string(nullptr, 0) {}
+
+    template<std::size_t N>
+    NTW_INLINE constexpr unicode_string::unicode_string(const wchar_t (&str)[N])
+        : _value{ static_cast<std::uint16_t>((N - 1) << 1),
+                  static_cast<std::uint16_t>((N - 1) << 1),
+                  const_cast<wchar_t*>(str) }
+    {}
 
     /// \brief Constructrs an empty string
     NTW_INLINE constexpr unicode_string::unicode_string(UNICODE_STRING str) : _value(str)

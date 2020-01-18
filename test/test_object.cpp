@@ -1,7 +1,8 @@
+#include <ntw/ob/object.hpp>
+#include <ntw/ob/object_info.hpp>
 #define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
-#include <ob/object.hpp>
-#include <ob/object_info.hpp>
 
 #pragma comment(lib, "ntdll.lib")
 
@@ -75,5 +76,23 @@ TEST_CASE("operator bool")
     {
         ntw::ob::unique_object obj;
         REQUIRE(!obj);
+    }
+}
+
+TEST_CASE("conversion betweeen types of objects")
+{
+    SECTION("assignment")
+    {
+        ntw::ob::unique_object unique;
+        ntw::ob::object_ref    ref;
+
+        ref = unique;
+    }
+
+    SECTION("constructor")
+    {
+        ntw::ob::object_ref    ref;
+        ntw::ob::unique_object unique(ref);
+        ntw::ob::object_ref    ref2(unique);
     }
 }
