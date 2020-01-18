@@ -31,6 +31,10 @@ namespace ntw::se {
         /// \brief Returns whether a dacl is present checking for SE_DACL_PRESENT flag.
         NTW_INLINE bool dacl_present() const { return control() & SE_DACL_PRESENT; }
 
+        /// \brief Returns whether a dacl is protected checking for SE_DACL_PROTECTED
+        /// flag.
+        NTW_INLINE bool dacl_protected() const { return control() & SE_DACL_PROTECTED; }
+
         /// \brief Returns whether a present dacl is defaulted.
         /// \warning Requires dacl_present
         NTW_INLINE bool dacl_defaulted() const { return control() & SE_DACL_DEFAULTED; }
@@ -38,6 +42,10 @@ namespace ntw::se {
 
         /// \brief Returns whether a sacl is present checking for SE_SACL_PRESENT flag.
         NTW_INLINE bool sacl_present() const { return control() & SE_SACL_PRESENT; }
+
+        /// \brief Returns whether a sacl is protected checking for SE_SACL_PROTECTED
+        /// flag.
+        NTW_INLINE bool sacl_protected() const { return control() & SE_SACL_PROTECTED; }
 
         /// \brief Returns whether a present sacl is defaulted.
         /// \warning Requires sacl_present.
@@ -50,124 +58,6 @@ namespace ntw::se {
         /// \brief Returns whether the owner is defaulted checking for SE_OWNER_DEFAULTED
         /// flag.
         NTW_INLINE bool owner_defaulted() const { return control() & SE_OWNER_DEFAULTED; }
-    };
-
-    /// \brief A builder class for creating a security descriptor
-    class security_builder {
-        SECURITY_DESCRIPTOR _sd;
-
-    public:
-        /// \brief Sets the owner member and clears defaulted flag.
-        NTW_INLINE security_builder& owner(SID* o)
-        {
-            _sd.Control &= ~SE_OWNER_DEFAULTED;
-            _sd.Owner = o;
-            return *this;
-        }
-
-        /// \brief Sets the defaulted owner flag.
-        NTW_INLINE security_builder& default_owner()
-        {
-            _sd.Control |= SE_OWNER_DEFAULTED;
-            return *this;
-        }
-
-        /// \brief Sets the group member and clears defaulted flag.
-        NTW_INLINE security_builder& group(SID* g)
-        {
-            _sd.Control &= ~SE_GROUP_DEFAULTED;
-            _sd.Group = g;
-            return *this;
-        }
-
-        /// \brief Sets the defaulted group flag.
-        NTW_INLINE security_builder& default_group()
-        {
-            _sd.Control |= SE_GROUP_DEFAULTED;
-            return *this;
-        }
-
-        /// \brief Sets the sacl member, clears defaulted and sets present flags.
-        NTW_INLINE security_builder& sacl(ACL* g)
-        {
-            _sd.Control &= ~SE_SACL_DEFAULTED;
-            _sd.Control |= SE_SACL_PRESENT;
-            _sd.Sacl = g;
-            return *this;
-        }
-
-        /// \brief Sets the present and defaulted flags for sacl.
-        NTW_INLINE security_builder& default_sacl()
-        {
-            _sd.Control |= (SE_SACL_PRESENT | SE_SACL_DEFAULTED);
-            return *this;
-        }
-
-        /// \brief Clears present flag for sacl.
-        NTW_INLINE security_builder& no_sacl()
-        {
-            _sd.Control &= ~SE_SACL_PRESENT;
-            return *this;
-        }
-
-        /// \brief Enables or disables SE_SACL_PROTECTED flag
-        NTW_INLINE security_builder& protect_sacl(bool enable = true)
-        {
-            if(enable)
-                _sd.Control |= SE_SACL_PROTECTED;
-            else
-                _sd.Control &= ~SE_SACL_PROTECTED;
-            return *this;
-        }
-
-        /// \brief Sets the dacl member, clears defaulted and sets present flags.
-        NTW_INLINE security_builder& dacl(ACL* d)
-        {
-            _sd.Control &= ~SE_DACL_DEFAULTED;
-            _sd.Control |= SE_DACL_PRESENT;
-            _sd.Dacl = d;
-            return *this;
-        }
-
-        /// \brief Sets the present and defaulted flags for dacl.
-        NTW_INLINE security_builder& default_dacl()
-        {
-            _sd.Control |= (SE_DACL_PRESENT | SE_DACL_DEFAULTED);
-            return *this;
-        }
-
-        /// \brief Clears present flag for dacl.
-        NTW_INLINE security_builder& no_dacl()
-        {
-            _sd.Control &= ~SE_DACL_PRESENT;
-            return *this;
-        }
-
-        /// \brief Enables or disables SE_DACL_PROTECTED flag
-        NTW_INLINE security_builder& protect_dacl(bool enable = true)
-        {
-            if(enable)
-                _sd.Control |= SE_DACL_PROTECTED;
-            else
-                _sd.Control &= ~SE_DACL_PROTECTED;
-            return *this;
-        }
-
-        /// \brief Sets the sbz1 member and sets the present flag.
-        NTW_INLINE security_builder& rm_control(std::uint8_t c)
-        {
-            _sd.Control |= SE_RM_CONTROL_VALID;
-            _sd.Sbz1 = c;
-            return *this;
-        }
-
-        /// \brief Clears present flag and sbz1 member.
-        NTW_INLINE security_builder& no_rm_control()
-        {
-            _sd.Control &= ~SE_RM_CONTROL_VALID;
-            _sd.Sbz1 = 0;
-            return *this;
-        }
     };
 
     class security_desc : base_security_desc<security_desc> {
@@ -191,7 +81,121 @@ namespace ntw::se {
         /// \brief Returns the owner.
         NTW_INLINE SID* owner() { return _sd.Owner; }
 
+        /// \brief Returns pointer to the internal security descriptor.
         NTW_INLINE SECURITY_DESCRIPTOR* get() { return &_sd; }
+
+
+        /// \brief Sets the owner member and clears defaulted flag.
+        NTW_INLINE security_desc& owner(SID* o)
+        {
+            _sd.Control &= ~SE_OWNER_DEFAULTED;
+            _sd.Owner = o;
+            return *this;
+        }
+
+        /// \brief Sets the defaulted owner flag.
+        NTW_INLINE security_desc& default_owner()
+        {
+            _sd.Control |= SE_OWNER_DEFAULTED;
+            return *this;
+        }
+
+        /// \brief Sets the group member and clears defaulted flag.
+        NTW_INLINE security_desc& group(SID* g)
+        {
+            _sd.Control &= ~SE_GROUP_DEFAULTED;
+            _sd.Group = g;
+            return *this;
+        }
+
+        /// \brief Sets the defaulted group flag.
+        NTW_INLINE security_desc& default_group()
+        {
+            _sd.Control |= SE_GROUP_DEFAULTED;
+            return *this;
+        }
+
+        /// \brief Sets the sacl member, clears defaulted and sets present flags.
+        NTW_INLINE security_desc& sacl(ACL* g)
+        {
+            _sd.Control &= ~SE_SACL_DEFAULTED;
+            _sd.Control |= SE_SACL_PRESENT;
+            _sd.Sacl = g;
+            return *this;
+        }
+
+        /// \brief Sets the present and defaulted flags for sacl.
+        NTW_INLINE security_desc& default_sacl()
+        {
+            _sd.Control |= (SE_SACL_PRESENT | SE_SACL_DEFAULTED);
+            return *this;
+        }
+
+        /// \brief Clears present flag for sacl.
+        NTW_INLINE security_desc& no_sacl()
+        {
+            _sd.Control &= ~SE_SACL_PRESENT;
+            return *this;
+        }
+
+        /// \brief Enables or disables SE_SACL_PROTECTED flag
+        NTW_INLINE security_desc& protect_sacl(bool enable = true)
+        {
+            if(enable)
+                _sd.Control |= SE_SACL_PROTECTED;
+            else
+                _sd.Control &= ~SE_SACL_PROTECTED;
+            return *this;
+        }
+
+        /// \brief Sets the dacl member, clears defaulted and sets present flags.
+        NTW_INLINE security_desc& dacl(ACL* d)
+        {
+            _sd.Control &= ~SE_DACL_DEFAULTED;
+            _sd.Control |= SE_DACL_PRESENT;
+            _sd.Dacl = d;
+            return *this;
+        }
+
+        /// \brief Sets the present and defaulted flags for dacl.
+        NTW_INLINE security_desc& default_dacl()
+        {
+            _sd.Control |= (SE_DACL_PRESENT | SE_DACL_DEFAULTED);
+            return *this;
+        }
+
+        /// \brief Clears present flag for dacl.
+        NTW_INLINE security_desc& no_dacl()
+        {
+            _sd.Control &= ~SE_DACL_PRESENT;
+            return *this;
+        }
+
+        /// \brief Enables or disables SE_DACL_PROTECTED flag
+        NTW_INLINE security_desc& protect_dacl(bool enable = true)
+        {
+            if(enable)
+                _sd.Control |= SE_DACL_PROTECTED;
+            else
+                _sd.Control &= ~SE_DACL_PROTECTED;
+            return *this;
+        }
+
+        /// \brief Sets the sbz1 member and sets the present flag.
+        NTW_INLINE security_desc& rm_control(std::uint8_t c)
+        {
+            _sd.Control |= SE_RM_CONTROL_VALID;
+            _sd.Sbz1 = c;
+            return *this;
+        }
+
+        /// \brief Clears present flag and sbz1 member.
+        NTW_INLINE security_desc& no_rm_control()
+        {
+            _sd.Control &= ~SE_RM_CONTROL_VALID;
+            _sd.Sbz1 = 0;
+            return *this;
+        }
     };
 
     class rel_security_desc : base_security_desc<rel_security_desc> {
