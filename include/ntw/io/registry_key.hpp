@@ -16,11 +16,12 @@
 
 #pragma once
 #include "../ob/object.hpp"
+#include "../access.hpp"
 
 namespace ntw::io {
 
     /// \brief Extends access_builder to contain all registry specific access flags.
-    struct reg_access : access_builder<process_access> {
+    struct reg_access : access_builder<reg_access> {
         /// \note Corresponds to KEY_CREATE_LINK flag.
         NTW_INLINE constexpr reg_access& create_link() noexcept;
 
@@ -89,46 +90,71 @@ namespace ntw::io {
         // inherit constructors
         using handle_type::handle_type;
 
-        NTW_INLINE result<basic_registry_key> create(unicode_string     path,
-                                                     registry_access    access,
-                                                     reg_create_options options = {},
-                                                     bool* opened_existing      = nullptr)
+        // TODO transacted API
+        NTW_INLINE result<basic_reg_key> create(unicode_string      path,
+                                                reg_access          access,
+                                                reg_create_options  options    = {},
+                                                ntw::ob::attributes attributes = {})
         {
-            return _create(NTW_SYSCALL(NtCreateKey), make_ustr(path), access, options);
+            void* handle        = nullptr;
+            auto& raw_attr      = attributes.get();
+            raw_attr.ObjectName = &path.get();
+
+            const auto status = NTW_SYSCALL(NtCreateKey)(
+                &handle, access.get(), &raw_attr, 0, nullptr, options.get(), nullptr);
+
+            return { status, handle };
         }
 
-        template<class Fn, class... Tx>
-        NT_FN
-        _create(Fn f, UNICODE_STRING path, ACCESS_MASK access, ulong_t options, Tx... t)
+        NTW_INLINE result<basic_reg_key> create(unicode_string      path,
+                                                reg_access          access,
+                                                reg_create_options  options,
+                                                ntw::ob::attributes attributes,
+                                                bool&               opened_existing)
         {
-            auto attr = make_attributes(&path, OBJ_CASE_INSENSITIVE);
+            void* handle        = nullptr;
+            auto& raw_attr      = attributes.get();
+            raw_attr.ObjectName = &path.get();
 
-            void*      temp_handle = nullptr;
+            ulong_t    open_state;
+            const auto status = NTW_SYSCALL(NtCreateKey)(
+                &handle, access.get(), &raw_attr, 0, nullptr, options.get(), &open_state);
+
+            if(NT_SUCCESS(status))
+                opened_existing = open_state - 1;
+
+            return { status, handle };
+        }
+
+        NTW_INLINE result<basic_reg_key> open(unicode_string      path,
+                                              reg_access          access,
+                                              reg_create_options  options,
+                                              ntw::ob::attributes attributes = {})
+        {
+            void* handle        = nullptr;
+            auto& raw_attr      = attributes.get();
+            raw_attr.ObjectName = &path.get();
+
             const auto status =
-                f(&temp_handle, access, &attr, 0, nullptr, options, t..., nullptr);
+                NTW_SYSCALL(NtOpenKeyEx)(&handle, access.get(), &raw_attr, options.get());
 
-            if(NT_SUCCESS(status))
-                _handle.reset(temp_handle);
-
-            return status;
+            return { status, handle };
         }
 
-        template<class Fn, class... Tx>
-        NT_FN
-        _open(Fn f, UNICODE_STRING path, ACCESS_MASK access, void* root_handle, Tx... tx)
+        NTW_INLINE result<basic_reg_key> open(unicode_string      path,
+                                              reg_access          access,
+                                              ntw::ob::attributes attributes = {})
         {
-            auto attr = make_attributes(&path, OBJ_CASE_INSENSITIVE, root_handle);
+            void* handle        = nullptr;
+            auto& raw_attr      = attributes.get();
+            raw_attr.ObjectName = &path.get();
 
-            void*      temp_handle = nullptr;
-            const auto status      = f(&temp_handle, access, &attr, 0, tx...);
+            const auto status = NTW_SYSCALL(NtOpenKey)(&handle, access.get(), &raw_attr);
 
-            if(NT_SUCCESS(status))
-                _handle.reset(temp_handle);
-
-            return status;
+            return { status, handle };
         }
 
-        template<class T>
+        /*template<class T>
         NT_FN _get(UNICODE_STRING path, T& x) const
         {
             std::aligned_storage_t<12 + sizeof(T)> storage;
@@ -145,42 +171,6 @@ namespace ntw::io {
                 x = *reinterpret_cast<T*>(reinterpret_cast<char*>(&storage) + 12);
 
             return status;
-        }
-
-
-        template<class TxHandle, class StringRef>
-        NT_FN create_transacted(const TxHandle&  transaction,
-                                const StringRef& path,
-                                ACCESS_MASK      access  = KEY_ALL_ACCESS,
-                                ulong_t          options = 0)
-        {
-            return _create(NTW_SYSCALL(NtCreateKeyTransacted),
-                           make_ustr(path),
-                           access,
-                           options,
-                           unwrap_handle(transaction));
-        }
-
-        template<class StringRef, class RootHandle = nullptr_t>
-        NT_FN open(const StringRef&  path,
-                   ACCESS_MASK       access = KEY_ALL_ACCESS,
-                   const RootHandle& handle = nullptr)
-        {
-            return _open(
-                NTW_SYSCALL(NtOpenKeyEx), make_ustr(path), access, unwrap_handle(handle));
-        }
-
-        template<class TxHandle, class StringRef, class RootHandle = nullptr_t>
-        NT_FN open_transacted(const TxHandle&   transaction,
-                              const StringRef&  path,
-                              ACCESS_MASK       access = KEY_ALL_ACCESS,
-                              const RootHandle& handle = nullptr)
-        {
-            return _open(NTW_SYSCALL(NtOpenKeyTransactedEx),
-                         make_ustr(path),
-                         access,
-                         unwrap_handle(transaction),
-                         unwrap_handle(handle));
         }
 
         template<class StringRef>
@@ -356,11 +346,11 @@ namespace ntw::io {
                                                   nullptr,
                                                   0,
                                                   true);
-        }
+        }*/
     };
 
-    using unique_registry_key = basic_registry_key<ntw::ob::unique_object>;
-    using registry_key_ref    = basic_registry_key<ntw::ob::object_ref>;
+    using unique_reg_key = basic_reg_key<ntw::ob::unique_object>;
+    using reg_key_ref    = basic_reg_key<ntw::ob::object_ref>;
 
 } // namespace ntw::io
 
