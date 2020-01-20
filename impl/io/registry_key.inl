@@ -95,6 +95,32 @@ namespace ntw::io {
         return *this;
     }
 
+    NTW_INLINE constexpr ntw::ulong_t reg_open_options::get() const noexcept
+    {
+        return _value;
+    }
+
+    // reg_create_options -----------------------------------------------------
+
+    NTW_INLINE constexpr reg_create_options& reg_create_options::backup_restore() noexcept
+    {
+        _value |= REG_OPTION_BACKUP_RESTORE;
+        return *this;
+    }
+
+    NTW_INLINE constexpr reg_create_options& reg_create_options::open_link() noexcept
+    {
+        _value |= REG_OPTION_OPEN_LINK;
+        return *this;
+    }
+
+    NTW_INLINE constexpr reg_create_options&
+    reg_create_options::dont_virtualize() noexcept
+    {
+        _value |= REG_OPTION_DONT_VIRTUALIZE;
+        return *this;
+    }
+
     NTW_INLINE constexpr reg_create_options& reg_create_options::non_preserved() noexcept
     {
         _value |= REG_OPTION_VOLATILE;
@@ -105,6 +131,82 @@ namespace ntw::io {
     {
         _value |= REG_OPTION_CREATE_LINK;
         return *this;
+    }
+
+    NTW_INLINE constexpr ntw::ulong_t reg_create_options::get() const noexcept
+    {
+        return _value;
+    }
+
+    // basic_reg_key ----------------------------------------------------------
+
+    template<class H>
+    NTW_INLINE result<basic_reg_key<H>>
+               basic_reg_key<H>::create(unicode_string     path,
+                             reg_access         access,
+                             reg_create_options options,
+                             ob::attributes     attributes) noexcept
+    {
+        void* handle        = nullptr;
+        auto& raw_attr      = attributes.get();
+        raw_attr.ObjectName = &path.get();
+
+        const auto status = NTW_SYSCALL(NtCreateKey)(
+            &handle, access.get(), &raw_attr, 0, nullptr, options.get(), nullptr);
+
+        return { status, basic_reg_key{ handle } };
+    }
+
+    template<class H>
+    NTW_INLINE result<basic_reg_key<H>>
+               basic_reg_key<H>::create(unicode_string     path,
+                             reg_access         access,
+                             reg_create_options options,
+                             ob::attributes     attributes,
+                             bool&              opened_existing) noexcept
+    {
+        void* handle        = nullptr;
+        auto& raw_attr      = attributes.get();
+        raw_attr.ObjectName = &path.get();
+
+        ulong_t    open_state;
+        const auto status = NTW_SYSCALL(NtCreateKey)(
+            &handle, access.get(), &raw_attr, 0, nullptr, options.get(), &open_state);
+
+        if(NT_SUCCESS(status))
+            opened_existing = open_state - 1;
+
+        return { status, basic_reg_key{ handle } };
+    }
+
+    template<class H>
+    NTW_INLINE result<basic_reg_key<H>>
+               basic_reg_key<H>::open(unicode_string   path,
+                           reg_access       access,
+                           reg_open_options options,
+                           ob::attributes   attributes) noexcept
+    {
+        void* handle        = nullptr;
+        auto& raw_attr      = attributes.get();
+        raw_attr.ObjectName = &path.get();
+
+        const auto status =
+            NTW_SYSCALL(NtOpenKeyEx)(&handle, access.get(), &raw_attr, options.get());
+
+        return { status, basic_reg_key{ handle } };
+    }
+
+    template<class H>
+    NTW_INLINE result<basic_reg_key<H>> basic_reg_key<H>::open(
+        unicode_string path, reg_access access, ob::attributes attributes) noexcept
+    {
+        void* handle        = nullptr;
+        auto& raw_attr      = attributes.get();
+        raw_attr.ObjectName = &path.get();
+
+        const auto status = NTW_SYSCALL(NtOpenKey)(&handle, access.get(), &raw_attr);
+
+        return { status, basic_reg_key{ handle } };
     }
 
 } // namespace ntw::io
