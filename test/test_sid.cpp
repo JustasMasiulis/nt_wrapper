@@ -1,6 +1,7 @@
+#include <ntw/se/sid.hpp>
 #define CATCH_CONFIG_MAIN
+#define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
-#include <se/sid.hpp>
 
 TEST_CASE("static_sid: default ctor")
 {
@@ -19,7 +20,8 @@ TEST_CASE("static_sid: authority ctor")
     REQUIRE(s.size() == 0);
     REQUIRE(s.max_size() == 0);
     REQUIRE(s.size() == 0);
-    REQUIRE(std::memcmp(&s.identifier_authority(), &ntw::se::sid::authority::non_unique, 8) == 0);
+    REQUIRE(std::memcmp(
+                &s.identifier_authority(), &ntw::se::sid::authority::non_unique, 8) == 0);
 }
 
-TEST_CASE("static_sid: ")
+TEST_CASE("static_sid: ") {}
