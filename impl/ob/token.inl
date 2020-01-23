@@ -307,7 +307,7 @@ namespace ntw::ob {
     NTW_INLINE status basic_token<H>::reset_privileges() const noexcept
     {
         return NTW_SYSCALL(NtAdjustPrivilegesToken)(
-            get(), true, nullptr, 0, nullptr, nullptr);
+            this->get(), true, nullptr, 0, nullptr, nullptr);
     }
 
     template<class H>
@@ -321,7 +321,7 @@ namespace ntw::ob {
 
         ntw::ulong_t ret_size = sizeof(state);
         const auto   status   = NTW_SYSCALL(NtAdjustPrivilegesToken)(
-            get(),
+            this->get(),
             FALSE,
             reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
             unsigned{ sizeof(state) },
@@ -341,7 +341,7 @@ namespace ntw::ob {
         } state{ 1, privilege };
 
         auto status = NTW_SYSCALL(NtAdjustPrivilegesToken)(
-            get(),
+            this->get(),
             FALSE,
             reinterpret_cast<TOKEN_PRIVILEGES*>(&state),
             unsigned{ sizeof(state) },
