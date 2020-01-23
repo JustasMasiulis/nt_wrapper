@@ -9,6 +9,13 @@ namespace ntw {
         UNICODE_STRING _value;
 
     public:
+        using iterator       = wchar_t*;
+        using const_iterator = const wchar_t*;
+
+        using reverse_iterator       = std::reverse_iterator<wchar_t*>;
+        using const_reverse_iterator = std::reverse_iterator<const wchar_t*>;
+
+
         /// \brief Constructrs an empty string
         NTW_INLINE constexpr unicode_string();
 
@@ -33,18 +40,33 @@ namespace ntw {
         NTW_INLINE const UNICODE_STRING& get() const;
 
         /// \brief Returns the beginning of buffer
-        NTW_INLINE wchar_t* begin();
+        NTW_INLINE iterator begin();
 
         /// \brief Returns the beginning of buffer
-        NTW_INLINE const wchar_t* begin() const;
+        NTW_INLINE const_iterator begin() const;
+
+        /// \brief Returns the beginning of buffer
+        NTW_INLINE reverse_iterator rbegin();
+
+        /// \brief Returns the beginning of buffer
+        NTW_INLINE const_reverse_iterator rbegin() const;
 
         /// \brief Returns one past the end of buffer
-        NTW_INLINE wchar_t* end();
+        NTW_INLINE iterator end();
 
         /// \brief Returns one past the end of buffer
-        NTW_INLINE const wchar_t* end() const;
+        NTW_INLINE const_iterator end() const;
+
+        /// \brief Returns one past the end of buffer
+        NTW_INLINE reverse_iterator rend();
+
+        /// \brief Returns one past the end of buffer
+        NTW_INLINE const_reverse_iterator rend() const;
 
         NTW_INLINE bool empty() const;
+
+        /// \brief Returns the size of string in bytes
+        NTW_INLINE std::uint16_t byte_size() const;
 
         /// \brief Returns the size of string in characters
         NTW_INLINE std::uint16_t size() const;
