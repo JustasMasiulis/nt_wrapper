@@ -209,4 +209,20 @@ namespace ntw::io {
         return { status, basic_reg_key{ handle } };
     }
 
+    template<class H>
+    NTW_INLINE status basic_reg_key<H>::set(unicode_string name,
+                                            unsigned long  type,
+                                            void*          data,
+                                            unsigned long  size) const
+    {
+        return NTW_SYSCALL(NtSetValueKey)(this->get(), &name.get(), 0, type, data, size);
+    }
+
+    template<class H>
+    NTW_INLINE status basic_reg_key<H>::set(unicode_string name, ntw::ulong_t value) const
+    {
+        return NTW_SYSCALL(NtSetValueKey)(
+            this->get(), &name.get(), 0, REG_DWORD, &value, 4);
+    }
+
 } // namespace ntw::io

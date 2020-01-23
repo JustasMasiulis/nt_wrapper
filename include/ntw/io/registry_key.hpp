@@ -134,6 +134,14 @@ namespace ntw::io {
             reg_access     access,
             ob::attributes attributes = {}) noexcept;
 
+        // TODO better buffer alternatives
+        NTW_INLINE status set(unicode_string name,
+                              unsigned long  type,
+                              void*          data,
+                              unsigned long  size) const;
+
+        NTW_INLINE status set(unicode_string name, ntw::ulong_t value) const;
+
         /*template<class T>
         NT_FN _get(UNICODE_STRING path, T& x) const
         {
@@ -153,14 +161,12 @@ namespace ntw::io {
             return status;
         }
 
-        template<class StringRef>
-        NT_FN set(const StringRef& path,
-                  unsigned long    type,
-                  void*            data,
-                  unsigned long    size) const
+        NT_FN get(unicode_string name,
+                  unsigned long  type,
+                  void*          data,
+                  unsigned long  size) const
         {
-            auto upath = make_ustr(path);
-            return NTW_SYSCALL(NtSetValueKey)(_handle.get(), &upath, 0, type, data, size);
+            return NTW_SYSCALL(NtQueryValueKey)(get(), &name.get(), 0, type, data, size);
         }
 
 
