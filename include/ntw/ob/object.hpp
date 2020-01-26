@@ -1,9 +1,9 @@
 #pragma once
-#include <chrono>
 #include "../unicode_string.hpp"
 #include "../detail/unwrap.hpp"
-#include "attributes.hpp"
 #include "../result.hpp"
+#include "../chrono.hpp"
+#include "attributes.hpp"
 
 namespace ntw::ob {
 
@@ -35,10 +35,6 @@ namespace ntw::ob {
     public:
         /// \brief The type this object uses
         using storage_type = Storage;
-
-        /// \brief The time format used by windows
-        using nanosecond_hundreds =
-            std::chrono::duration<std::int64_t, std::ratio<1, 10000000>>;
 
         /// \brief Constructors are inherited from storage
         using storage_type::storage_type;
@@ -140,11 +136,11 @@ namespace ntw::ob {
 
         /// \brief Performs a wait on the object
         /// \param timeout The timeout of wait
-        NTW_INLINE status wait_for(nanosecond_hundreds timeout) const;
+        NTW_INLINE status wait_for(duration timeout) const;
 
         /// \brief Performs a wait on the object in an alertable state
         /// \param timeout The timeout of wait
-        NTW_INLINE status wait_for(nanosecond_hundreds timeout, alertable_t) const;
+        NTW_INLINE status wait_for(duration timeout, alertable_t) const;
 
         NTW_INLINE result_ref<unicode_string> name() const;
     };

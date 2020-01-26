@@ -170,7 +170,7 @@ namespace ntw::ob {
     }
 
     template<class S>
-    NTW_INLINE status basic_object<S>::wait_for(nanosecond_hundreds timeout) const
+    NTW_INLINE status basic_object<S>::wait_for(duration timeout) const
     {
         LARGE_INTEGER li;
         li.QuadPart = -timeout.count();
@@ -178,8 +178,7 @@ namespace ntw::ob {
     }
 
     template<class S>
-    NTW_INLINE status basic_object<S>::wait_for(nanosecond_hundreds timeout,
-                                                alertable_t) const
+    NTW_INLINE status basic_object<S>::wait_for(duration timeout, alertable_t) const
     {
         LARGE_INTEGER li;
         li.QuadPart = -timeout.count();
@@ -201,8 +200,8 @@ namespace ntw::ob {
         {}
 
         template<class Handle>
-        NTW_INLINE constexpr object_ref_storage& object_ref_storage::
-                                                 operator=(const Handle& other) noexcept
+        NTW_INLINE constexpr object_ref_storage&
+        object_ref_storage::operator=(const Handle& other) noexcept
         {
             _value = ::ntw::detail::unwrap_handle(other);
             return *this;
