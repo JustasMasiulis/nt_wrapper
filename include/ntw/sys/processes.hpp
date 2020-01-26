@@ -6,6 +6,7 @@
 
 namespace ntw::sys {
 
+    /// \brief A wrapper around SYSTEM_THREAD_INFORMATION class
     struct thread {
         duration       kernel_time;
         duration       user_time;
@@ -21,6 +22,7 @@ namespace ntw::sys {
         KWAIT_REASON   wait_reason;
     };
 
+    /// \brief A wrapper around SYSTEM_PROCESS_INFORMATION class
     struct process {
         std::uint32_t  offset_to_next;
         std::uint32_t  thread_count; // NumberOfThreads
@@ -67,8 +69,10 @@ namespace ntw::sys {
             std::uint64_t other; // OtherTransferCount
         } transfer_count;
 
+        /// \brief Returns a span of this process thread information
         NTW_INLINE gsl::span<thread> threads() noexcept;
 
+        /// \brief Returns a span of this process thread information
         NTW_INLINE gsl::span<const thread> threads() const noexcept;
 
         using range_type = detail::offset_iterator_range<process, true>;
