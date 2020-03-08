@@ -1,5 +1,6 @@
 #pragma once
 #include "../../include/ntw/ob/process.hpp"
+#include "../../include/ntw/detail/unwrap.hpp"
 
 namespace ntw::ob {
 
@@ -101,7 +102,7 @@ namespace ntw::ob {
     template<class ProcessIdType>
     NTW_INLINE status basic_process<H>::open(ProcessIdType     pid,
                                              process_access    access,
-                                             const attributes& attr)
+                                             const attributes& attr) noexcept
     {
         CLIENT_ID cid{ reinterpret_cast<void*>(pid), nullptr };
         void*     result_handle;
@@ -118,27 +119,70 @@ namespace ntw::ob {
 
     template<class H>
     template<class Address, class Range>
-    NTW_INLINE status basic_process<H>::read_mem(Address addr, Range&& buffer)
+    NTW_INLINE status basic_process<H>::read_mem(Address addr, Range&& buffer) noexcept
     {
-        const auto first = detail::unfancy(detail::adl_begin(buffer));
-        const auto size  = detail::range_byte_size(buffer);
         return NTW_SYSCALL(NtReadVirtualMemory)(
-            this->get(), reinterpret_cast<void*>(address), first, size, nullptr);
+            this->get(),
+            reinterpret_cast<void*>(addr),
+            static_cast<void*>(::ntw::detail::unfancy(::ntw::detail::adl_begin(buffer))),
+            ::ntw::detail::range_byte_size(buffer),
+            nullptr);
+    }
+
+    template<class H>
+    template<class Address>
+    NTW_INLINE status basic_process<H>::read_mem(Address     addr,
+                                                 void*       buffer,
+                                                 std::size_t size) noexcept
+    {
+        return NTW_SYSCALL(NtReadVirtualMemory)(
+            this->get(),
+            const_cast<void*>(reinterpret_cast<const void*>(addr)),
+            buffer,
+            size,
+            nullptr);
     }
 
     template<class H>
     template<class Address, class Range>
-    NTW_INLINE status basic_process<H>::write_mem(Address addr, Range&& buffer)
+    NTW_INLINE status basic_process<H>::write_mem(Address addr, Range&& buffer) noexcept
     {
-        const auto first = detail::unfancy(detail::adl_begin(buffer));
-        const auto size  = detail::range_byte_size(buffer);
-
         return NTW_SYSCALL(NtWriteVirtualMemory)(
             this->get(),
-            reinterpret_cast<void*>(address),
-            const_cast<void*>(static_cast<const void*>(first)),
+            const_cast<void*>(reinterpret_cast<const void*>(addr)),
+            const_cast<void*>(static_cast<const void*>(
+                ::ntw::detail::unfancy(::ntw::detail::adl_begin(buffer)))),
+            ::ntw::detail::range_byte_size(buffer),
+            nullptr);
+    }
+
+    template<class H>
+    template<class Address>
+    NTW_INLINE status basic_process<H>::write_mem(Address     addr,
+                                                  const void* buffer,
+                                                  std::size_t size) noexcept
+    {
+        return NTW_SYSCALL(NtWriteVirtualMemory)(
+            this->get(),
+            const_cast<void*>(reinterpret_cast<const void*>(addr)),
+            const_cast<void*>(buffer),
             size,
             nullptr);
+    }
+
+    template<class H>
+    template<class InfoType, class Address>
+    NTW_INLINE result<InfoType> basic_process<H>::query_mem(Address addr) noexcept
+    {
+        result<InfoType> res;
+        res.status() = NTW_SYSCALL(NtQueryVirtualMemory)(
+            this->get(),
+            const_cast<void*>(reinterpret_cast<const void*>(addr)),
+            InfoType::info_class,
+            reinterpret_cast<typename InfoType::native_type*>(&*res),
+            sizeof(typename InfoType::native_type),
+            nullptr);
+        return res;
     }
 
 } // namespace ntw::ob
