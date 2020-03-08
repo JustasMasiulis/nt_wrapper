@@ -116,4 +116,29 @@ namespace ntw::ob {
         return s;
     }
 
+    template<class H>
+    template<class Address, class Range>
+    NTW_INLINE status basic_process<H>::read_mem(Address addr, Range&& buffer)
+    {
+        const auto first = detail::unfancy(detail::adl_begin(buffer));
+        const auto size  = detail::range_byte_size(buffer);
+        return NTW_SYSCALL(NtReadVirtualMemory)(
+            this->get(), reinterpret_cast<void*>(address), first, size, nullptr);
+    }
+
+    template<class H>
+    template<class Address, class Range>
+    NTW_INLINE status basic_process<H>::write_mem(Address addr, Range&& buffer)
+    {
+        const auto first = detail::unfancy(detail::adl_begin(buffer));
+        const auto size  = detail::range_byte_size(buffer);
+
+        return NTW_SYSCALL(NtWriteVirtualMemory)(
+            this->get(),
+            reinterpret_cast<void*>(address),
+            const_cast<void*>(static_cast<const void*>(first)),
+            size,
+            nullptr);
+    }
+
 } // namespace ntw::ob

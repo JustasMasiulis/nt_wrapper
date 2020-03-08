@@ -75,6 +75,18 @@ namespace ntw::ob {
         NTW_INLINE status open(ProcessIdType     pid,
                                process_access    access,
                                const attributes& attr = {});
+
+        /// \brief Reads memory at given address into given range.
+        /// \param addr Address of memory to read from.
+        /// \param range The range of memory to read into.
+        template<class Address, class Range>
+        NTW_INLINE status read_mem(Address addr, Range&& range);
+
+        /// \brief Writes memory to given address from given range.
+        /// \param addr Address of memory to write to.
+        /// \param range The range of memory to read from.
+        template<class Address, class Range>
+        NTW_INLINE status write_mem(Address addr, Range&& range);
     };
 
     using unique_process = basic_process<unique_object>;
