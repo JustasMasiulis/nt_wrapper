@@ -3,6 +3,8 @@
 #define WIN32_NO_STATUS
 #include <catch2/catch.hpp>
 
+#pragma comment(lib, "ntdll.lib")
+
 TEST_CASE("process access building")
 {
     auto access = ntw::ob::process_access{}
@@ -33,4 +35,51 @@ TEST_CASE("process access building")
 TEST_CASE("process default constructors")
 {
     REQUIRE(NtCurrentProcess() == ntw::ob::process_ref{}.get());
+}
+
+TEST_CASE("memory read")
+{
+    SECTION("buffer and size")
+    {
+        std::size_t variable{ 6 };
+        std::size_t copy{ 0 };
+        auto status = ntw::ob::process_ref{}.read_mem(&variable, &copy, sizeof(copy));
+        REQUIRE(copy == variable);
+        REQUIRE(status.success());
+    }
+
+    SECTION("range")
+    {
+        std::size_t variable{ 6 };
+        std::size_t copy{ 0 };
+        auto        status = ntw::ob::process_ref{}.read_mem(
+            &variable, gsl::as_writeable_bytes(gsl::span{ &copy, 1 }));
+
+        REQUIRE(copy == variable);
+        REQUIRE(status.success());
+    }
+}
+
+TEST_CASE("memory write")
+{
+    SECTION("buffer and size")
+    {
+        std::size_t variable{ 6 };
+        std::size_t copy{ 0 };
+        auto        status =
+            ntw::ob::process_ref{}.write_mem(&copy, &variable, sizeof(variable));
+        REQUIRE(copy == variable);
+        REQUIRE(status.success());
+    }
+
+    SECTION("range")
+    {
+        std::size_t variable{ 6 };
+        std::size_t copy{ 0 };
+        auto        status = ntw::ob::process_ref{}.write_mem(
+            &copy, gsl::as_bytes(gsl::span{ &variable, 1 }));
+
+        REQUIRE(copy == variable);
+        REQUIRE(status.success());
+    }
 }
