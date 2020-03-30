@@ -24,7 +24,8 @@ namespace ntw::io {
 
         class file_attributes_builder {
             struct file_attributes_data {
-                ulong_t attributes = 0;
+                ulong_t attributes               = 0;
+                constexpr file_attributes_data() = default;
             };
 
             file_attributes_data _data;
