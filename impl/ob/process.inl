@@ -114,7 +114,8 @@ namespace ntw::ob {
 
     template<class H>
     template<class Address, class Range>
-    NTW_INLINE status basic_process<H>::read_mem(Address addr, Range&& buffer) noexcept
+    NTW_INLINE status basic_process<H>::read_mem(Address addr,
+                                                 Range&& buffer) const noexcept
     {
         return NTW_SYSCALL(NtReadVirtualMemory)(
             this->get(),
@@ -128,7 +129,7 @@ namespace ntw::ob {
     template<class Address>
     NTW_INLINE status basic_process<H>::read_mem(Address     addr,
                                                  void*       buffer,
-                                                 std::size_t size) noexcept
+                                                 std::size_t size) const noexcept
     {
         return NTW_SYSCALL(NtReadVirtualMemory)(
             this->get(),
@@ -140,7 +141,8 @@ namespace ntw::ob {
 
     template<class H>
     template<class Address, class Range>
-    NTW_INLINE status basic_process<H>::write_mem(Address addr, Range&& buffer) noexcept
+    NTW_INLINE status basic_process<H>::write_mem(Address addr,
+                                                  Range&& buffer) const noexcept
     {
         return NTW_SYSCALL(NtWriteVirtualMemory)(
             this->get(),
@@ -155,7 +157,7 @@ namespace ntw::ob {
     template<class Address>
     NTW_INLINE status basic_process<H>::write_mem(Address     addr,
                                                   const void* buffer,
-                                                  std::size_t size) noexcept
+                                                  std::size_t size) const noexcept
     {
         return NTW_SYSCALL(NtWriteVirtualMemory)(
             this->get(),
@@ -167,7 +169,7 @@ namespace ntw::ob {
 
     template<class H>
     template<class InfoType, class Address>
-    NTW_INLINE result<InfoType> basic_process<H>::query_mem(Address addr) noexcept
+    NTW_INLINE result<InfoType> basic_process<H>::query_mem(Address addr) const noexcept
     {
         result<InfoType> res;
         res.status() = NTW_SYSCALL(NtQueryVirtualMemory)(

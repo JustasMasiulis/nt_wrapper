@@ -75,37 +75,41 @@ namespace ntw::ob {
         template<class ProcessIdType>
         NTW_INLINE static result<basic_process>
         open(ProcessIdType     pid,
-                               process_access    access,
-                               const attributes& attr = {}) noexcept;
+             process_access    access,
+             const attributes& attr = {}) noexcept;
 
         /// \brief Reads memory at given address into given range.
         /// \param addr Address of memory to read from.
         /// \param range The range of memory to read into.
         template<class Address, class Range>
-        NTW_INLINE status read_mem(Address addr, Range&& range) noexcept;
+        NTW_INLINE status read_mem(Address addr, Range&& range) const noexcept;
 
         /// \brief Reads memory at given address into given buffer.
         /// \param addr Address of memory to read from.
         /// \param buffer Buffer to read into.
         /// \param size Size of buffer.
         template<class Address>
-        NTW_INLINE status read_mem(Address addr, void* buffer, std::size_t size) noexcept;
+        NTW_INLINE status read_mem(Address     addr,
+                                   void*       buffer,
+                                   std::size_t size) const noexcept;
 
         /// \brief Writes memory to given address from given range.
         /// \param addr Address of memory to write to.
         /// \param range The range of memory to write.
         template<class Address, class Range>
-        NTW_INLINE status write_mem(Address addr, Range&& range) noexcept;
+        NTW_INLINE status write_mem(Address addr, Range&& range) const noexcept;
 
         /// \brief Writes memory to given address from given range.
         /// \param addr Address of memory to write to.
         /// \param buffer Buffer to write into addr.
         /// \param size Size of buffer.
         template<class Address>
-        NTW_INLINE status write_mem(Address addr, const void* buffer, std::size_t size) noexcept;
+        NTW_INLINE status write_mem(Address     addr,
+                                    const void* buffer,
+                                    std::size_t size) const noexcept;
 
         template<class InfoType, class Address>
-        NTW_INLINE result<InfoType> query_mem(Address address) noexcept;
+        NTW_INLINE result<InfoType> query_mem(Address address) const noexcept;
     };
 
     using unique_process = basic_process<unique_object>;
