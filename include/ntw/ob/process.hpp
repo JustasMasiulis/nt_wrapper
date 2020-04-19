@@ -73,7 +73,8 @@ namespace ntw::ob {
         /// \param access The access to request for when opening process.
         /// \param attr Optional extra attributes.
         template<class ProcessIdType>
-        NTW_INLINE status open(ProcessIdType     pid,
+        NTW_INLINE static result<basic_process>
+        open(ProcessIdType     pid,
                                process_access    access,
                                const attributes& attr = {}) noexcept;
 
