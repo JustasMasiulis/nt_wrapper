@@ -79,9 +79,12 @@ namespace ntw::sys {
     };
 
     /// \brief Acquires a list of processes using NtQuerySystemInformation with
-    ///        SystemProcessInformation class
+    ///        SystemProcessInformation class.
+    /// \param buffer Buffer into which process information will be read into.
+    /// \param returned The amount of bytes used inside the buffer.
     template<class Range>
-    NTW_INLINE ntw::result<process::range_type> acquire_processes(Range&& buffer);
+    NTW_INLINE ntw::result<process::range_type>
+               acquire_processes(Range&& buffer, ulong_t* returned = nullptr);
 
 } // namespace ntw::sys
 
