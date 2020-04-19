@@ -63,6 +63,7 @@ namespace ntw::ob {
 
         /// \brief Inherits constructors from handle type.
         using handle_type::handle_type;
+        using handle_type::operator=;
 
         /// \brief Constructs process with the current processes handle.
         NTW_INLINE basic_process();
