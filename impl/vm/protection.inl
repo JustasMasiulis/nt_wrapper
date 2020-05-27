@@ -13,8 +13,9 @@ namespace ntw::vm {
 
     NTW_INLINE constexpr bool protection::readable() const noexcept
     {
-        return value & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE |
-                        PAGE_EXECUTE_WRITECOPY);
+        return value &
+               (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ |
+                PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY);
     }
 
     NTW_INLINE constexpr bool protection::writeable() const noexcept
