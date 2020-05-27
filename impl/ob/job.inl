@@ -89,9 +89,39 @@ namespace ntw::ob {
     }
 
     template<class H>
+    NTW_INLINE status basic_job<H>::assign_curr_process() const noexcept
+    {
+        return NTW_SYSCALL(NtAssignProcessToJobObject)(this->get(), NtCurrentProcess());
+    }
+
+    template<class H>
     NTW_INLINE ntw::status basic_job<H>::terminate(ntw::status status) const noexcept
     {
         return NTW_SYSCALL(NtTerminateJobObject)(this->get(), status);
+    }
+
+    template<class H>
+    template<class T>
+    NTW_INLINE ntw::status basic_job<H>::set(const T& info) const noexcept
+    {
+        static_assert(std::is_base_of_v<::ntw::detail::set_info, T>,
+                      "given info class is not settable");
+
+        return NTW_SYSCALL(NtSetInformationJobObject)(
+            this->get(), info.info_class, ::std::addressof(info), sizeof(info));
+    }
+
+    template<class H>
+    template<class T>
+    NTW_INLINE ntw::result<T> basic_job<H>::query() const noexcept
+    {
+        static_assert(std::is_base_of_v<::ntw::detail::query_info, T>,
+                      "given info class is not queryable");
+
+        ntw::result<T> res;
+        res.status() = NTW_SYSCALL(NtQueryInformationJobObject)(
+            this->get(), T::info_class, ::std::addressof(*res), sizeof(T), nullptr);
+        return res;
     }
 
 } // namespace ntw::ob

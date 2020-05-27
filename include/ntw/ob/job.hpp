@@ -52,20 +52,38 @@ namespace ntw::ob {
 
         /// \brief Creates job object using given access.
         /// \param access The access to request for when creating job.
-        NTW_INLINE static result<basic_job> create(job_access access) noexcept;
+        NTW_INLINE static result<basic_job> create(
+            job_access access = job_access{}.all()) noexcept;
 
-        /// \brief Creates job using given name, access and attributes
+        /// \brief Creates job using given name, access and attributes.
         /// \param name The name of job object.
         /// \param access The access to request for when opening job.
         /// \param attr Optional extra attributes.
-        NTW_INLINE static result<basic_job> create(unicode_string    name,
-                                                   job_access        access,
+        NTW_INLINE static result<basic_job> create(unicode_string name,
+                                                   job_access access = job_access{}.all(),
                                                    const attributes& attr = {}) noexcept;
 
+        /// \brief Assigns a process to the job object.
+        /// \param handle The process handle.
         template<class ProcessHandle>
         NTW_INLINE status assign_process(const ProcessHandle& handle) const noexcept;
 
+        /// \brief Assigns current process to the job object.
+        NTW_INLINE status assign_curr_process() const noexcept;
+
+        /// \brief Terminates all processes associated with job.
+        /// \param status The exit status for processes.
         NTW_INLINE ntw::status terminate(ntw::status status) const noexcept;
+
+        /// \brief Sets job information
+        /// \param info The information to set
+        template<class T>
+        NTW_INLINE ntw::status set(const T& info) const noexcept;
+
+        /// \brief Queries job information.
+        /// \tparam T The information type
+        template<class T>
+        NTW_INLINE ntw::result<T> query() const noexcept;
     };
 
     using job     = basic_job<unique_object>;
