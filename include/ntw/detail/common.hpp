@@ -1,4 +1,5 @@
 #pragma once
+#define PHNT_VERSION PHNT_19H2
 #include "macros.hpp"
 #include "../../../deps/GSL/include/gsl/span"
 #include "../../../deps/phnt/phnt_windows.h"
@@ -54,6 +55,9 @@ namespace ntw {
         {
             return ::std::addressof(*iterator);
         }
+
+        struct set_info {};
+        struct query_info {};
 
     } // namespace detail
 
