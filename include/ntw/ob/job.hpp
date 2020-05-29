@@ -34,6 +34,7 @@ namespace ntw::ob {
     struct basic_job : Handle {
         /// \brief The type of handle that is used internally
         using handle_type = Handle;
+        using access_type = job_access;
 
         /// \brief Inherits constructors from handle type.
         using handle_type::handle_type;
@@ -86,7 +87,7 @@ namespace ntw::ob {
         NTW_INLINE ntw::result<T> query() const noexcept;
     };
 
-    using job     = basic_job<unique_object>;
+    using job     = basic_job<object>;
     using job_ref = basic_job<object_ref>;
 
 } // namespace ntw::ob
