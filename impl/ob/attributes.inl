@@ -1,5 +1,6 @@
 #pragma once
 #include "../../include/ntw/ob/attributes.hpp"
+#include "../../include/ntw/detail/unwrap.hpp"
 
 namespace ntw::ob {
 
@@ -108,7 +109,7 @@ namespace ntw::ob {
     template<class Handle>
     NTW_INLINE constexpr attributes& attributes::parent(const Handle& parent)
     {
-        _attributes.RootDirectory = detail::unwrap_handle(parent);
+        _attributes.RootDirectory = ::ntw::detail::unwrap_handle(parent);
         return *this;
     }
 
