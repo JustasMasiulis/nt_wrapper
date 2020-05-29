@@ -1,5 +1,7 @@
-# nt_wrapper
+# nt_wrapper ![version badge](https://img.shields.io/badge/version-0.2-brightgreen)
 A header only wrapper library around native windows system APIs.
+
+WARNING: the API of version 2 is still unstable
 
 ### Highlights of currently implemented features
 System information:
@@ -10,18 +12,16 @@ System information:
 * [Memory operations with RAII constructs](https://github.com/JustasMasiulis/nt_wrapper/blob/2f9ca30dc3098bf6884f325c77b44f77f2845f5a/test/test_memory.cpp#L132) -> ntw::memory
 
 Object manipulation:
-* Process -> ntw::obj::unique_process
-    * Loaded modules enumeration -> ntw::obj::process_module_info
-* Thread -> ntw::obj::unique_thread
-* File -> ntw::obj::unique_file
-* Token -> ntw::obj::unique_token
-* Registry -> ntw::obj::unique_registry
-* Handle -> ntw::obj::unique_handle
+* Process -> ntw::ob::process
+* Thread -> ntw::ob::thread
+* File -> ntw::ob::file
+* Token -> ntw::ob::token
+* Registry -> ntw::ob::registry
+And more
 
 ### Design goals
 * No exceptions - if a function can fail it will return a status code.
 * No overhead - every single abstraction is costless and is as fast as it can be.
-* Strict control over imports - every call is made trough a macro which allows turning the lazy importer off or easy switched to direct syscalls.
 * Ease of developer use - it is a much more consistent and pleasant to work with compared to win32.
 
 ### Why?
