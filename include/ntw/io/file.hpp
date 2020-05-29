@@ -103,7 +103,7 @@ namespace ntw::io {
                                      ulong_t*     returned = nullptr) const noexcept;
     };
 
-    using unique_file = basic_file<ob::unique_object>;
+    using unique_file = basic_file<ob::object>;
     using file_ref    = basic_file<ob::object_ref>;
 
 

@@ -335,7 +335,7 @@ namespace ntw::io {
         }*/
     };
 
-    using unique_reg_key = basic_reg_key<ntw::ob::unique_object>;
+    using unique_reg_key = basic_reg_key<ntw::ob::object>;
     using reg_key_ref    = basic_reg_key<ntw::ob::object_ref>;
 
 } // namespace ntw::io
