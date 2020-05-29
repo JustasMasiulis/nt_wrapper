@@ -60,6 +60,7 @@ namespace ntw::ob {
     struct basic_process : Handle {
         /// \brief The type of handle that is used internally
         using handle_type = Handle;
+        using access_type = process_access;
 
         /// \brief Inherits constructors from handle type.
         using handle_type::handle_type;
@@ -110,10 +111,47 @@ namespace ntw::ob {
 
         template<class InfoType, class Address>
         NTW_INLINE result<InfoType> query_mem(Address address) const noexcept;
+
+        /// \brief Duplicates object owned by this process while preserving both the
+        ///        access and attributes.
+        /// \param handle The handle value.
+        template<class Object, class ObjectHandle>
+        NTW_INLINE result<Object>
+                   duplicate_object(const ObjectHandle& handle) const noexcept;
+
+        /// \brief Duplicates object owned by this process.
+        /// \param handle The handle value.
+        /// \param access The access with which to open the object.
+        /// \param attr The attributes with which to open the object.
+        template<class Object, class ObjectHandle>
+        NTW_INLINE result<Object> duplicate_object(const ObjectHandle&          handle,
+                                                   typename Object::access_type access,
+                                                   attribute_options attr) const noexcept;
+
+        /// \brief Duplicates object owned by this process while preserving attributes.
+        /// \param handle The handle value.
+        /// \param access The access with which to open the object.
+        template<class Object, class ObjectHandle>
+        NTW_INLINE result<Object>
+                   duplicate_object(const ObjectHandle&          handle,
+                                    typename Object::access_type access) const noexcept;
+
+        /// \brief Duplicates object owned by this process while preserving access.
+        /// \param handle The handle value.
+        /// \param attr The attributes with which to open the object.
+        template<class Object, class ObjectHandle>
+        NTW_INLINE result<Object> duplicate_object(const ObjectHandle& handle,
+                                                   attribute_options attr) const noexcept;
+
+        /// \brief Closes the handle in this process using NtDuplicateObject with
+        ///        DUPLICATE_CLOSE_SOURCE flag.
+        /// \param handle The handle to close.
+        template<class ObjectHandle>
+        NTW_INLINE status close_object(const ObjectHandle& handle) const noexcept;
     };
 
-    using unique_process = basic_process<unique_object>;
-    using process_ref    = basic_process<object_ref>;
+    using process     = basic_process<object>;
+    using process_ref = basic_process<object_ref>;
 
 } // namespace ntw::ob
 

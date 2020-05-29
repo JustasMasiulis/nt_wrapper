@@ -182,4 +182,88 @@ namespace ntw::ob {
         return res;
     }
 
+    template<class H>
+    template<class Object, class Handle>
+    NTW_INLINE result<Object>
+               basic_process<H>::duplicate_object(const Handle& handle) const noexcept
+    {
+        void*  result;
+        status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
+                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  NtCurrentProcess(),
+                                                  &result,
+                                                  0,
+                                                  0,
+                                                  DUPLICATE_SAME_ACCESS |
+                                                      DUPLICATE_SAME_ATTRIBUTES);
+
+        return { s, Object{ result } };
+    }
+
+    template<class H>
+    template<class Object, class Handle>
+    NTW_INLINE result<Object>
+               basic_process<H>::duplicate_object(const Handle&                handle,
+                                       typename Object::access_type access,
+                                       attribute_options            attr) const noexcept
+    {
+        void*  result;
+        status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
+                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  NtCurrentProcess(),
+                                                  &result,
+                                                  access.get(),
+                                                  attr.get(),
+                                                  0);
+
+        return { s, Object{ result } };
+    }
+
+    template<class H>
+    template<class Object, class Handle>
+    NTW_INLINE result<Object> basic_process<H>::duplicate_object(
+        const Handle& handle, typename Object::access_type access) const noexcept
+    {
+        void*  result;
+        status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
+                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  NtCurrentProcess(),
+                                                  &result,
+                                                  access.get(),
+                                                  0,
+                                                  DUPLICATE_SAME_ATTRIBUTES);
+
+        return { s, Object{ result } };
+    }
+
+    template<class H>
+    template<class Object, class Handle>
+    NTW_INLINE result<Object> basic_process<H>::duplicate_object(
+        const Handle& handle, attribute_options attr) const noexcept
+    {
+        void*  result;
+        status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
+                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  NtCurrentProcess(),
+                                                  &result,
+                                                  0,
+                                                  attr.get(),
+                                                  DUPLICATE_SAME_ACCESS);
+
+        return { s, Object{ result } };
+    }
+
+    template<class H>
+    template<class Handle>
+    NTW_INLINE status basic_process<H>::close_object(const Handle& handle) const noexcept
+    {
+        return NTW_SYSCALL(NtDuplicateObject)(this->get(),
+                                              ::ntw::detail::unwrap_handle(handle),
+                                              nullptr,
+                                              nullptr,
+                                              0,
+                                              nullptr,
+                                              DUPLICATE_CLOSE_SOURCE);
+    }
+
 } // namespace ntw::ob
