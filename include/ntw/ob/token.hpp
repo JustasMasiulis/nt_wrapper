@@ -164,6 +164,8 @@ namespace ntw::ob {
     template<class Handle>
     struct basic_token : Handle {
         using handle_type = Handle;
+        using access_type = token_access;
+
         using handle_type::handle_type;
 
         basic_token() = default;
@@ -188,12 +190,12 @@ namespace ntw::ob {
         /// \brief Ajusts a single privilege using NtAdjustPrivilegesToken API.
         /// \warn MAY RETURN STATUS_NOT_ALL_ASSIGNED WHICH IS NOT TREATED AS AN ERROR.
         /// \note If you care about old state use adjust_privilege.
-        NTW_INLINE status replace_privilege(privilege_with_attributes privilege) const
-            noexcept;
+        NTW_INLINE status
+        replace_privilege(privilege_with_attributes privilege) const noexcept;
     };
 
-    using unique_token = basic_token<unique_object>;
-    using token_ref    = basic_token<object_ref>;
+    using token     = basic_token<object>;
+    using token_ref = basic_token<object_ref>;
 
 } // namespace ntw::ob
 
