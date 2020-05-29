@@ -14,6 +14,11 @@ namespace ntw::job {
         std::uint32_t active_processes; // ActiveProcesses
         std::uint32_t terminated_processes; // TotalTerminatedProcesses
 
+        NTW_INLINE JOBOBJECT_BASIC_ACCOUNTING_INFORMATION& get() noexcept
+        {
+            return *reinterpret_cast<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION*>(this);
+        }
+
         constexpr static JOBOBJECTINFOCLASS info_class =
             static_cast<JOBOBJECTINFOCLASS>(JobObjectBasicAccountingInformation);
     };
