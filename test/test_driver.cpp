@@ -11,8 +11,7 @@ TEST_CASE("driver loader")
     using namespace ntw::ob;
     using namespace ntw::sys;
 
-    const auto token =
-        unique_token::open(process_ref{}, token_access{}.adjust_privileges());
+    const auto token = token::open(process_ref{}, token_access{}.adjust_privileges());
     REQUIRE(token);
 
     REQUIRE(token->replace_privilege(privilege::load_driver().enable()).success());
