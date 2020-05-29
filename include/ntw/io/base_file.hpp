@@ -278,11 +278,8 @@ namespace ntw::io {
 
             /// \brief Deletes opened file using NtDeleteFile API.
             /// \param path The path to file.
-            ///             May be either an UNICODE_STRING or std::wstring_view.
-            /// \param case_sensitive Whether the filename is case sensitive.
-            template<class StringRef>
-            NTW_INLINE status static destroy(const StringRef& path,
-                                             bool case_sensitive = false) noexcept;
+            NTW_INLINE status static destroy(unicode_string path,
+                                             const ob::attributes& attributes = {}) noexcept;
         };
 
         NTW_INLINE constexpr ulong_t normalize_attributes(

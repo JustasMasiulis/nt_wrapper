@@ -240,8 +240,8 @@ namespace ntw::io::detail {
 
 
     template<class Derived, class Traits>
-    NTW_INLINE ntw::result<std::uint64_t> base_file<Derived, Traits>::size() const
-        noexcept
+    NTW_INLINE ntw::result<std::uint64_t>
+               base_file<Derived, Traits>::size() const noexcept
     {
         IO_STATUS_BLOCK           status_block;
         FILE_STANDARD_INFORMATION info;
@@ -264,14 +264,12 @@ namespace ntw::io::detail {
     }
 
     template<class Derived, class Traits>
-    template<class StringRef /* wstring_view or UNICODE_STRING */>
     NTW_INLINE ntw::status base_file<Derived, Traits>::destroy(
-        const StringRef& path, bool case_sensitive) noexcept
+        unicode_string path, const ob::attributes& attributes) noexcept
     {
-        auto upath = make_ustr(path);
-        auto attributes =
-            make_attributes(&upath, case_sensitive ? 0 : OBJ_CASE_INSENSITIVE);
-        return NTW_SYSCALL(NtDeleteFile)(&attributes);
+        OBJECT_ATTRIBUTES attr = attributes.get();
+        attr.ObjectName        = &path.get();
+        return NTW_SYSCALL(NtDeleteFile)(&attr);
     }
 
     NTW_INLINE constexpr ntw::ulong_t normalize_attributes(
