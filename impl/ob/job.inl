@@ -108,7 +108,10 @@ namespace ntw::ob {
                       "given info class is not settable");
 
         return NTW_SYSCALL(NtSetInformationJobObject)(
-            this->get(), info.info_class, ::std::addressof(info), sizeof(info));
+            this->get(),
+            info.info_class,
+            ::std::addressof(const_cast<T&>(info).get()),
+            sizeof(info));
     }
 
     template<class H>
@@ -120,7 +123,7 @@ namespace ntw::ob {
 
         ntw::result<T> res;
         res.status() = NTW_SYSCALL(NtQueryInformationJobObject)(
-            this->get(), T::info_class, ::std::addressof(*res), sizeof(T), nullptr);
+            this->get(), T::info_class, ::std::addressof(res->get()), sizeof(T), nullptr);
         return res;
     }
 
