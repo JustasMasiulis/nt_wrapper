@@ -1,5 +1,6 @@
 #pragma once
 #include "protection.hpp"
+#include "../result.hpp"
 
 namespace ntw::vm {
 
