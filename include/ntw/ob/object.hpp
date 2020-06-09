@@ -8,12 +8,6 @@
 
 namespace ntw::ob {
 
-    struct alertable_t {
-        explicit constexpr alertable_t() = default;
-    };
-
-    constexpr inline alertable_t       alertable;
-
     template<class Storage>
     class basic_object : public Storage {
         template<class DOther>
