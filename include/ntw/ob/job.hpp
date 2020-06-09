@@ -72,6 +72,11 @@ namespace ntw::ob {
         /// \brief Assigns current process to the job object.
         NTW_INLINE status assign_curr_process() const noexcept;
 
+        /// \brief Checks if given process is assigned this job
+        /// \param process The process to check
+        template<class ProcessHandle>
+        NTW_INLINE result<bool> is_assigned(const ProcessHandle& process) const noexcept;
+
         /// \brief Terminates all processes associated with job.
         /// \param status The exit status for processes.
         NTW_INLINE ntw::status terminate(ntw::status status) const noexcept;
