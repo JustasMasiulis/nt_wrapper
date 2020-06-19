@@ -4,25 +4,22 @@
 
 namespace ntw::vm {
 
-    /// allocation_builder{process}
-    ///     .resize(0x1000)
-    ///     .protect(protection::read_write())
-    ///     .commit_reserve();
-    struct allocation_builder {
-        const void*   address    = nullptr;
-        std::size_t   zero_bytes = 0;
-        std::uint32_t type       = 0;
+    /// allocate()
+    ///     .at(address)
+    ///     .commit_reserve(size, protection);
+    class allocation_builder {
+        const void*   _address = nullptr;
+        std::size_t   _zero    = 0;
+        std::uint32_t _type    = 0;
 
-        // allocation_builder(const allocation_builder&) = delete;
-        // allocation_builder& operator=(const allocation_builder&) = delete;
-
+    public:
         /// \brief Construct allocation_builder with nothing set.
         NTW_INLINE constexpr allocation_builder() noexcept = default;
 
-        /// \brief Sets the amount of bytes to be zeroed
-        /// \param amount The new amount of zero bytes.
-        /// \returns *this
-        NTW_INLINE constexpr allocation_builder& zero(std::size_t amount) noexcept;
+        /// \brief Sets the amount high-order address bits that must be zero in the base
+        /// address. \param amount The new amount of zero bits. \note When amount is
+        /// larger than 32, it becomes a bitmask. \returns *this
+        NTW_INLINE constexpr allocation_builder& zero_bits(std::size_t amount) noexcept;
 
         /// \brief Sets the preferred address for this allocation.
         /// \param address The new preferred allocation address.
@@ -55,19 +52,6 @@ namespace ntw::vm {
                                   ntw::vm::protection prot = ntw::vm::protection::read_write(),
                                   const Process&      process = NtCurrentProcess()) const noexcept;
 
-        /// \brief Enables MEM_RESET_UNDO type flag and attempts to allocate memory.
-        /// \returns *this
-        template<class Process = void*>
-        NTW_INLINE result<void*>
-                   reset_undo(std::size_t         size,
-                              ntw::vm::protection prot,
-                              const Process&      process = NtCurrentProcess()) const noexcept;
-
-
-        /// \brief Enables MEM_RESET type flag.
-        /// \returns *this
-        NTW_INLINE constexpr allocation_builder& reset() noexcept;
-
         /// \brief Enables MEM_TOP_DOWN type flag.
         /// \returns *this
         NTW_INLINE constexpr allocation_builder& top_down() noexcept;
@@ -80,11 +64,11 @@ namespace ntw::vm {
         /// \returns *this
         NTW_INLINE constexpr allocation_builder& physical() noexcept;
 
-        /// \brief Enables MEM_WRITE_WATCH type flag.
+        /// \brief Enables MEM_ROTATE type flag.
         /// \returns *this
         NTW_INLINE constexpr allocation_builder& rotate() noexcept;
 
-        /// \brief Enables MEM_RESET_UNDO type flag.
+        /// \brief Enables MEM_LARGE_PAGES type flag.
         /// \returns *this
         NTW_INLINE constexpr allocation_builder& large_pages() noexcept;
 
