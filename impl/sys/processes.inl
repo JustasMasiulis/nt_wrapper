@@ -7,8 +7,8 @@ namespace ntw::sys {
                   (sizeof(SYSTEM_PROCESS_INFORMATION) - sizeof(thread)));
 
     template<class Range>
-    NTW_INLINE ntw::result<process::range_type> acquire_processes(Range&&  buffer,
-                                                                  ulong_t* returned)
+    NTW_INLINE ntw::result<process::range_type> processes(Range&&  buffer,
+                                                          ulong_t* returned)
     {
         const auto  first  = detail::unfancy(detail::adl_begin(buffer));
         const auto  size   = static_cast<ulong_t>(detail::range_byte_size(buffer));
