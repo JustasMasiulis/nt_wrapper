@@ -6,6 +6,8 @@ namespace ntw::vm {
     NTW_INLINE constexpr protection::protection(std::uint32_t raw_value) noexcept
         : value(raw_value){};
 
+    NTW_INLINE constexpr std::uint32_t protection::get() const noexcept { return value; }
+
     NTW_INLINE constexpr bool protection::accessible() const noexcept
     {
         return !(value & PAGE_NOACCESS);

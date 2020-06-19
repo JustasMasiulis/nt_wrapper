@@ -11,6 +11,8 @@ namespace ntw::vm {
 
         NTW_INLINE constexpr protection(std::uint32_t value) noexcept;
 
+        NTW_INLINE constexpr std::uint32_t get() const noexcept;
+
         /// \brief Checks whether the values doesn't have PAGE_NOACCESS flag.
         NTW_INLINE constexpr bool accessible() const noexcept;
 
