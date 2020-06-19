@@ -74,14 +74,14 @@ namespace ntw::ob::detail {
     template<class Handle>
     NTW_INLINE constexpr object_ref_storage::object_ref_storage(
         const Handle& other) noexcept
-        : _value(::ntw::detail::unwrap_handle(other))
+        : _value(::ntw::detail::unwrap(other))
     {}
 
     template<class Handle>
     NTW_INLINE constexpr object_ref_storage&
     object_ref_storage::operator=(const Handle& other) noexcept
     {
-        _value = ::ntw::detail::unwrap_handle(other);
+        _value = ::ntw::detail::unwrap(other);
         return *this;
     }
 

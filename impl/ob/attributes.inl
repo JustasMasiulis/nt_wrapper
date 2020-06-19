@@ -109,7 +109,7 @@ namespace ntw::ob {
     template<class Handle>
     NTW_INLINE constexpr attributes& attributes::parent(const Handle& parent)
     {
-        _attributes.RootDirectory = ::ntw::detail::unwrap_handle(parent);
+        _attributes.RootDirectory = ::ntw::detail::unwrap(parent);
         return *this;
     }
 
