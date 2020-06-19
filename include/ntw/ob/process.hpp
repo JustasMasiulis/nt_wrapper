@@ -148,6 +148,10 @@ namespace ntw::ob {
         /// \param handle The handle to close.
         template<class ObjectHandle>
         NTW_INLINE status close_object(const ObjectHandle& handle) const noexcept;
+
+        NTW_INLINE status suspend() const noexcept;
+
+        NTW_INLINE status resume() const noexcept;
     };
 
     using process     = basic_process<object>;

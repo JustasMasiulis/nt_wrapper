@@ -119,7 +119,7 @@ namespace ntw::ob {
     {
         return NTW_SYSCALL(NtReadVirtualMemory)(
             this->get(),
-            reinterpret_cast<void*>(addr),
+            const_cast<void*>(reinterpret_cast<const void*>(addr)),
             static_cast<void*>(::ntw::detail::unfancy(::ntw::detail::adl_begin(buffer))),
             ::ntw::detail::range_byte_size(buffer),
             nullptr);
@@ -264,6 +264,18 @@ namespace ntw::ob {
                                               0,
                                               nullptr,
                                               DUPLICATE_CLOSE_SOURCE);
+    }
+
+    template<class H>
+    NTW_INLINE status basic_process<H>::suspend() const noexcept
+    {
+        return NTW_SYSCALL(NtSuspendProcess)(this->get());
+    }
+
+    template<class H>
+    NTW_INLINE status basic_process<H>::resume() const noexcept
+    {
+        return NTW_SYSCALL(NtResumeProcess)(this->get());
     }
 
 } // namespace ntw::ob
