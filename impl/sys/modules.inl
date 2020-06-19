@@ -27,7 +27,7 @@ namespace ntw::sys {
     }
 
     template<class Range>
-    ntw::result<loaded_module::range_type> acquire_loaded_modules(Range&& buffer)
+    ntw::result<loaded_module::range_type> loaded_modules(Range&& buffer)
     {
         const auto  first  = detail::unfancy(detail::adl_begin(buffer));
         const auto  size   = static_cast<ulong_t>(detail::range_byte_size(buffer));

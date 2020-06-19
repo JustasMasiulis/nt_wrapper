@@ -83,8 +83,8 @@ namespace ntw::sys {
     /// \param buffer Buffer into which process information will be read into.
     /// \param returned The amount of bytes used inside the buffer.
     template<class Range>
-    NTW_INLINE ntw::result<process::range_type>
-               acquire_processes(Range&& buffer, ulong_t* returned = nullptr);
+    NTW_INLINE ntw::result<process::range_type> processes(Range&&  buffer,
+                                                          ulong_t* returned = nullptr);
 
 } // namespace ntw::sys
 

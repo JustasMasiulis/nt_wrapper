@@ -33,7 +33,7 @@ namespace ntw::sys {
     };
 
     template<class Range>
-    ntw::result<typename loaded_module::range_type> acquire_loaded_modules(Range&& buffer);
+    ntw::result<typename loaded_module::range_type> loaded_modules(Range&& buffer);
 
 } // namespace ntw::sys
 

@@ -8,7 +8,7 @@
 TEST_CASE("acquire_processes works")
 {
     std::vector<std::uint8_t> arr(0x100000);
-    auto                      processes = ntw::sys::acquire_processes(arr);
+    auto                      processes = ntw::sys::processes(arr);
     REQUIRE(processes);
     for(auto& p : *processes) {
         CHECK(p.offset_to_next != 0);
