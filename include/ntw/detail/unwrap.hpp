@@ -1,5 +1,5 @@
 #pragma once
-#include "macros.hpp"
+#include "config.hpp"
 #include <type_traits>
 
 namespace ntw::detail {

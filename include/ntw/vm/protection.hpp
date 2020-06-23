@@ -1,5 +1,5 @@
 #pragma once
-#include "../detail/macros.hpp"
+#include "../detail/config.hpp"
 #include <cstdint>
 
 namespace ntw::vm {
