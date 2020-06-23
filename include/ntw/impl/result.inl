@@ -63,7 +63,7 @@ namespace ntw {
 
     template<class T>
     NTW_INLINE constexpr std::add_lvalue_reference_t<T>
-        ntw::result_ref<T>::operator*() const
+    ntw::result_ref<T>::operator*() const
     {
         return *_value;
     }

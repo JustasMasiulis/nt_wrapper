@@ -83,16 +83,16 @@ TEST_CASE("conversion betweeen types of objects")
 {
     SECTION("assignment")
     {
-        ntw::ob::object unique;
-        ntw::ob::object_ref    ref;
+        ntw::ob::object     unique;
+        ntw::ob::object_ref ref;
 
         ref = unique;
     }
 
     SECTION("constructor")
     {
-        ntw::ob::object_ref    ref;
-        ntw::ob::object unique(ref);
-        ntw::ob::object_ref    ref2(unique);
+        ntw::ob::object_ref ref;
+        ntw::ob::object     unique(ref);
+        ntw::ob::object_ref ref2(unique);
     }
 }

@@ -10,5 +10,5 @@
     {                                                \
         ::ntw::status _ntw_ret_on_err_status = expr; \
         if(!_ntw_ret_on_err_status.success())        \
-            return_ntw_ret_on_err_status;            \
+            return _ntw_ret_on_err_status;           \
     }

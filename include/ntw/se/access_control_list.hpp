@@ -5,7 +5,7 @@
 
 namespace ntw::se {
 
-  struct ace{
+    struct ace {
         ACCESS_DENIED_ACE ace;
     }
 

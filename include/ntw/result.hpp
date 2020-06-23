@@ -35,7 +35,7 @@ namespace ntw {
         NTW_INLINE constexpr operator bool() const noexcept { return success(); }
 
         template<class Fn>
-        NTW_INLINE constexpr auto then(Fn fn)->ntw::result<decltype(fn(**this))>;
+        NTW_INLINE constexpr auto then(Fn fn) -> ntw::result<decltype(fn(**this))>;
     };
 
     template<class T>

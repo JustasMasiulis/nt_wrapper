@@ -278,8 +278,8 @@ namespace ntw::io {
 
             /// \brief Deletes opened file using NtDeleteFile API.
             /// \param path The path to file.
-            NTW_INLINE status static destroy(unicode_string path,
-                                             const ob::attributes& attributes = {}) noexcept;
+            NTW_INLINE status static destroy(
+                unicode_string path, const ob::attributes& attributes = {}) noexcept;
         };
 
         NTW_INLINE constexpr ulong_t normalize_attributes(
