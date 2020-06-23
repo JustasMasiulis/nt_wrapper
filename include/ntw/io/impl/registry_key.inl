@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/io/registry_key.hpp"
+#include "../registry_key.hpp"
 
 namespace ntw::io {
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/sys/driver_loader.hpp"
+#include "../driver_loader.hpp"
 #include <algorithm>
 
 namespace ntw::sys {

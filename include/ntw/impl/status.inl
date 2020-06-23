@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/ntw/status.hpp"
+#include "../status.hpp"
 #include <type_traits>
 
 namespace ntw {

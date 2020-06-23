@@ -90,4 +90,4 @@ namespace ntw::object {
 
 } // namespace ntw::object
 
-#include "../include/ntw/ob/object_info.hpp"
+#include "impl/object_info.inl"

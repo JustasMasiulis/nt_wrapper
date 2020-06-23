@@ -50,7 +50,7 @@ namespace ntw::se {
 
 } // namespace ntw::se
 
-#include "../impl/se/sid.inl"
+#include "impl/sid.inl"
 
 namespace ntw::se::sid {
 

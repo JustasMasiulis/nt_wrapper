@@ -28,4 +28,4 @@ namespace ntw::vm {
 
 } // namespace ntw::vm
 
-#include "../../../impl/vm/operation.inl"
+#include "impl/operation.inl"

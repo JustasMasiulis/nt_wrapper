@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/info/memory.hpp"
+#include "../memory.hpp"
 
 namespace ntw::memory {
 

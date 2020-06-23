@@ -59,4 +59,4 @@ namespace ntw {
 
 } // namespace ntw
 
-#include "../impl/result.inl"
+#include "impl/result.inl"

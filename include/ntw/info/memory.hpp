@@ -40,4 +40,4 @@ namespace ntw::memory {
 
 } // namespace ntw::memory
 
-#include "../../../impl/ob/memory_info.inl"
+#include "impl/memory.inl"

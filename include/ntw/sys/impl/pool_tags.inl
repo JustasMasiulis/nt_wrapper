@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/sys/pool_tags.hpp"
+#include "../pool_tags.hpp"
 
 namespace ntw::sys {
 

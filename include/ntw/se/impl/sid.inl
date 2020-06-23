@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/se/sid.hpp"
+#include "../sid.hpp"
 
 namespace ntw::se {
 
@@ -63,5 +63,3 @@ namespace ntw::se {
     }
 
 } // namespace ntw::se
-
-#include "../../impl/se/sid.inl"

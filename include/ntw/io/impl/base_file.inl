@@ -15,7 +15,7 @@
  */
 
 #pragma once
-#include "../include/ntw/io/base_file.hpp"
+#include "../base_file.hpp"
 
 #define NTW_BUILDER_OPTION(builder, function_name, member, value, op) \
     NTW_INLINE constexpr builder& builder::function_name()            \

@@ -103,4 +103,4 @@ namespace ntw::ob {
 
 } // namespace ntw::ob
 
-#include "../impl/ob/attributes.inl"
+#include "impl/attributes.inl"

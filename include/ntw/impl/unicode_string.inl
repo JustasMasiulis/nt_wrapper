@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/ntw/unicode_string.hpp"
+#include "../unicode_string.hpp"
 
 namespace ntw {
 

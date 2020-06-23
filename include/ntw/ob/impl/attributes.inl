@@ -1,6 +1,6 @@
 #pragma once
-#include "../../include/ntw/ob/attributes.hpp"
-#include "../../include/ntw/detail/unwrap.hpp"
+#include "../attributes.hpp"
+#include "../../detail/unwrap.hpp"
 
 namespace ntw::ob {
 
