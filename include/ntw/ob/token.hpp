@@ -199,4 +199,4 @@ namespace ntw::ob {
 
 } // namespace ntw::ob
 
-#include "../impl/ob/token.inl"
+#include "impl/token.inl"

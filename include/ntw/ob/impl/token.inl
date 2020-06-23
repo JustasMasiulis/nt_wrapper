@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/ob/token.hpp"
+#include "../token.hpp"
 
 namespace ntw::ob {
 

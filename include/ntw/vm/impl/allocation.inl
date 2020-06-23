@@ -1,7 +1,7 @@
 #pragma once
-#include "../../include/ntw/vm/allocation.hpp"
-#include "../../include/ntw/detail/unwrap.hpp"
-#include "../../include/ntw/detail/common.hpp"
+#include "../allocation.hpp"
+#include "../../detail/unwrap.hpp"
+#include "../../detail/common.hpp"
 
 namespace ntw::vm {
 

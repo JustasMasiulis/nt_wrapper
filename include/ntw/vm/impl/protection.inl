@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/ntw/vm/protection.hpp"
+#include "../protection.hpp"
 
 namespace ntw::vm {
 

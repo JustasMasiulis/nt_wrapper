@@ -1,6 +1,6 @@
 #pragma once
-#include "../../include/ntw/vm/operation.hpp"
-#include "../../include/ntw/detail/unwrap.hpp"
+#include "..//operation.hpp"
+#include "../../detail/unwrap.hpp"
 
 namespace ntw::vm {
 

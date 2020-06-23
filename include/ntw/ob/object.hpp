@@ -87,4 +87,4 @@ namespace ntw::ob {
 
 } // namespace ntw::ob
 
-#include "../../../impl/ob/object.inl"
+#include "impl/object.inl"

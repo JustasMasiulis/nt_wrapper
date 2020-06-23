@@ -73,4 +73,4 @@ namespace ntw::vm {
 
 } // namespace ntw::vm
 
-#include "../../../impl/vm/protection.inl"
+#include "impl/protection.inl"

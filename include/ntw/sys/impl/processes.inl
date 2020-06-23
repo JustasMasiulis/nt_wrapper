@@ -1,4 +1,4 @@
-#include "../../include/ntw/sys/processes.hpp"
+#include "../processes.hpp"
 
 namespace ntw::sys {
 
