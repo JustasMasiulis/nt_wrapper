@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Justas Masiulis
+ * Copyright 2020 Justas Masiulis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -278,8 +278,8 @@ namespace ntw::io {
 
             /// \brief Deletes opened file using NtDeleteFile API.
             /// \param path The path to file.
-            NTW_INLINE status static destroy(unicode_string path,
-                                             const ob::attributes& attributes = {}) noexcept;
+            NTW_INLINE status static destroy(
+                unicode_string path, const ob::attributes& attributes = {}) noexcept;
         };
 
         NTW_INLINE constexpr ulong_t normalize_attributes(

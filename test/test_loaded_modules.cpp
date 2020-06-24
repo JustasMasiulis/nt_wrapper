@@ -8,7 +8,7 @@
 TEST_CASE("loaded_modules")
 {
     alignas(16) std::uint8_t arr[0x1000 * 32] = { 0 };
-    const auto               r = ntw::sys::acquire_loaded_modules(gsl::make_span(arr));
+    const auto               r = ntw::sys::loaded_modules(gsl::make_span(arr));
     INFO(std::hex << r.get());
     REQUIRE(r.success());
 

@@ -30,8 +30,8 @@ TEST_CASE("token access building works")
 
 TEST_CASE("token open works")
 {
-    const auto tok = ntw::ob::token::open(
-        ntw::ob::process_ref{}, ntw::ob::token_access{}.adjust_privileges());
+    const auto tok = ntw::ob::token::open(ntw::ob::process_ref{},
+                                          ntw::ob::token_access{}.adjust_privileges());
 
     INFO(std::hex << tok.status().get());
     REQUIRE(tok);
@@ -40,8 +40,8 @@ TEST_CASE("token open works")
 
 TEST_CASE("token.reset_privileges")
 {
-    const auto tok = ntw::ob::token::open(
-        ntw::ob::process_ref{}, ntw::ob::token_access{}.adjust_privileges());
+    const auto tok = ntw::ob::token::open(ntw::ob::process_ref{},
+                                          ntw::ob::token_access{}.adjust_privileges());
 
     REQUIRE(tok);
     REQUIRE(tok->reset_privileges().success());

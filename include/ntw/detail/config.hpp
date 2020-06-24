@@ -15,19 +15,11 @@
  */
 
 #pragma once
-#include "../detail/common.hpp"
-#include "../detail/unwrap.hpp"
-#include <cstdint>
 
-namespace ntw::se {
+#define NTW_INLINE __forceinline
 
-    struct ace {
-        ACCESS_DENIED_ACE ace;
-    }
+#ifndef NTW_SYSCALL
+#define NTW_SYSCALL(fn) fn
+#endif
 
-    template<std::size_t NumAces>
-    class static_acl {
-        ACL _acl;
-    };
-
-} // namespace ntw::se
+#define NTW_IMPORT_CALL(fn) fn

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Justas Masiulis
+ * Copyright 2020 Justas Masiulis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,17 +47,17 @@ namespace ntw::io::traits {
         const auto&     data = options.data();
         IO_STATUS_BLOCK status_block;
         return NTW_SYSCALL(NtCreateFile)(&handle,
-                                   detail::synchronize_access<Sync>(options),
-                                   &attributes,
-                                   &status_block,
-                                   nullptr,
-                                   detail::normalize_attributes(options),
-                                   data.share_access,
-                                   disposition,
-                                   detail::synchronize_options<Sync>(options) |
-                                       FILE_NON_DIRECTORY_FILE,
-                                   nullptr,
-                                   0);
+                                         detail::synchronize_access<Sync>(options),
+                                         &attributes,
+                                         &status_block,
+                                         nullptr,
+                                         detail::normalize_attributes(options),
+                                         data.share_access,
+                                         disposition,
+                                         detail::synchronize_options<Sync>(options) |
+                                             FILE_NON_DIRECTORY_FILE,
+                                         nullptr,
+                                         0);
     }; // namespace ntw::io::traits
 
 } // namespace ntw::io::traits
