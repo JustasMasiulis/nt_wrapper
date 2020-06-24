@@ -323,7 +323,7 @@ namespace ntw::io {
         {
             IO_STATUS_BLOCK iosb;
             return NTW_SYSCALL(NtNotifyChangeKey)(_handle.get(),
-                                                  unwrap_handle(event),
+                                                  unwrap(event),
                                                   nullptr,
                                                   nullptr,
                                                   &iosb,

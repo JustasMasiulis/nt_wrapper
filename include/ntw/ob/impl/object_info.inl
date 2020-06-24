@@ -22,7 +22,7 @@ namespace ntw::object {
     template<class Object>
     NTW_INLINE status handle_flags_info::acquire(const Object& object)
     {
-        return NTW_SYSCALL(NtQueryObject)(detail::unwrap_handle(object),
+        return NTW_SYSCALL(NtQueryObject)(detail::unwrap(object),
                                           ObjectHandleFlagInformation,
                                           this,
                                           sizeof(handle_flags_info),
@@ -32,7 +32,7 @@ namespace ntw::object {
     template<class Object>
     NTW_INLINE status handle_flags_info::apply(const Object& object) const
     {
-        return NTW_SYSCALL(NtSetInformationObject)(detail::unwrap_handle(object),
+        return NTW_SYSCALL(NtSetInformationObject)(detail::unwrap(object),
                                                    ObjectHandleFlagInformation,
                                                    this,
                                                    sizeof(handle_flags_info));
@@ -73,7 +73,7 @@ namespace ntw::object {
     template<class Object>
     NTW_INLINE status basic_info::acquire(const Object& object)
     {
-        return NTW_SYSCALL(NtQueryObject)(detail::unwrap_handle(object),
+        return NTW_SYSCALL(NtQueryObject)(detail::unwrap(object),
                                           ObjectBasicInformation,
                                           &_info,
                                           sizeof(_info),

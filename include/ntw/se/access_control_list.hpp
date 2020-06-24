@@ -23,7 +23,7 @@ namespace ntw::se {
 
     struct ace {
         ACCESS_DENIED_ACE ace;
-    }
+    };
 
     template<std::size_t NumAces>
     class static_acl {

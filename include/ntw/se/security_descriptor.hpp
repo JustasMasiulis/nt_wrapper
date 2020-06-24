@@ -92,10 +92,10 @@ namespace ntw::se {
         NTW_INLINE ACL* sacl() { return _sd.Sacl; }
 
         /// \brief Returns the group.
-        NTW_INLINE SID* group() { return _sd.Group; }
+        NTW_INLINE SID* group() { return static_cast<SID*>(_sd.Group); }
 
         /// \brief Returns the owner.
-        NTW_INLINE SID* owner() { return _sd.Owner; }
+        NTW_INLINE SID* owner() { return static_cast<SID*>(_sd.Owner); }
 
         /// \brief Returns pointer to the internal security descriptor.
         NTW_INLINE SECURITY_DESCRIPTOR* get() { return &_sd; }
@@ -229,13 +229,13 @@ namespace ntw::se {
         {}
 
 
-        NTW_INLINE ACL* dacl() { return _at_offset<ACL*>(_sd->Dacl); }
+        NTW_INLINE ACL* dacl() { return _at_offset<ACL>(_sd->Dacl); }
 
-        NTW_INLINE ACL* sacl() { return _at_offset<ACL*>(_sd->Sacl); }
+        NTW_INLINE ACL* sacl() { return _at_offset<ACL>(_sd->Sacl); }
 
-        NTW_INLINE SID* group() { return _at_offset<SID*>(_sd->Group); }
+        NTW_INLINE SID* group() { return _at_offset<SID>(_sd->Group); }
 
-        NTW_INLINE SID* owner() { return _at_offset<SID*>(_sd->Owner); }
+        NTW_INLINE SID* owner() { return _at_offset<SID>(_sd->Owner); }
 
         NTW_INLINE SECURITY_DESCRIPTOR_RELATIVE* get() { return _sd; }
     };

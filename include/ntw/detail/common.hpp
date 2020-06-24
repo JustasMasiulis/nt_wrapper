@@ -21,6 +21,7 @@
 #include "../../../deps/phnt/phnt_windows.h"
 #include "../../../deps/phnt/phnt.h"
 #include <iterator>
+#include <cstdint>
 
 namespace ntw {
 
