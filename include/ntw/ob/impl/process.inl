@@ -205,7 +205,7 @@ namespace ntw::ob {
     {
         void*  result;
         status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
-                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  ::ntw::detail::unwrap(handle),
                                                   NtCurrentProcess(),
                                                   &result,
                                                   0,
@@ -225,7 +225,7 @@ namespace ntw::ob {
     {
         void*  result;
         status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
-                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  ::ntw::detail::unwrap(handle),
                                                   NtCurrentProcess(),
                                                   &result,
                                                   access.get(),
@@ -242,7 +242,7 @@ namespace ntw::ob {
     {
         void*  result;
         status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
-                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  ::ntw::detail::unwrap(handle),
                                                   NtCurrentProcess(),
                                                   &result,
                                                   access.get(),
@@ -259,7 +259,7 @@ namespace ntw::ob {
     {
         void*  result;
         status s = NTW_SYSCALL(NtDuplicateObject)(this->get(),
-                                                  ::ntw::detail::unwrap_handle(handle),
+                                                  ::ntw::detail::unwrap(handle),
                                                   NtCurrentProcess(),
                                                   &result,
                                                   0,
@@ -274,7 +274,7 @@ namespace ntw::ob {
     NTW_INLINE status basic_process<H>::close_object(const Handle& handle) const noexcept
     {
         return NTW_SYSCALL(NtDuplicateObject)(this->get(),
-                                              ::ntw::detail::unwrap_handle(handle),
+                                              ::ntw::detail::unwrap(handle),
                                               nullptr,
                                               nullptr,
                                               0,

@@ -152,7 +152,7 @@ namespace ntw::sys {
     NTW_INLINE status driver::unload() noexcept
     {
         if(_service_path.begin()) {
-            const auto s = NTW_SYSCALL(NtUnloadDriver(&_service_path.get()));
+            const auto s = NTW_SYSCALL(NtUnloadDriver)(&_service_path.get());
             if(NT_SUCCESS(s))
                 _service_path.get().Buffer = nullptr;
             return s;

@@ -100,8 +100,8 @@ namespace ntw::ob {
     NTW_INLINE status
     basic_job<H>::assign_process(const ProcessHandle& handle) const noexcept
     {
-        return NTW_SYSCALL(NtAssignProcessToJobObject)(
-            this->get(), ntw::detail::unwrap_handle(handle));
+        return NTW_SYSCALL(NtAssignProcessToJobObject)(this->get(),
+                                                       ntw::detail::unwrap(handle));
     }
 
     template<class H>
@@ -121,8 +121,8 @@ namespace ntw::ob {
     NTW_INLINE result<bool>
                basic_job<H>::is_assigned(const Process& process) const noexcept
     {
-        auto status = NTW_SYSCALL(NtIsProcessInJob)(::ntw::detail::unwrap_handle(process),
-                                                    this->get());
+        auto status =
+            NTW_SYSCALL(NtIsProcessInJob)(::ntw::detail::unwrap(process), this->get());
         return { status, status != STATUS_PROCESS_NOT_IN_JOB };
     }
 
