@@ -39,7 +39,7 @@ TEST_CASE("returns correct severity")
                               STATUS_BUFFER_ALL_ZEROS };
         for(auto c : codes) {
             auto s = ntw::status{ c };
-            REQUIRE(!!s);
+            REQUIRE(!s);
             REQUIRE(s.severity() == ntw::severity::success);
             REQUIRE(s.success());
             REQUIRE_FALSE(s.warning());
@@ -55,7 +55,7 @@ TEST_CASE("returns correct severity")
                               STATUS_BAD_CURRENT_DIRECTORY };
         for(auto c : codes) {
             auto s = ntw::status{ c };
-            REQUIRE(!!s);
+            REQUIRE(!s);
             REQUIRE(s.severity() == ntw::severity::information);
             REQUIRE(s.success());
             REQUIRE_FALSE(s.warning());
@@ -71,7 +71,7 @@ TEST_CASE("returns correct severity")
                               STATUS_NO_MORE_FILES };
         for(auto c : codes) {
             auto s = ntw::status{ c };
-            REQUIRE(!s);
+            REQUIRE(!!s);
             REQUIRE(s.severity() == ntw::severity::warning);
             REQUIRE_FALSE(s.success());
             REQUIRE(s.warning());
@@ -88,7 +88,7 @@ TEST_CASE("returns correct severity")
                               STATUS_INVALID_INFO_CLASS };
         for(auto c : codes) {
             auto s = ntw::status{ c };
-            REQUIRE(!s);
+            REQUIRE(!!s);
             REQUIRE(s.severity() == ntw::severity::error);
             REQUIRE_FALSE(s.success());
             REQUIRE_FALSE(s.warning());
