@@ -188,9 +188,9 @@ namespace ntw::io::detail {
     NTW_INLINE ntw::result<Derived>
                base_file<Derived, Traits>::open(const unicode_string& path,
                                      const ob::attributes& attributes,
-                                     const file_options&   options) noexcept
+                                     const file_options&   opt) noexcept
     {
-        return _open(path, attributes, options, FILE_OPEN);
+        return _open(path, attributes, opt, FILE_OPEN);
     }
 
     template<class Derived, class Traits>
@@ -199,7 +199,7 @@ namespace ntw::io::detail {
                                        const ob::attributes& attributes,
                                        const file_options&   opt) noexcept
     {
-        return _open(path, attributes, options, FILE_CREATE);
+        return _open(path, attributes, opt, FILE_CREATE);
     }
 
     template<class Derived, class Traits>
@@ -208,7 +208,7 @@ namespace ntw::io::detail {
                                           const ob::attributes& attributes,
                                           const file_options&   opt) noexcept
     {
-        return _open(path, attributes, options, FILE_SUPERSEDE);
+        return _open(path, attributes, opt, FILE_SUPERSEDE);
     }
 
     template<class Derived, class Traits>
@@ -217,7 +217,7 @@ namespace ntw::io::detail {
                                           const ob::attributes& attributes,
                                           const file_options&   opt) noexcept
     {
-        return _open(path, attributes, options, FILE_OVERWRITE);
+        return _open(path, attributes, opt, FILE_OVERWRITE);
     }
 
     template<class Derived, class Traits>
@@ -226,7 +226,7 @@ namespace ntw::io::detail {
                                                const ob::attributes& attributes,
                                                const file_options&   opt) noexcept
     {
-        return _open(path, attributes, options, FILE_OPEN_IF);
+        return _open(path, attributes, opt, FILE_OPEN_IF);
     }
 
     template<class Derived, class Traits>
@@ -235,7 +235,7 @@ namespace ntw::io::detail {
                                                     const ob::attributes& attributes,
                                                     const file_options&   opt) noexcept
     {
-        return _open(path, attributes, options, FILE_OVERWRITE_IF);
+        return _open(path, attributes, opt, FILE_OVERWRITE_IF);
     }
 
 
