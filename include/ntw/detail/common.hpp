@@ -15,11 +15,11 @@
  */
 
 #pragma once
-#define PHNT_VERSION PHNT_19H2
+#define PHNT_VERSION PHNT_19H1
 #include "config.hpp"
-#include "../../../deps/GSL/include/gsl/span"
-#include "../../../deps/phnt/phnt_windows.h"
-#include "../../../deps/phnt/phnt.h"
+#include <gsl/span_ext>
+#include <phnt_windows.h>
+#include <phnt.h>
 #include <iterator>
 #include <cstdint>
 

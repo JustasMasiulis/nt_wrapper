@@ -17,6 +17,7 @@
 #pragma once
 #include "../detail/offset_iterator.hpp"
 #include "../result.hpp"
+#include <string_view>
 
 namespace ntw::sys {
 
