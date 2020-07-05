@@ -11,6 +11,12 @@ add_library(${NT_WRAPPER_TARGET_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${NT_WRAPPER_TARGET_NAME} ALIAS ${NT_WRAPPER_TARGET_NAME})
 target_compile_features(${NT_WRAPPER_TARGET_NAME} INTERFACE cxx_std_17)
 
+find_package(Microsoft.GSL CONFIG REQUIRED)
+target_link_libraries(${NT_WRAPPER_TARGET_NAME} INTERFACE Microsoft.GSL::GSL)
+
+find_path(PHNT_INCLUDE_DIR phnt.h)
+include_directories(${PHNT_INCLUDE_DIR})
+
 target_include_directories(
     ${NT_WRAPPER_TARGET_NAME}
     INTERFACE
