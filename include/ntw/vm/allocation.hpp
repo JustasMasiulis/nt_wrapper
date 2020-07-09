@@ -24,7 +24,7 @@ namespace ntw::vm {
     ///     .at(address)
     ///     .commit_reserve(size, protection);
     class allocation_builder {
-        const void*   _address = nullptr;
+        void*         _address = nullptr;
         std::size_t   _zero    = 0;
         std::uint32_t _type    = 0;
 

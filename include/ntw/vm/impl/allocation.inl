@@ -25,45 +25,48 @@ namespace ntw::vm {
     NTW_INLINE result<void*> allocation_builder::commit(
         std::size_t size, protection prot, const Process& process) const noexcept
     {
+        void*    addr     = _address;
         SIZE_T   win_size = size;
         NTSTATUS result =
             NTW_SYSCALL(NtAllocateVirtualMemory)(::ntw::detail::unwrap(process),
-                                                 &_address,
+                                                 &addr,
                                                  _zero,
                                                  &win_size,
                                                  _type | MEM_COMMIT,
                                                  prot.get());
-        return { result, _address };
+        return { result, addr };
     }
 
     template<class Process>
     NTW_INLINE result<void*> allocation_builder::reserve(
         std::size_t size, protection prot, const Process& process) const noexcept
     {
+        void*    addr     = _address;
         SIZE_T   win_size = size;
         NTSTATUS result =
             NTW_SYSCALL(NtAllocateVirtualMemory)(::ntw::detail::unwrap(process),
-                                                 &_address,
+                                                 &addr,
                                                  _zero,
                                                  &win_size,
                                                  _type | MEM_RESERVE,
                                                  prot.get());
-        return { result, _address };
+        return { result, addr };
     }
 
     template<class Process>
     NTW_INLINE result<void*> allocation_builder::commit_reserve(
         std::size_t size, protection prot, const Process& process) const noexcept
     {
+        void*    addr     = _address;
         SIZE_T   win_size = size;
         NTSTATUS result =
             NTW_SYSCALL(NtAllocateVirtualMemory)(::ntw::detail::unwrap(process),
-                                                 &_address,
+                                                 &addr,
                                                  _zero,
                                                  &win_size,
                                                  _type | MEM_COMMIT | MEM_RESERVE,
                                                  prot.get());
-        return { result, _address };
+        return { result, addr };
     }
 
     NTW_INLINE constexpr allocation_builder& allocation_builder::zero_bits(
