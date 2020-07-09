@@ -165,9 +165,15 @@ namespace ntw::ob {
         template<class ObjectHandle>
         NTW_INLINE status close_object(const ObjectHandle& handle) const noexcept;
 
+        /// \brief Suspends the process using NtSuspendProcess
         NTW_INLINE status suspend() const noexcept;
 
+        /// \brief Resumes the process using NtResumeProcess
         NTW_INLINE status resume() const noexcept;
+
+        /// \brief Terminates the process using NtTerminateProcess
+        /// \param status The status the process should terminate with.
+        NTW_INLINE status terminate(::ntw::status status) const noexcept;
     };
 
     using process     = basic_process<object>;

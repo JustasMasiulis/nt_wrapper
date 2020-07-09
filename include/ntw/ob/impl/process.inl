@@ -294,4 +294,10 @@ namespace ntw::ob {
         return NTW_SYSCALL(NtResumeProcess)(this->get());
     }
 
+    template<class H>
+    NTW_INLINE status basic_process<H>::terminate(status s) const noexcept
+    {
+        return NTW_SYSCALL(NtTerminateProcess)(this->get(), s.get());
+    }
+
 } // namespace ntw::ob
