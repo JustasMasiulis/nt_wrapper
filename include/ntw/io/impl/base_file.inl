@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Justas Masiulis
+ * Copyright 2018 Justas Masiulis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,17 +170,12 @@ namespace ntw::io::detail {
                                       const file_options&        options,
                                       ulong_t                    disposition) noexcept
     {
-        result<Derived> ret;
-        void*           temp_handle = nullptr;
-        auto&           attr        = const_cast<ob::attributes&>(attributes).get();
-        attr.ObjectName             = const_cast<UNICODE_STRING*>(&path.get());
+        void* temp_handle = nullptr;
+        auto& attr        = const_cast<ob::attributes&>(attributes).get();
+        attr.ObjectName   = const_cast<UNICODE_STRING*>(&path.get());
 
-        ret.status() = Traits::open(temp_handle, attr, options, disposition);
-
-        if(ret)
-            ret->handle().reset(temp_handle);
-
-        return ret;
+        const auto status = Traits::open(temp_handle, attr, options, disposition);
+        return { status, Derived{ temp_handle } };
     }
 
 
@@ -245,22 +240,21 @@ namespace ntw::io::detail {
     {
         IO_STATUS_BLOCK           status_block;
         FILE_STANDARD_INFORMATION info;
-        const auto status = NTW_SYSCALL(NtQueryInformationFile)(_handle.get(),
-                                                                &status_block,
-                                                                &info,
-                                                                unsigned{ sizeof(info) },
-                                                                FileStandardInformation);
-        if(NT_SUCCESS(status))
-            size_out = static_cast<std::uint64_t>(info.EndOfFile.QuadPart);
-
-        return status;
+        const auto                status =
+            NTW_SYSCALL(NtQueryInformationFile)(static_cast<const Derived&>(*this).get(),
+                                                &status_block,
+                                                &info,
+                                                unsigned{ sizeof(info) },
+                                                FileStandardInformation);
+        return { status, info.EndOfFile.QuadPart };
     }
 
     template<class Derived, class Traits>
     NTW_INLINE ntw::status base_file<Derived, Traits>::flush() const noexcept
     {
         IO_STATUS_BLOCK iosb;
-        return NTW_SYSCALL(NtFlushBuffersFile)(handle().get(), &iosb);
+        return NTW_SYSCALL(NtFlushBuffersFile)(static_cast<const Derived&>(*this).get(),
+                                               &iosb);
     }
 
     template<class Derived, class Traits>
