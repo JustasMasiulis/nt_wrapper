@@ -186,9 +186,6 @@ namespace ntw::io {
         /// \brief Contains APIs that are common between basic_file and async_file
         template<class Derived, class Traits>
         class base_file {
-            using handle_type = typename Traits::handle_type;
-            handle_type _handle;
-
             NTW_INLINE static result<Derived> _open(const unicode_string& path,
                                                     const ob::attributes& attributes,
                                                     const file_options&   opt,
@@ -199,18 +196,6 @@ namespace ntw::io {
 
         public:
             constexpr static auto options = Traits::options;
-
-            NTW_INLINE base_file() = default;
-            NTW_INLINE base_file(void* handle) noexcept : _handle(handle) {}
-
-            NTW_INLINE base_file(base_file&&)      = default;
-            NTW_INLINE base_file(const base_file&) = default;
-
-            NTW_INLINE base_file& operator=(base_file&&) = default;
-            NTW_INLINE base_file& operator=(const base_file&) = default;
-
-            NTW_INLINE handle_type& handle() noexcept { return _handle; }
-            NTW_INLINE const handle_type& handle() const noexcept { return _handle; }
 
             /// \brief Opens file using NtCreateFile API. FILE_OPEN disposition is used.
             /// \param path The path to file.
