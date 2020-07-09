@@ -28,12 +28,12 @@ namespace ntw::io {
         li_offset.QuadPart = offset;
 
         const auto status =
-            NTW_SYSCALL(NtWriteFile)(this->handle().get(),
+            NTW_SYSCALL(NtWriteFile)(this->get(),
                                      nullptr,
                                      nullptr,
                                      nullptr,
                                      &status_block,
-                                     const_cast<std::uint8_t*>(buffer.begin()),
+                                     const_cast<std::uint8_t*>(buffer.data()),
                                      buffer.size(),
                                      &li_offset,
                                      nullptr);
@@ -48,7 +48,7 @@ namespace ntw::io {
         LARGE_INTEGER   li_offset;
         li_offset.QuadPart = offset;
 
-        const auto status = NTW_SYSCALL(NtReadFile)(handle().get(),
+        const auto status = NTW_SYSCALL(NtReadFile)(this->get(),
                                                     nullptr,
                                                     nullptr,
                                                     nullptr,
@@ -66,7 +66,7 @@ namespace ntw::io {
     {
         IO_STATUS_BLOCK status_block;
         const auto      status =
-            NTW_SYSCALL(NtDeviceIoControlFile)(this->handle().get(),
+            NTW_SYSCALL(NtDeviceIoControlFile)(this->get(),
                                                nullptr,
                                                nullptr,
                                                nullptr,
@@ -87,8 +87,7 @@ namespace ntw::io {
     {
         return device_io_control(control_code,
                                  { ::std::addressof(input), sizeof(Input) },
-                                 { ::std::addressof(output), sizeof(Output) },
-                                 returned);
+                                 { ::std::addressof(output), sizeof(Output) });
     }
 
     template<class Handle, class Traits>
@@ -97,7 +96,7 @@ namespace ntw::io {
     {
         IO_STATUS_BLOCK status_block;
         const auto      status =
-            NTW_SYSCALL(NtFsControlFile)(this->handle().get(),
+            NTW_SYSCALL(NtFsControlFile)(this->get(),
                                          nullptr,
                                          nullptr,
                                          nullptr,
@@ -118,8 +117,7 @@ namespace ntw::io {
     {
         return fs_control(control_code,
                           { ::std::addressof(input), sizeof(Input) },
-                          { ::std::addressof(output), sizeof(Output) },
-                          returned);
+                          { ::std::addressof(output), sizeof(Output) });
     }
 
 } // namespace ntw::io
