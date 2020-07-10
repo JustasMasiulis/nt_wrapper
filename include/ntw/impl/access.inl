@@ -95,4 +95,11 @@ namespace ntw {
         return static_cast<D&>(*this);
     }
 
+    template<class D>
+    NTW_INLINE constexpr D& access_builder<D>::maximum_allowed()
+    {
+        _access |= MAXIMUM_ALLOWED;
+        return static_cast<D&>(*this);
+    }
+
 } // namespace ntw

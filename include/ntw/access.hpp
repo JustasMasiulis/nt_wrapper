@@ -59,6 +59,9 @@ namespace ntw {
 
         /// \brief Enables WRITE_OWNER flag
         NTW_INLINE constexpr ObjectSpecific& write_owner();
+
+        /// \brief Enables MAXIMUM_ALLOWED flag
+        NTW_INLINE constexpr ObjectSpecific& maximum_allowed();
     };
 
 } // namespace ntw
