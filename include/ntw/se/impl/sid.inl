@@ -25,7 +25,7 @@ namespace ntw::se {
                                                      SubAuths... subauthorities) noexcept
         : _sub_auth_count(sizeof...(SubAuths))
         , _identifier_authority(authority)
-        , _sub_authorities{ { subauthorities... } }
+        , _sub_authorities{ subauthorities... }
     {}
 
     template<std::size_t NSA>

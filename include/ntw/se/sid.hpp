@@ -64,6 +64,9 @@ namespace ntw::se {
         NTW_INLINE constexpr void push_back(std::uint32_t new_sub_auth);
     };
 
+    template<class... SubAuths>
+    static_sid(SID_IDENTIFIER_AUTHORITY, SubAuths...) -> static_sid<sizeof...(SubAuths)>;
+
 } // namespace ntw::se
 
 #include "impl/sid.inl"

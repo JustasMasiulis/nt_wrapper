@@ -21,13 +21,29 @@
 
 namespace ntw::se {
 
-    struct ace {
-        ACCESS_DENIED_ACE ace;
+    template<class... Aces>
+    struct static_acl {
+        ACL                 acl;
+        std::tuple<Aces...> aces;
+
+        NTW_INLINE constexpr static_acl() noexcept
+            : acl{ ACL_REVISION, 0, sizeof(static_acl<Aces...>) + 1, sizeof...(Aces), 0 }
+        {}
+
+        NTW_INLINE constexpr static_acl(Aces... aces_) noexcept
+            : acl{ ACL_REVISION, 0, sizeof(static_acl<Aces...>) + 1, sizeof...(Aces), 0 }
+            , aces(aces_...)
+        {}
+
+        operator ACL*() { return reinterpret_cast<ACL*>(this); }
     };
 
-    template<std::size_t NumAces>
-    class static_acl {
-        ACL _acl;
+    template<class... Aces>
+    static_acl(Aces...) -> static_acl<Aces...>;
+
+
+    struct dyn_acl {
+        ACL acl;
     };
 
 } // namespace ntw::se

@@ -86,16 +86,16 @@ namespace ntw::se {
         }
 
         /// \brief Returns the dacl.
-        NTW_INLINE ACL* dacl() { return _sd.Dacl; }
+        NTW_INLINE ACL* dacl() noexcept { return static_cast<ACL*>(_sd.Dacl); }
 
         /// \brief Returns the sacl.
-        NTW_INLINE ACL* sacl() { return _sd.Sacl; }
+        NTW_INLINE ACL* sacl() noexcept { return static_cast<ACL*>(_sd.Sacl); }
 
         /// \brief Returns the group.
-        NTW_INLINE SID* group() { return static_cast<SID*>(_sd.Group); }
+        NTW_INLINE SID* group() noexcept { return static_cast<SID*>(_sd.Group); }
 
         /// \brief Returns the owner.
-        NTW_INLINE SID* owner() { return static_cast<SID*>(_sd.Owner); }
+        NTW_INLINE SID* owner() noexcept { return static_cast<SID*>(_sd.Owner); }
 
         /// \brief Returns pointer to the internal security descriptor.
         NTW_INLINE SECURITY_DESCRIPTOR* get() { return &_sd; }
