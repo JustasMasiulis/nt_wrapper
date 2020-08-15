@@ -17,6 +17,7 @@
 #pragma once
 #include "../detail/common.hpp"
 #include <cstdint>
+#include <array>
 
 namespace ntw::se {
 
@@ -52,10 +53,10 @@ namespace ntw::se {
         NTW_INLINE constexpr SID_IDENTIFIER_AUTHORITY& identifier_authority();
 
         /// \brief Returns a span of the initialized sub authorities
-        NTW_INLINE constexpr gsl::span<std::uint32_t> sub_authorities();
+        NTW_INLINE constexpr std::span<std::uint32_t> sub_authorities();
 
         /// \brief Returns a span of the initialized sub authorities
-        NTW_INLINE constexpr gsl::span<const std::uint32_t> sub_authorities() const;
+        NTW_INLINE constexpr std::span<const std::uint32_t> sub_authorities() const;
 
         /// \brief Changes the amount of sub authorities stored
         NTW_INLINE constexpr void resize(std::size_t new_size);

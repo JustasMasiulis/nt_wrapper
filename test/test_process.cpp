@@ -53,7 +53,7 @@ TEST_CASE("memory read")
         std::size_t variable{ 6 };
         std::size_t copy{ 0 };
         auto        status = ntw::ob::process_ref{}.read_mem(
-            &variable, gsl::as_writable_bytes(gsl::span{ &copy, 1 }));
+            &variable, std::as_writable_bytes(std::span{ &copy, 1 }));
 
         REQUIRE(copy == variable);
         REQUIRE(status.success());
@@ -77,7 +77,7 @@ TEST_CASE("memory write")
         std::size_t variable{ 6 };
         std::size_t copy{ 0 };
         auto        status = ntw::ob::process_ref{}.write_mem(
-            &copy, gsl::as_bytes(gsl::span{ &variable, 1 }));
+            &copy, std::as_bytes(std::span{ &variable, 1 }));
 
         REQUIRE(copy == variable);
         REQUIRE(status.success());

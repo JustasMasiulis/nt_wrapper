@@ -34,12 +34,12 @@ namespace ntw::sys {
         return { status, { reinterpret_cast<process*>(first) } };
     }
 
-    NTW_INLINE gsl::span<thread> process::threads() noexcept
+    NTW_INLINE std::span<thread> process::threads() noexcept
     {
         return { reinterpret_cast<thread*>(this + 1), thread_count };
     }
 
-    NTW_INLINE gsl::span<const thread> process::threads() const noexcept
+    NTW_INLINE std::span<const thread> process::threads() const noexcept
     {
         return { reinterpret_cast<const thread*>(this + 1), thread_count };
     }

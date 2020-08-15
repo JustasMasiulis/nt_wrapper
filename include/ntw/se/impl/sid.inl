@@ -54,14 +54,14 @@ namespace ntw::se {
     }
 
     template<std::size_t NSA>
-    NTW_INLINE constexpr gsl::span<const std::uint32_t>
+    NTW_INLINE constexpr std::span<const std::uint32_t>
     static_sid<NSA>::sub_authorities() const
     {
         return { _sub_authorities.data(), _sub_auth_count };
     }
 
     template<std::size_t NSA>
-    NTW_INLINE constexpr gsl::span<std::uint32_t> static_sid<NSA>::sub_authorities()
+    NTW_INLINE constexpr std::span<std::uint32_t> static_sid<NSA>::sub_authorities()
     {
         return { _sub_authorities.data(), _sub_auth_count };
     }

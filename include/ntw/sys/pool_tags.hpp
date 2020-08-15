@@ -30,7 +30,7 @@ namespace ntw::sys {
 
     /// \brief Queries pool tags in system use using SystemPoolTagInformation class.
     template<class Range>
-    ntw::result<gsl::span<system_pooltag>>
+    ntw::result<std::span<system_pooltag>>
     pool_tags(Range&& buffer, ulong_t* returned = nullptr) noexcept;
 
 } // namespace ntw::sys

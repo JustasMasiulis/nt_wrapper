@@ -22,7 +22,7 @@ namespace ntw::sys {
     static_assert(sizeof(system_pooltag) == sizeof(SYSTEM_POOLTAG));
 
     template<class Range>
-    NTW_INLINE ::ntw::result<gsl::span<system_pooltag>>
+    NTW_INLINE ::ntw::result<std::span<system_pooltag>>
     pool_tags(Range&& buffer, ulong_t* returned) noexcept
     {
         const auto  first  = ::ntw::detail::unfancy(::ntw::detail::adl_begin(buffer));
@@ -32,7 +32,7 @@ namespace ntw::sys {
 
         const auto info = reinterpret_cast<SYSTEM_POOLTAG_INFORMATION*>(first);
         return { status,
-                 gsl::span<system_pooltag>{
+                 std::span<system_pooltag>{
                      reinterpret_cast<system_pooltag*>(info->TagInfo), info->Count } };
     }
 

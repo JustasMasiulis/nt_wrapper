@@ -86,10 +86,10 @@ namespace ntw::sys {
         } transfer_count;
 
         /// \brief Returns a span of this process thread information
-        NTW_INLINE gsl::span<thread> threads() noexcept;
+        NTW_INLINE std::span<thread> threads() noexcept;
 
         /// \brief Returns a span of this process thread information
-        NTW_INLINE gsl::span<const thread> threads() const noexcept;
+        NTW_INLINE std::span<const thread> threads() const noexcept;
 
         using range_type = detail::offset_iterator_range<process, true>;
     };

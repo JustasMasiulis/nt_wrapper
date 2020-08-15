@@ -36,5 +36,5 @@ The main reason to choose this library over existing windows constructs are:
 > git clone https://github.com/microsoft/vcpkg
 > cd vcpkg
 > ./bootstrap-vcpkg.sh
-> ./vcpkg install phnt ms-gsl
+> ./vcpkg install phnt
 ```

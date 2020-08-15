@@ -17,16 +17,16 @@
 #pragma once
 #define PHNT_VERSION PHNT_19H1
 #include "config.hpp"
-#include <gsl/span_ext>
 #include <phnt_windows.h>
 #include <phnt.h>
 #include <iterator>
 #include <cstdint>
+#include <span>
 
 namespace ntw {
 
-    using byte_span  = gsl::span<std::uint8_t>;
-    using cbyte_span = gsl::span<const std::uint8_t>;
+    using byte_span  = std::span<std::uint8_t>;
+    using cbyte_span = std::span<const std::uint8_t>;
 
     using ulong_t = unsigned long;
 

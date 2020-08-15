@@ -46,7 +46,7 @@ namespace ntw::sys {
     ntw::result<loaded_module::range_type> loaded_modules(Range&& buffer)
     {
         const auto  first  = detail::unfancy(detail::adl_begin(buffer));
-        const auto  size   = static_cast<ulong_t>(detail::range_byte_size(buffer));
+        const auto  size   = static_cast<ulong_t>(detail::range_byte_size<Range>(buffer));
         ntw::status status = NTW_SYSCALL(NtQuerySystemInformation)(
             SystemModuleInformationEx, first, size, nullptr);
 
