@@ -320,6 +320,28 @@ namespace ntw::ob {
     }
 
     template<class H>
+    template<class HT>
+    NTW_INLINE ntw::result<basic_token<H>> basic_token<H>::open(
+        const basic_thread<HT>& thread, token_access desired_access) noexcept
+    {
+        void*      handle;
+        const auto status = NTW_SYSCALL(NtOpenThreadToken)(
+            thread->get(), desired_access.get(), false, &handle);
+        return { status, { handle } };
+    }
+
+    template<class H>
+    template<class HT>
+    NTW_INLINE ntw::result<basic_token<H>> basic_token<H>::open_as_self(
+        const basic_thread<HT>& thread, token_access desired_access) noexcept
+    {
+        void*      handle;
+        const auto status = NTW_SYSCALL(NtOpenThreadToken)(
+            thread->get(), desired_access.get(), true, &handle);
+        return { status, { handle } };
+    }
+
+    template<class H>
     NTW_INLINE status basic_token<H>::reset_privileges() const noexcept
     {
         return NTW_SYSCALL(NtAdjustPrivilegesToken)(

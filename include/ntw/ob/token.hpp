@@ -17,6 +17,7 @@
 #pragma once
 #include "object.hpp"
 #include "process.hpp"
+#include "thread.hpp"
 
 namespace ntw::ob {
 
@@ -187,10 +188,19 @@ namespace ntw::ob {
         basic_token() = default;
 
         /// \brief Opens given process token with the specified access.
-        // TODO add thread token open
         template<class H>
         NTW_INLINE static ntw::result<basic_token>
         open(const basic_process<H>& process, token_access desired_access) noexcept;
+
+        /// \brief Opens given thread token with the specified access.
+        template<class H>
+        NTW_INLINE static ntw::result<basic_token>
+        open(const basic_thread<H>& thread, token_access desired_access) noexcept;
+
+        /// \brief Opens given thread token with the specified access as self.
+        template<class H>
+        NTW_INLINE static ntw::result<basic_token>
+        open_as_self(const basic_thread<H>& thread, token_access desired_access) noexcept;
 
         /// \brief Resets / disables all privileges.
         /// \note Acts as AdjustTokenPrivileges(handle, TRUE, ...)
