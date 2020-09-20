@@ -15,18 +15,19 @@
  */
 
 #pragma once
-#include "../driver.hpp"
 
-namespace ntw::sys {
+#include <type_traits>
+#include <cstddef>
+#include <ranges>
 
-    status load_driver(unicode_string service_name)
-    {
-        return NTW_SYSCALL(NtLoadDriver)(&service_name.get());
-    }
+namespace ntw {
 
-    status unload_driver(unicode_string service_name)
-    {
-        return NTW_SYSCALL(NtUnloadDriver)(&service_name.get());
-    }
+    template<class T>
+    concept Byte =
+        (sizeof(T) == 1 && std::is_integral_v<T>) || std::is_same_v<T, std::byte>;
 
-} // namespace ntw::sys
+    template<class R>
+    concept ByteRange =
+        std::ranges::contiguous_range<R>&& Byte<std::ranges::range_value_t>;
+
+} // namespace ntw

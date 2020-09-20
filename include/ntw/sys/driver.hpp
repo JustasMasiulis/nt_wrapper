@@ -15,18 +15,16 @@
  */
 
 #pragma once
-#include "../driver.hpp"
+#include "../result.hpp"
+#include "../unicode_string.hpp"
+#include "../io/registry_key.hpp"
 
 namespace ntw::sys {
 
-    status load_driver(unicode_string service_name)
-    {
-        return NTW_SYSCALL(NtLoadDriver)(&service_name.get());
-    }
+    NTW_INLINE status load_driver(unicode_string service_name);
 
-    status unload_driver(unicode_string service_name)
-    {
-        return NTW_SYSCALL(NtUnloadDriver)(&service_name.get());
-    }
+    NTW_INLINE status unload_driver(unicode_string service_name);
 
 } // namespace ntw::sys
+
+#include "impl/driver_loader.inl"
