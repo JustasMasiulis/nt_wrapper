@@ -26,7 +26,7 @@ And more
 
 ### Why?
 The main reason to choose this library over existing windows constructs are:
-* Speed - even with lazy_importer you code is likely to be faster compared to win32 API.
+* Speed - even with lazy_importer your code is likely to be faster compared to win32 API.
 * Ease of use - the language of choice is c++ and allows you to use modern alternatives to old C.
 * Obfuscation - it is a lot harder to reverse engineer an application which uses obfuscated imports or direct syscalls.
 
